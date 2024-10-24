@@ -113,7 +113,7 @@ func (c *Context) drawIcon(icon icon, rect image.Rectangle, color color.Color) {
 	}
 }
 
-func (c *Context) Draw(f func(screen *ebiten.Image)) {
+func (c *Context) DrawControl(f func(screen *ebiten.Image)) {
 	c.setClip(c.clipRect())
 	defer c.setClip(unclippedRect)
 	cmd := c.pushCommand(commandDraw)

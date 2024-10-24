@@ -117,7 +117,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 			})
 			// color preview
 			ctx.Control(0, 0, func(r image.Rectangle) debugui.Response {
-				ctx.Draw(func(screen *ebiten.Image) {
+				ctx.DrawControl(func(screen *ebiten.Image) {
 					vector.DrawFilledRect(
 						screen,
 						float32(r.Min.X),
