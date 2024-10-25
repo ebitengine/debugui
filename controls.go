@@ -80,16 +80,16 @@ func (c *Context) updateControl(id ID, rect image.Rectangle, opt option) {
 
 	if c.focus == id {
 		if c.mousePressed != 0 && !mouseover {
-			c.SetFocus(0)
+			c.setFocus(0)
 		}
 		if c.mouseDown == 0 && (^opt&optionHoldFocus) != 0 {
-			c.SetFocus(0)
+			c.setFocus(0)
 		}
 	}
 
 	if c.hover == id {
 		if c.mousePressed != 0 {
-			c.SetFocus(id)
+			c.setFocus(id)
 		} else if !mouseover {
 			c.hover = 0
 		}
@@ -232,7 +232,7 @@ func (c *Context) textBoxRaw(buf *string, id ID, opt option) Response {
 
 				// handle return
 				if (c.keyPressed & keyReturn) != 0 {
-					c.SetFocus(0)
+					c.setFocus(0)
 					res |= ResponseSubmit
 					f.SetTextAndSelection("", 0, 0)
 				}
@@ -445,7 +445,7 @@ func (c *Context) treeNode(label string, opt option, f func(res Response)) {
 	defer func() {
 		c.layout().indent -= c.style.indent
 	}()
-	c.idStack = append(c.idStack, c.LastID)
+	c.idStack = append(c.idStack, c.lastID)
 	defer c.popID()
 	f(res)
 }

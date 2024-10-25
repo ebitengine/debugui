@@ -163,7 +163,7 @@ func (g *Game) logWindow(ctx *debugui.Context) {
 		var submitted bool
 		ctx.SetLayoutRow([]int{-70, -1}, 0)
 		if ctx.TextBox(&g.logSubmitBuf)&debugui.ResponseSubmit != 0 {
-			ctx.SetFocus(ctx.LastID)
+			ctx.SetFocus()
 			submitted = true
 		}
 		if ctx.Button("Submit") != 0 {

@@ -42,7 +42,7 @@ func (c *Context) id(data []byte) ID {
 		init = c.idStack[len(c.idStack)-1]
 	}
 	id := fnv1a(init, data)
-	c.LastID = id
+	c.lastID = id
 	return id
 }
 
@@ -140,7 +140,11 @@ func (c *Context) bringToFront(cnt *container) {
 	cnt.zIndex = c.lastZIndex
 }
 
-func (c *Context) SetFocus(id ID) {
+func (c *Context) SetFocus() {
+	c.setFocus(c.lastID)
+}
+
+func (c *Context) setFocus(id ID) {
 	c.focus = id
 	c.keepFocus = true
 }

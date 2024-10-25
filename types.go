@@ -106,7 +106,7 @@ type Context struct {
 	style         *style
 	hover         ID
 	focus         ID
-	LastID        ID
+	lastID        ID
 	lastRect      image.Rectangle
 	lastZIndex    int
 	keepFocus     bool
