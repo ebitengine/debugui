@@ -96,7 +96,11 @@ func (c *Context) updateControl(id ID, rect image.Rectangle, opt option) {
 	}
 }
 
-func (c *Context) Control(id ID, opt option, f func(r image.Rectangle) Response) Response {
+func (c *Context) Control(id ID, f func(r image.Rectangle) Response) Response {
+	return c.control(id, 0, f)
+}
+
+func (c *Context) control(id ID, opt option, f func(r image.Rectangle) Response) Response {
 	r := c.layoutNext()
 	c.updateControl(id, r, opt)
 	return f(r)
@@ -108,7 +112,7 @@ func (c *Context) Text(text string) {
 		var endIdx, p int
 		c.SetLayoutRow([]int{-1}, lineHeight())
 		for endIdx < len(text) {
-			c.Control(0, 0, func(r image.Rectangle) Response {
+			c.control(0, 0, func(r image.Rectangle) Response {
 				w := 0
 				endIdx = p
 				startIdx := endIdx
@@ -136,7 +140,7 @@ func (c *Context) Text(text string) {
 }
 
 func (c *Context) Label(text string) {
-	c.Control(0, 0, func(r image.Rectangle) Response {
+	c.control(0, 0, func(r image.Rectangle) Response {
 		c.drawControlText(text, r, ColorText, 0)
 		return 0
 	})
@@ -147,7 +151,7 @@ func (c *Context) buttonEx(label string, opt option) Response {
 	if len(label) > 0 {
 		id = c.id([]byte(label))
 	}
-	return c.Control(id, opt, func(r image.Rectangle) Response {
+	return c.control(id, opt, func(r image.Rectangle) Response {
 		var res Response
 		// handle click
 		if c.mousePressed == mouseLeft && c.focus == id {
@@ -164,7 +168,7 @@ func (c *Context) buttonEx(label string, opt option) Response {
 
 func (c *Context) Checkbox(label string, state *bool) Response {
 	id := c.id(ptrToBytes(unsafe.Pointer(state)))
-	return c.Control(id, 0, func(r image.Rectangle) Response {
+	return c.control(id, 0, func(r image.Rectangle) Response {
 		var res Response
 		box := image.Rect(r.Min.X, r.Min.Y, r.Min.X+r.Dy(), r.Max.Y)
 		c.updateControl(id, r, 0)
@@ -198,7 +202,7 @@ func (c *Context) textField(id ID) *textinput.Field {
 }
 
 func (c *Context) textBoxRaw(buf *string, id ID, opt option) Response {
-	return c.Control(id, opt|optionHoldFocus, func(r image.Rectangle) Response {
+	return c.control(id, opt|optionHoldFocus, func(r image.Rectangle) Response {
 		var res Response
 
 		if c.focus == id {
@@ -301,7 +305,7 @@ func (c *Context) sliderEx(value *float64, low, high, step float64, digits int, 
 	}
 
 	// handle normal mode
-	return c.Control(id, opt, func(r image.Rectangle) Response {
+	return c.control(id, opt, func(r image.Rectangle) Response {
 		var res Response
 		// handle input
 		if c.focus == id && (c.mouseDown|c.mousePressed) == mouseLeft {
@@ -342,7 +346,7 @@ func (c *Context) numberEx(value *float64, step float64, digits int, opt option)
 	}
 
 	// handle normal mode
-	return c.Control(id, opt, func(r image.Rectangle) Response {
+	return c.control(id, opt, func(r image.Rectangle) Response {
 		var res Response
 		// handle input
 		if c.focus == id && c.mouseDown == mouseLeft {
@@ -376,7 +380,7 @@ func (c *Context) header(label string, istreenode bool, opt option) Response {
 		expanded = active
 	}
 
-	return c.Control(id, 0, func(r image.Rectangle) Response {
+	return c.control(id, 0, func(r image.Rectangle) Response {
 		// handle click (TODO (port): check if this is correct)
 		clicked := c.mousePressed == mouseLeft && c.focus == id
 		v1, v2 := 0, 0
