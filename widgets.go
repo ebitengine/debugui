@@ -26,7 +26,7 @@ func (c *Context) Header(label string, expanded bool) Response {
 	if expanded {
 		opt |= optionExpanded
 	}
-	return c.headerEx(label, opt)
+	return c.header(label, false, opt)
 }
 
 func (c *Context) TreeNode(label string, f func(res Response)) {

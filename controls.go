@@ -434,10 +434,6 @@ func (c *Context) header(label string, istreenode bool, opt option) Response {
 	})
 }
 
-func (c *Context) headerEx(label string, opt option) Response {
-	return c.header(label, false, opt)
-}
-
 func (c *Context) treeNode(label string, opt option, f func(res Response)) {
 	res := c.header(label, true, opt)
 	if res&ResponseActive == 0 {
@@ -563,14 +559,13 @@ func (c *Context) pushContainerBody(cnt *container, body image.Rectangle, opt op
 }
 
 func (c *Context) window(title string, rect image.Rectangle, opt option, f func(res Response, layout Layout)) {
-	id := c.idFromBytes([]byte(title))
+	id := c.pushID([]byte(title))
+	defer c.popID()
 
 	cnt := c.container(id, opt)
 	if cnt == nil || !cnt.open {
 		return
 	}
-	c.idStack = append(c.idStack, id)
-	defer c.popID()
 	// This is popped at endRootContainer.
 	// TODO: This is tricky. Refactor this.
 
