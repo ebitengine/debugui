@@ -29,7 +29,7 @@ func (c *Context) inHoverRoot() bool {
 	return false
 }
 
-func (c *Context) drawControlFrame(id ID, rect image.Rectangle, colorid int, opt option) {
+func (c *Context) drawControlFrame(id controlID, rect image.Rectangle, colorid int, opt option) {
 	if (opt & optionNoFrame) != 0 {
 		return
 	}
@@ -61,7 +61,7 @@ func (c *Context) mouseOver(rect image.Rectangle) bool {
 	return c.mousePos.In(rect) && c.mousePos.In(c.clipRect()) && c.inHoverRoot()
 }
 
-func (c *Context) updateControl(id ID, rect image.Rectangle, opt option) {
+func (c *Context) updateControl(id controlID, rect image.Rectangle, opt option) {
 	if id == 0 {
 		return
 	}
@@ -96,11 +96,13 @@ func (c *Context) updateControl(id ID, rect image.Rectangle, opt option) {
 	}
 }
 
-func (c *Context) Control(id ID, f func(r image.Rectangle) Response) Response {
+func (c *Context) Control(idStr string, f func(r image.Rectangle) Response) Response {
+	id := c.pushID([]byte(idStr))
+	defer c.popID()
 	return c.control(id, 0, f)
 }
 
-func (c *Context) control(id ID, opt option, f func(r image.Rectangle) Response) Response {
+func (c *Context) control(id controlID, opt option, f func(r image.Rectangle) Response) Response {
 	r := c.layoutNext()
 	c.updateControl(id, r, opt)
 	return f(r)
@@ -147,9 +149,9 @@ func (c *Context) Label(text string) {
 }
 
 func (c *Context) buttonEx(label string, opt option) Response {
-	var id ID
+	var id controlID
 	if len(label) > 0 {
-		id = c.id([]byte(label))
+		id = c.idFromBytes([]byte(label))
 	}
 	return c.control(id, opt, func(r image.Rectangle) Response {
 		var res Response
@@ -167,7 +169,7 @@ func (c *Context) buttonEx(label string, opt option) Response {
 }
 
 func (c *Context) Checkbox(label string, state *bool) Response {
-	id := c.id(ptrToBytes(unsafe.Pointer(state)))
+	id := c.idFromBytes(ptrToBytes(unsafe.Pointer(state)))
 	return c.control(id, 0, func(r image.Rectangle) Response {
 		var res Response
 		box := image.Rect(r.Min.X, r.Min.Y, r.Min.X+r.Dy(), r.Max.Y)
@@ -188,20 +190,20 @@ func (c *Context) Checkbox(label string, state *bool) Response {
 	})
 }
 
-func (c *Context) textField(id ID) *textinput.Field {
+func (c *Context) textField(id controlID) *textinput.Field {
 	if id == 0 {
 		return nil
 	}
 	if _, ok := c.textFields[id]; !ok {
 		if c.textFields == nil {
-			c.textFields = make(map[ID]*textinput.Field)
+			c.textFields = make(map[controlID]*textinput.Field)
 		}
 		c.textFields[id] = &textinput.Field{}
 	}
 	return c.textFields[id]
 }
 
-func (c *Context) textBoxRaw(buf *string, id ID, opt option) Response {
+func (c *Context) textBoxRaw(buf *string, id controlID, opt option) Response {
 	return c.control(id, opt|optionHoldFocus, func(r image.Rectangle) Response {
 		var res Response
 
@@ -264,7 +266,7 @@ func (c *Context) textBoxRaw(buf *string, id ID, opt option) Response {
 	})
 }
 
-func (c *Context) numberTextBox(value *float64, id ID) bool {
+func (c *Context) numberTextBox(value *float64, id controlID) bool {
 	if c.mousePressed == mouseLeft && (c.keyDown&keyShift) != 0 &&
 		c.hover == id {
 		c.numberEdit = id
@@ -286,7 +288,7 @@ func (c *Context) numberTextBox(value *float64, id ID) bool {
 }
 
 func (c *Context) textBoxEx(buf *string, opt option) Response {
-	id := c.id(ptrToBytes(unsafe.Pointer(buf)))
+	id := c.idFromBytes(ptrToBytes(unsafe.Pointer(buf)))
 	return c.textBoxRaw(buf, id, opt)
 }
 
@@ -297,7 +299,7 @@ func formatNumber(v float64, digits int) string {
 func (c *Context) sliderEx(value *float64, low, high, step float64, digits int, opt option) Response {
 	last := *value
 	v := last
-	id := c.id(ptrToBytes(unsafe.Pointer(value)))
+	id := c.idFromBytes(ptrToBytes(unsafe.Pointer(value)))
 
 	// handle text input mode
 	if c.numberTextBox(&v, id) {
@@ -337,7 +339,7 @@ func (c *Context) sliderEx(value *float64, low, high, step float64, digits int, 
 }
 
 func (c *Context) numberEx(value *float64, step float64, digits int, opt option) Response {
-	id := c.id(ptrToBytes(unsafe.Pointer(value)))
+	id := c.idFromBytes(ptrToBytes(unsafe.Pointer(value)))
 	last := *value
 
 	// handle text input mode
@@ -368,7 +370,7 @@ func (c *Context) numberEx(value *float64, step float64, digits int, opt option)
 }
 
 func (c *Context) header(label string, istreenode bool, opt option) Response {
-	id := c.id([]byte(label))
+	id := c.idFromBytes([]byte(label))
 	idx := c.poolGet(c.treeNodePool[:], id)
 	c.SetLayoutRow([]int{-1}, 0)
 
@@ -454,7 +456,7 @@ func (c *Context) treeNode(label string, opt option, f func(res Response)) {
 func (c *Context) scrollbarVertical(cnt *container, b image.Rectangle, cs image.Point) {
 	maxscroll := cs.Y - b.Dy()
 	if maxscroll > 0 && b.Dy() > 0 {
-		id := c.id([]byte("!scrollbar" + "y"))
+		id := c.idFromBytes([]byte("!scrollbar" + "y"))
 
 		// get sizing / positioning
 		base := b
@@ -490,7 +492,7 @@ func (c *Context) scrollbarVertical(cnt *container, b image.Rectangle, cs image.
 func (c *Context) scrollbarHorizontal(cnt *container, b image.Rectangle, cs image.Point) {
 	maxscroll := cs.X - b.Dx()
 	if maxscroll > 0 && b.Dx() > 0 {
-		id := c.id([]byte("!scrollbar" + "x"))
+		id := c.idFromBytes([]byte("!scrollbar" + "x"))
 
 		// get sizing / positioning
 		base := b
@@ -561,7 +563,7 @@ func (c *Context) pushContainerBody(cnt *container, body image.Rectangle, opt op
 }
 
 func (c *Context) window(title string, rect image.Rectangle, opt option, f func(res Response, layout Layout)) {
-	id := c.id([]byte(title))
+	id := c.idFromBytes([]byte(title))
 
 	cnt := c.container(id, opt)
 	if cnt == nil || !cnt.open {
@@ -618,7 +620,7 @@ func (c *Context) window(title string, rect image.Rectangle, opt option, f func(
 
 		// do title text
 		if (^opt & optionNoTitle) != 0 {
-			id := c.id([]byte("!title"))
+			id := c.idFromBytes([]byte("!title"))
 			c.updateControl(id, tr, opt)
 			c.drawControlText(title, tr, ColorTitleText, opt)
 			if id == c.focus && c.mouseDown == mouseLeft {
@@ -629,7 +631,7 @@ func (c *Context) window(title string, rect image.Rectangle, opt option, f func(
 
 		// do `close` button
 		if (^opt & optionNoClose) != 0 {
-			id := c.id([]byte("!close"))
+			id := c.idFromBytes([]byte("!close"))
 			r := image.Rect(tr.Max.X-tr.Dy(), tr.Min.Y, tr.Max.X, tr.Max.Y)
 			tr.Max.X -= r.Dx()
 			c.drawIcon(iconClose, r, c.style.colors[ColorTitleText])
@@ -645,7 +647,7 @@ func (c *Context) window(title string, rect image.Rectangle, opt option, f func(
 	// do `resize` handle
 	if (^opt & optionNoResize) != 0 {
 		sz := c.style.titleHeight
-		id := c.id([]byte("!resize"))
+		id := c.idFromBytes([]byte("!resize"))
 		r := image.Rect(rect.Max.X-sz, rect.Max.Y-sz, rect.Max.X, rect.Max.Y)
 		c.updateControl(id, r, opt)
 		if id == c.focus && c.mouseDown == mouseLeft {

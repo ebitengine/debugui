@@ -3,7 +3,7 @@
 
 package debugui
 
-func (c *Context) poolInit(items []poolItem, id ID) int {
+func (c *Context) poolInit(items []poolItem, id controlID) int {
 	f := c.tick
 	n := -1
 	for i := 0; i < len(items); i++ {
@@ -18,7 +18,7 @@ func (c *Context) poolInit(items []poolItem, id ID) int {
 }
 
 // returns the index of an ID in the pool. returns -1 if it is not found
-func (c *Context) poolGet(items []poolItem, id ID) int {
+func (c *Context) poolGet(items []poolItem, id controlID) int {
 	for i := 0; i < len(items); i++ {
 		if items[i].id == id {
 			return i

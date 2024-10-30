@@ -11,10 +11,10 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/exp/textinput"
 )
 
-type ID uint64
+type controlID uint64
 
 type poolItem struct {
-	id         ID
+	id         controlID
 	lastUpdate int
 }
 
@@ -104,9 +104,9 @@ type Context struct {
 	// core state
 
 	style         *style
-	hover         ID
-	focus         ID
-	lastID        ID
+	hover         controlID
+	focus         controlID
+	lastID        controlID
 	lastRect      image.Rectangle
 	lastZIndex    int
 	keepFocus     bool
@@ -115,7 +115,7 @@ type Context struct {
 	nextHoverRoot *container
 	scrollTarget  *container
 	numberEditBuf string
-	numberEdit    ID
+	numberEdit    controlID
 
 	// stacks
 
@@ -123,7 +123,7 @@ type Context struct {
 	rootList       []*container
 	containerStack []*container
 	clipStack      []image.Rectangle
-	idStack        []ID
+	idStack        []controlID
 	layoutStack    []layout
 
 	// retained state pools
@@ -143,5 +143,5 @@ type Context struct {
 	keyDown      int
 	keyPressed   int
 
-	textFields map[ID]*textinput.Field
+	textFields map[controlID]*textinput.Field
 }

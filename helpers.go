@@ -17,10 +17,10 @@ func clampF(x, a, b float64) float64 {
 	return min(b, max(a, x))
 }
 
-func fnv1a(init ID, data []byte) ID {
+func fnv1a(init controlID, data []byte) controlID {
 	h := init
 	for i := 0; i < len(data); i++ {
-		h = (h ^ ID(data[i])) * 1099511628211
+		h = (h ^ controlID(data[i])) * 1099511628211
 	}
 	return h
 }
@@ -29,15 +29,19 @@ func ptrToBytes(ptr unsafe.Pointer) []byte {
 	return unsafe.Slice((*byte)(unsafe.Pointer(&ptr)), unsafe.Sizeof(ptr))
 }
 
-// id returns a hash value based on the data and the last ID on the stack.
-func (c *Context) id(data []byte) ID {
+// idFromBytes returns a hash value based on the data and the last ID on the stack.
+func (c *Context) idFromBytes(data []byte) controlID {
+	if len(data) == 0 {
+		return 0
+	}
+
 	const (
 		// hashInitial is the initial value for the FNV-1a hash.
 		// https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
 		hashInitial = 14695981039346656037
 	)
 
-	var init ID = hashInitial
+	var init controlID = hashInitial
 	if len(c.idStack) > 0 {
 		init = c.idStack[len(c.idStack)-1]
 	}
@@ -46,9 +50,9 @@ func (c *Context) id(data []byte) ID {
 	return id
 }
 
-func (c *Context) pushID(data []byte) ID {
+func (c *Context) pushID(data []byte) controlID {
 	// push()
-	id := c.id(data)
+	id := c.idFromBytes(data)
 	c.idStack = append(c.idStack, id)
 	return id
 }
@@ -106,7 +110,7 @@ func (c *Context) SetScroll(scroll image.Point) {
 	c.currentContainer().layout.Scroll = scroll
 }
 
-func (c *Context) container(id ID, opt option) *container {
+func (c *Context) container(id controlID, opt option) *container {
 	// try to get existing container from pool
 	if idx := c.poolGet(c.containerPool[:], id); idx >= 0 {
 		if c.containers[idx].open || (^opt&optionClosed) != 0 {
@@ -131,7 +135,7 @@ func (c *Context) container(id ID, opt option) *container {
 }
 
 func (c *Context) Container(name string) *container {
-	id := c.id([]byte(name))
+	id := c.idFromBytes([]byte(name))
 	return c.container(id, 0)
 }
 
@@ -144,7 +148,7 @@ func (c *Context) SetFocus() {
 	c.setFocus(c.lastID)
 }
 
-func (c *Context) setFocus(id ID) {
+func (c *Context) setFocus(id controlID) {
 	c.focus = id
 	c.keepFocus = true
 }

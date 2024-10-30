@@ -116,7 +116,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 				ctx.Slider(&g.bg[2], 0, 255, 1, 0)
 			})
 			// color preview
-			ctx.Control(0, func(r image.Rectangle) debugui.Response {
+			ctx.Control("", func(r image.Rectangle) debugui.Response {
 				ctx.DrawControl(func(screen *ebiten.Image) {
 					vector.DrawFilledRect(
 						screen,
