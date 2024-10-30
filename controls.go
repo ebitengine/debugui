@@ -369,8 +369,7 @@ func (c *Context) numberEx(value *float64, step float64, digits int, opt option)
 	})
 }
 
-func (c *Context) header(label string, istreenode bool, opt option) Response {
-	id := c.idFromBytes([]byte(label))
+func (c *Context) header(id controlID, label string, istreenode bool, opt option) Response {
 	idx := c.poolGet(c.treeNodePool[:], id)
 	c.SetLayoutRow([]int{-1}, 0)
 
@@ -435,7 +434,10 @@ func (c *Context) header(label string, istreenode bool, opt option) Response {
 }
 
 func (c *Context) treeNode(label string, opt option, f func(res Response)) {
-	res := c.header(label, true, opt)
+	id := c.pushID([]byte(label))
+	defer c.popID()
+
+	res := c.header(id, label, true, opt)
 	if res&ResponseActive == 0 {
 		return
 	}
@@ -443,8 +445,6 @@ func (c *Context) treeNode(label string, opt option, f func(res Response)) {
 	defer func() {
 		c.layout().indent -= c.style.indent
 	}()
-	c.idStack = append(c.idStack, c.lastID)
-	defer c.popID()
 	f(res)
 }
 
