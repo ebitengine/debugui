@@ -9,15 +9,8 @@ import (
 )
 
 const (
-	commandListSize    = 256 * 1024
-	rootListSize       = 32
-	containerStackSize = 32
-	clipStackSize      = 32
-	idStackSize        = 32
-	layoutStackSize    = 16
-	containerPoolSize  = 48
-	treeNodePoolSize   = 48
-	maxWidths          = 16
+	containerPoolSize = 48
+	treeNodePoolSize  = 48
 )
 
 const (
