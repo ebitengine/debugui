@@ -148,7 +148,7 @@ func (c *Context) Label(text string) {
 	})
 }
 
-func (c *Context) buttonEx(label string, opt option) Response {
+func (c *Context) button(label string, opt option) Response {
 	var id controlID
 	if len(label) > 0 {
 		id = c.idFromBytes([]byte(label))
@@ -287,7 +287,7 @@ func (c *Context) numberTextBox(value *float64, id controlID) bool {
 	return false
 }
 
-func (c *Context) textBoxEx(buf *string, opt option) Response {
+func (c *Context) textBox(buf *string, opt option) Response {
 	id := c.idFromBytes(ptrToBytes(unsafe.Pointer(buf)))
 	return c.textBoxRaw(buf, id, opt)
 }
@@ -296,7 +296,7 @@ func formatNumber(v float64, digits int) string {
 	return fmt.Sprintf("%."+strconv.Itoa(digits)+"f", v)
 }
 
-func (c *Context) sliderEx(value *float64, low, high, step float64, digits int, opt option) Response {
+func (c *Context) slider(value *float64, low, high, step float64, digits int, opt option) Response {
 	last := *value
 	v := last
 	id := c.idFromBytes(ptrToBytes(unsafe.Pointer(value)))
@@ -338,7 +338,7 @@ func (c *Context) sliderEx(value *float64, low, high, step float64, digits int, 
 	})
 }
 
-func (c *Context) numberEx(value *float64, step float64, digits int, opt option) Response {
+func (c *Context) number(value *float64, step float64, digits int, opt option) Response {
 	id := c.idFromBytes(ptrToBytes(unsafe.Pointer(value)))
 	last := *value
 

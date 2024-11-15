@@ -6,19 +6,19 @@ package debugui
 import "image"
 
 func (c *Context) Button(label string) Response {
-	return c.buttonEx(label, optionAlignCenter)
+	return c.button(label, optionAlignCenter)
 }
 
 func (c *Context) TextBox(buf *string) Response {
-	return c.textBoxEx(buf, 0)
+	return c.textBox(buf, 0)
 }
 
 func (c *Context) Slider(value *float64, lo, hi float64, step float64, digits int) Response {
-	return c.sliderEx(value, lo, hi, step, digits, optionAlignCenter)
+	return c.slider(value, lo, hi, step, digits, optionAlignCenter)
 }
 
 func (c *Context) Number(value *float64, step float64, digits int) Response {
-	return c.numberEx(value, step, digits, optionAlignCenter)
+	return c.number(value, step, digits, optionAlignCenter)
 }
 
 func (c *Context) Header(label string, expanded bool) Response {
