@@ -24,7 +24,7 @@ func (g *Game) writeLog(text string) {
 }
 
 func (g *Game) testWindow(ctx *debugui.Context) {
-	ctx.Window("Demo Window", image.Rect(40, 40, 340, 490), func(res debugui.Response, layout debugui.Layout) {
+	ctx.Window("Demo Window", image.Rect(40, 40, 340, 500), func(res debugui.Response, layout debugui.Layout) {
 		// window info
 		if ctx.Header("Window Info", false) != 0 {
 			ctx.SetLayoutRow([]int{54, -1}, 0)
@@ -147,7 +147,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 }
 
 func (g *Game) logWindow(ctx *debugui.Context) {
-	ctx.Window("Log Window", image.Rect(350, 40, 650, 490), func(res debugui.Response, layout debugui.Layout) {
+	ctx.Window("Log Window", image.Rect(350, 40, 650, 290), func(res debugui.Response, layout debugui.Layout) {
 		// output text panel
 		ctx.SetLayoutRow([]int{-1}, -25)
 		ctx.Panel("Log Output", func(layout debugui.Layout) {
@@ -172,6 +172,18 @@ func (g *Game) logWindow(ctx *debugui.Context) {
 		if submitted {
 			g.writeLog(g.logSubmitBuf)
 			g.logSubmitBuf = ""
+		}
+	})
+}
+
+func (g *Game) buttonWindows(ctx *debugui.Context) {
+	ctx.Window("Button Windows", image.Rect(350, 300, 650, 500), func(res debugui.Response, layout debugui.Layout) {
+		ctx.SetLayoutRow([]int{100, 100, 100, 100}, 0)
+		for i := 0; i < 100; i++ {
+			// TODO: This doesn't work yet. Make it work.
+			if ctx.Button("Button") != 0 {
+				g.writeLog(fmt.Sprintf("Pressed button %d in Button Window", i))
+			}
 		}
 	})
 }

@@ -38,6 +38,7 @@ func (g *Game) Update() error {
 	g.debugUI.Update(func(ctx *debugui.Context) {
 		g.testWindow(ctx)
 		g.logWindow(ctx)
+		g.buttonWindows(ctx)
 	})
 	return nil
 }
