@@ -26,9 +26,7 @@ func (c *Context) Header(label string, expanded bool) Response {
 	if expanded {
 		opt |= optionExpanded
 	}
-	id := c.pushID([]byte(label))
-	defer c.popID()
-	return c.header(id, label, false, opt)
+	return c.header(label, false, opt)
 }
 
 func (c *Context) TreeNode(label string, f func(res Response)) {

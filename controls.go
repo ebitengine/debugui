@@ -151,7 +151,8 @@ func (c *Context) Label(text string) {
 func (c *Context) button(label string, opt option) Response {
 	var id controlID
 	if len(label) > 0 {
-		id = c.idFromBytes([]byte(label))
+		id = c.pushID([]byte(label))
+		defer c.popID()
 	}
 	return c.control(id, opt, func(r image.Rectangle) Response {
 		var res Response
@@ -169,7 +170,9 @@ func (c *Context) button(label string, opt option) Response {
 }
 
 func (c *Context) Checkbox(label string, state *bool) Response {
-	id := c.idFromBytes(ptrToBytes(unsafe.Pointer(state)))
+	id := c.pushID(ptrToBytes(unsafe.Pointer(state)))
+	defer c.popID()
+
 	return c.control(id, 0, func(r image.Rectangle) Response {
 		var res Response
 		box := image.Rect(r.Min.X, r.Min.Y, r.Min.X+r.Dy(), r.Max.Y)
@@ -288,7 +291,9 @@ func (c *Context) numberTextBox(value *float64, id controlID) bool {
 }
 
 func (c *Context) textBox(buf *string, opt option) Response {
-	id := c.idFromBytes(ptrToBytes(unsafe.Pointer(buf)))
+	id := c.pushID(ptrToBytes(unsafe.Pointer(buf)))
+	defer c.popID()
+
 	return c.textBoxRaw(buf, id, opt)
 }
 
@@ -299,7 +304,8 @@ func formatNumber(v float64, digits int) string {
 func (c *Context) slider(value *float64, low, high, step float64, digits int, opt option) Response {
 	last := *value
 	v := last
-	id := c.idFromBytes(ptrToBytes(unsafe.Pointer(value)))
+	id := c.pushID(ptrToBytes(unsafe.Pointer(value)))
+	defer c.popID()
 
 	// handle text input mode
 	if c.numberTextBox(&v, id) {
@@ -339,7 +345,8 @@ func (c *Context) slider(value *float64, low, high, step float64, digits int, op
 }
 
 func (c *Context) number(value *float64, step float64, digits int, opt option) Response {
-	id := c.idFromBytes(ptrToBytes(unsafe.Pointer(value)))
+	id := c.pushID(ptrToBytes(unsafe.Pointer(value)))
+	defer c.popID()
 	last := *value
 
 	// handle text input mode
@@ -369,7 +376,10 @@ func (c *Context) number(value *float64, step float64, digits int, opt option) R
 	})
 }
 
-func (c *Context) header(id controlID, label string, istreenode bool, opt option) Response {
+func (c *Context) header(label string, istreenode bool, opt option) Response {
+	id := c.pushID([]byte(label))
+	defer c.popID()
+
 	idx := c.poolGet(c.treeNodePool[:], id)
 	c.SetLayoutRow([]int{-1}, 0)
 
@@ -434,10 +444,7 @@ func (c *Context) header(id controlID, label string, istreenode bool, opt option
 }
 
 func (c *Context) treeNode(label string, opt option, f func(res Response)) {
-	id := c.pushID([]byte(label))
-	defer c.popID()
-
-	res := c.header(id, label, true, opt)
+	res := c.header(label, true, opt)
 	if res&ResponseActive == 0 {
 		return
 	}
@@ -452,14 +459,13 @@ func (c *Context) treeNode(label string, opt option, f func(res Response)) {
 func (c *Context) scrollbarVertical(cnt *container, b image.Rectangle, cs image.Point) {
 	maxscroll := cs.Y - b.Dy()
 	if maxscroll > 0 && b.Dy() > 0 {
-		id := c.idFromBytes([]byte("!scrollbar" + "y"))
-
 		// get sizing / positioning
 		base := b
 		base.Min.X = b.Max.X
 		base.Max.X = base.Min.X + c.style.scrollbarSize
 
 		// handle input
+		id := c.idFromBytes([]byte("!scrollbar" + "y"))
 		c.updateControl(id, base, 0)
 		if c.focus == id && c.mouseDown == mouseLeft {
 			cnt.layout.Scroll.Y += c.mouseDelta.Y * cs.Y / base.Dy()
@@ -488,14 +494,13 @@ func (c *Context) scrollbarVertical(cnt *container, b image.Rectangle, cs image.
 func (c *Context) scrollbarHorizontal(cnt *container, b image.Rectangle, cs image.Point) {
 	maxscroll := cs.X - b.Dx()
 	if maxscroll > 0 && b.Dx() > 0 {
-		id := c.idFromBytes([]byte("!scrollbar" + "x"))
-
 		// get sizing / positioning
 		base := b
 		base.Min.Y = b.Max.Y
 		base.Max.Y = base.Min.Y + c.style.scrollbarSize
 
 		// handle input
+		id := c.idFromBytes([]byte("!scrollbar" + "x"))
 		c.updateControl(id, base, 0)
 		if c.focus == id && c.mouseDown == mouseLeft {
 			cnt.layout.Scroll.X += c.mouseDelta.X * cs.X / base.Dx()
