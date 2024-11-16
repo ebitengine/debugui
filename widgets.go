@@ -3,10 +3,16 @@
 
 package debugui
 
-import "image"
+import (
+	"image"
+	"strings"
+)
+
+const idSeparator = "\x00"
 
 func (c *Context) Button(label string) Response {
-	return c.button(label, optionAlignCenter)
+	label, idStr, _ := strings.Cut(label, idSeparator)
+	return c.button(label, idStr, optionAlignCenter)
 }
 
 func (c *Context) TextBox(buf *string) Response {
@@ -26,15 +32,18 @@ func (c *Context) Header(label string, expanded bool) Response {
 	if expanded {
 		opt |= optionExpanded
 	}
-	return c.header(label, false, opt)
+	label, idStr, _ := strings.Cut(label, idSeparator)
+	return c.header(label, idStr, false, opt)
 }
 
 func (c *Context) TreeNode(label string, f func(res Response)) {
-	c.treeNode(label, 0, f)
+	label, idStr, _ := strings.Cut(label, idSeparator)
+	c.treeNode(label, idStr, 0, f)
 }
 
 func (c *Context) Window(title string, rect image.Rectangle, f func(res Response, layout Layout)) {
-	c.window(title, rect, 0, f)
+	title, idStr, _ := strings.Cut(title, idSeparator)
+	c.window(title, idStr, rect, 0, f)
 }
 
 func (c *Context) Panel(name string, f func(layout Layout)) {

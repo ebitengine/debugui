@@ -181,7 +181,7 @@ func (g *Game) buttonWindows(ctx *debugui.Context) {
 		ctx.SetLayoutRow([]int{100, 100, 100, 100}, 0)
 		for i := 0; i < 100; i++ {
 			// TODO: This doesn't work yet. Make it work.
-			if ctx.Button("Button") != 0 {
+			if ctx.Button("Button\x00"+fmt.Sprintf("%d", i)) != 0 {
 				g.writeLog(fmt.Sprintf("Pressed button %d in Button Window", i))
 			}
 		}

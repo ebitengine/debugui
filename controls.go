@@ -148,9 +148,12 @@ func (c *Context) Label(text string) {
 	})
 }
 
-func (c *Context) button(label string, opt option) Response {
+func (c *Context) button(label string, idStr string, opt option) Response {
 	var id controlID
-	if len(label) > 0 {
+	if len(idStr) > 0 {
+		id = c.pushID([]byte(idStr))
+		defer c.popID()
+	} else if len(label) > 0 {
 		id = c.pushID([]byte(label))
 		defer c.popID()
 	}
@@ -376,9 +379,15 @@ func (c *Context) number(value *float64, step float64, digits int, opt option) R
 	})
 }
 
-func (c *Context) header(label string, istreenode bool, opt option) Response {
-	id := c.pushID([]byte(label))
-	defer c.popID()
+func (c *Context) header(label string, idStr string, istreenode bool, opt option) Response {
+	var id controlID
+	if len(idStr) > 0 {
+		id = c.pushID([]byte(idStr))
+		defer c.popID()
+	} else if len(label) > 0 {
+		id = c.pushID([]byte(label))
+		defer c.popID()
+	}
 
 	idx := c.poolGet(c.treeNodePool[:], id)
 	c.SetLayoutRow([]int{-1}, 0)
@@ -443,8 +452,8 @@ func (c *Context) header(label string, istreenode bool, opt option) Response {
 	})
 }
 
-func (c *Context) treeNode(label string, opt option, f func(res Response)) {
-	res := c.header(label, true, opt)
+func (c *Context) treeNode(label string, idStr string, opt option, f func(res Response)) {
+	res := c.header(label, idStr, true, opt)
 	if res&ResponseActive == 0 {
 		return
 	}
@@ -563,9 +572,15 @@ func (c *Context) pushContainerBody(cnt *container, body image.Rectangle, opt op
 	cnt.layout.Body = body
 }
 
-func (c *Context) window(title string, rect image.Rectangle, opt option, f func(res Response, layout Layout)) {
-	id := c.pushID([]byte(title))
-	defer c.popID()
+func (c *Context) window(title string, idStr string, rect image.Rectangle, opt option, f func(res Response, layout Layout)) {
+	var id controlID
+	if len(idStr) > 0 {
+		id = c.pushID([]byte(idStr))
+		defer c.popID()
+	} else if len(title) > 0 {
+		id = c.pushID([]byte(title))
+		defer c.popID()
+	}
 
 	cnt := c.container(id, opt)
 	if cnt == nil || !cnt.open {
@@ -687,7 +702,7 @@ func (c *Context) OpenPopup(name string) {
 
 func (c *Context) Popup(name string, f func(res Response, layout Layout)) {
 	opt := optionPopup | optionAutoSize | optionNoResize | optionNoScroll | optionNoTitle | optionClosed
-	c.window(name, image.Rectangle{}, opt, f)
+	c.window(name, "", image.Rectangle{}, opt, f)
 }
 
 func (c *Context) panel(name string, opt option, f func(layout Layout)) {
