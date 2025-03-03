@@ -623,7 +623,8 @@ func (c *Context) window(title string, idStr string, rect image.Rectangle, opt o
 	rect = body
 
 	// draw frame
-	if (^opt&optionNoFrame) != 0 && !cnt.collapsed {
+	collapsed := cnt.collapsed
+	if (^opt&optionNoFrame) != 0 && !collapsed {
 		c.drawFrame(rect, ColorWindowBG)
 	}
 
@@ -650,7 +651,7 @@ func (c *Context) window(title string, idStr string, rect image.Rectangle, opt o
 			id := c.idFromBytes([]byte("!close"))
 			r := image.Rect(tr.Min.X, tr.Min.Y, tr.Min.X+tr.Dy(), tr.Max.Y)
 			icon := iconExpanded
-			if cnt.collapsed {
+			if collapsed {
 				icon = iconCollapsed
 			}
 			c.drawIcon(icon, r, c.style.colors[ColorTitleText])
@@ -661,7 +662,7 @@ func (c *Context) window(title string, idStr string, rect image.Rectangle, opt o
 		}
 	}
 
-	if cnt.collapsed {
+	if collapsed {
 		return
 	}
 
