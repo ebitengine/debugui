@@ -594,8 +594,6 @@ func (c *Context) window(title string, idStr string, rect image.Rectangle, opt o
 	}
 
 	c.containerStack = append(c.containerStack, cnt)
-	// TODO: Calling popLayout here is odd. Refactor this.
-	defer c.popLayout()
 	defer c.popContainer()
 
 	// push container to roots list and push head command
@@ -660,6 +658,7 @@ func (c *Context) window(title string, idStr string, rect image.Rectangle, opt o
 	}
 
 	c.pushContainerBodyLayout(cnt, body, opt)
+	defer c.popLayout()
 
 	// do `resize` handle
 	if (^opt & optionNoResize) != 0 {

@@ -91,16 +91,14 @@ func (c *Context) layout() *layout {
 }
 
 func (c *Context) popContainer() {
-	cnt := c.currentContainer()
-	layout := c.layout()
-	cnt.layout.ContentSize.X = layout.max.X - layout.body.Min.X
-	cnt.layout.ContentSize.Y = layout.max.Y - layout.body.Min.Y
-	// pop container, layout and id
-	// pop()
 	c.containerStack = c.containerStack[:len(c.containerStack)-1]
 }
 
 func (c *Context) popLayout() {
+	cnt := c.currentContainer()
+	layout := c.layout()
+	cnt.layout.ContentSize.X = layout.max.X - layout.body.Min.X
+	cnt.layout.ContentSize.Y = layout.max.Y - layout.body.Min.Y
 	c.layoutStack = c.layoutStack[:len(c.layoutStack)-1]
 }
 
