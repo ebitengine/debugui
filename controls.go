@@ -564,7 +564,7 @@ func (c *Context) scrollbars(cnt *container, body image.Rectangle) image.Rectang
 	return body
 }
 
-func (c *Context) pushContainerBody(cnt *container, body image.Rectangle, opt option) {
+func (c *Context) pushContainerBodyLayout(cnt *container, body image.Rectangle, opt option) {
 	if (^opt & optionNoScroll) != 0 {
 		body = c.scrollbars(cnt, body)
 	}
@@ -594,6 +594,8 @@ func (c *Context) window(title string, idStr string, rect image.Rectangle, opt o
 	}
 
 	c.containerStack = append(c.containerStack, cnt)
+	// TODO: Calling popLayout here is odd. Refactor this.
+	defer c.popLayout()
 	defer c.popContainer()
 
 	// push container to roots list and push head command
@@ -657,7 +659,7 @@ func (c *Context) window(title string, idStr string, rect image.Rectangle, opt o
 		}
 	}
 
-	c.pushContainerBody(cnt, body, opt)
+	c.pushContainerBodyLayout(cnt, body, opt)
 
 	// do `resize` handle
 	if (^opt & optionNoResize) != 0 {
@@ -716,8 +718,10 @@ func (c *Context) panel(name string, opt option, f func(layout Layout)) {
 	}
 
 	c.containerStack = append(c.containerStack, cnt)
-	c.pushContainerBody(cnt, cnt.layout.Rect, opt)
 	defer c.popContainer()
+
+	c.pushContainerBodyLayout(cnt, cnt.layout.Rect, opt)
+	defer c.popLayout()
 
 	c.pushClipRect(cnt.layout.Body)
 	defer c.popClipRect()

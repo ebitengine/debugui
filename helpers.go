@@ -98,7 +98,9 @@ func (c *Context) popContainer() {
 	// pop container, layout and id
 	// pop()
 	c.containerStack = c.containerStack[:len(c.containerStack)-1]
-	// pop()
+}
+
+func (c *Context) popLayout() {
 	c.layoutStack = c.layoutStack[:len(c.layoutStack)-1]
 }
 
