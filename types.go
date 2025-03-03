@@ -75,11 +75,12 @@ type command struct {
 }
 
 type container struct {
-	layout  Layout
-	headIdx int
-	tailIdx int
-	zIndex  int
-	open    bool
+	layout    Layout
+	headIdx   int
+	tailIdx   int
+	zIndex    int
+	open      bool
+	collapsed bool
 }
 
 type Layout struct {

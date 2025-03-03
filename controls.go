@@ -623,7 +623,7 @@ func (c *Context) window(title string, idStr string, rect image.Rectangle, opt o
 	rect = body
 
 	// draw frame
-	if (^opt & optionNoFrame) != 0 {
+	if (^opt&optionNoFrame) != 0 && !cnt.collapsed {
 		c.drawFrame(rect, ColorWindowBG)
 	}
 
@@ -649,12 +649,20 @@ func (c *Context) window(title string, idStr string, rect image.Rectangle, opt o
 		if (^opt & optionNoClose) != 0 {
 			id := c.idFromBytes([]byte("!close"))
 			r := image.Rect(tr.Min.X, tr.Min.Y, tr.Min.X+tr.Dy(), tr.Max.Y)
-			c.drawIcon(iconClose, r, c.style.colors[ColorTitleText])
+			icon := iconExpanded
+			if cnt.collapsed {
+				icon = iconCollapsed
+			}
+			c.drawIcon(icon, r, c.style.colors[ColorTitleText])
 			c.updateControl(id, r, opt)
 			if c.mousePressed == mouseLeft && id == c.focus {
-				cnt.open = false
+				cnt.collapsed = !cnt.collapsed
 			}
 		}
+	}
+
+	if cnt.collapsed {
+		return
 	}
 
 	c.pushContainerBodyLayout(cnt, body, opt)
