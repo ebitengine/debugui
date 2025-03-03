@@ -636,8 +636,9 @@ func (c *Context) window(title string, idStr string, rect image.Rectangle, opt o
 		// do title text
 		if (^opt & optionNoTitle) != 0 {
 			id := c.idFromBytes([]byte("!title"))
-			c.updateControl(id, tr, opt)
-			c.drawControlText(title, tr, ColorTitleText, opt)
+			r := image.Rect(tr.Min.X+tr.Dy(), tr.Min.Y, tr.Max.X, tr.Max.Y)
+			c.updateControl(id, r, opt)
+			c.drawControlText(title, r, ColorTitleText, opt)
 			if id == c.focus && c.mouseDown == mouseLeft {
 				cnt.layout.Rect = cnt.layout.Rect.Add(c.mouseDelta)
 			}
@@ -647,8 +648,7 @@ func (c *Context) window(title string, idStr string, rect image.Rectangle, opt o
 		// do `close` button
 		if (^opt & optionNoClose) != 0 {
 			id := c.idFromBytes([]byte("!close"))
-			r := image.Rect(tr.Max.X-tr.Dy(), tr.Min.Y, tr.Max.X, tr.Max.Y)
-			tr.Max.X -= r.Dx()
+			r := image.Rect(tr.Min.X, tr.Min.Y, tr.Min.X+tr.Dy(), tr.Max.Y)
 			c.drawIcon(iconClose, r, c.style.colors[ColorTitleText])
 			c.updateControl(id, r, opt)
 			if c.mousePressed == mouseLeft && id == c.focus {
