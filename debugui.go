@@ -24,3 +24,7 @@ func (d *DebugUI) Update(f func(ctx *Context)) {
 func (d *DebugUI) Draw(screen *ebiten.Image) {
 	d.ctx.draw(screen)
 }
+
+func (d *DebugUI) IsCapturingInput() bool {
+	return d.ctx.hoverRoot != nil || d.ctx.focus != 0
+}
