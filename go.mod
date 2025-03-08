@@ -3,8 +3,8 @@ module github.com/ebitengine/debugui
 go 1.22.0
 
 require (
-	github.com/hajimehoshi/bitmapfont/v3 v3.2.0
-	github.com/hajimehoshi/ebiten/v2 v2.8.2
+	github.com/hajimehoshi/bitmapfont/v3 v3.2.1
+	github.com/hajimehoshi/ebiten/v2 v2.8.6
 )
 
 require (
