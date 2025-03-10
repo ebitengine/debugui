@@ -19,12 +19,12 @@ func mouseButtonToInt(btn ebiten.MouseButton) int {
 	return 0
 }
 
-func (c *Context) inputMouseDown(x, y int, btn ebiten.MouseButton) {
+func (c *Context) inputMouseDown(btn ebiten.MouseButton) {
 	c.mouseDown |= mouseButtonToInt(btn)
 	c.mousePressed |= mouseButtonToInt(btn)
 }
 
-func (c *Context) inputMouseUp(x, y int, btn ebiten.MouseButton) {
+func (c *Context) inputMouseUp(btn ebiten.MouseButton) {
 	c.mouseDown &= ^mouseButtonToInt(btn)
 }
 
