@@ -138,7 +138,6 @@ type Context struct {
 	lastMousePos image.Point
 	scrollDelta  image.Point
 	keyDown      int
-	keyPressed   int
 
 	textFields map[controlID]*textinput.Field
 }

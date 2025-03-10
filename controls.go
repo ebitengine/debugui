@@ -234,7 +234,7 @@ func (c *Context) textBoxRaw(buf *string, id controlID, opt option) Response {
 
 			if !handled {
 				// handle backspace
-				if (c.keyPressed&keyBackspace) != 0 && len(*buf) > 0 {
+				if inpututil.IsKeyJustPressed(ebiten.KeyBackspace) && len(*buf) > 0 {
 					_, size := utf8.DecodeLastRuneInString(*buf)
 					*buf = (*buf)[:len(*buf)-size]
 					f.SetTextAndSelection(*buf, len(*buf), len(*buf))
@@ -242,7 +242,7 @@ func (c *Context) textBoxRaw(buf *string, id controlID, opt option) Response {
 				}
 
 				// handle return
-				if (c.keyPressed & keyReturn) != 0 {
+				if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
 					c.setFocus(0)
 					res |= ResponseSubmit
 					f.SetTextAndSelection("", 0, 0)

@@ -29,7 +29,6 @@ func keyToInt(key ebiten.Key) int {
 }
 
 func (c *Context) inputKeyDown(key ebiten.Key) {
-	c.keyPressed |= keyToInt(key)
 	c.keyDown |= keyToInt(key)
 }
 
