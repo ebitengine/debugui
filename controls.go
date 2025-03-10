@@ -12,6 +12,7 @@ import (
 	"unicode/utf8"
 	"unsafe"
 
+	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/exp/textinput"
 )
 
@@ -58,7 +59,8 @@ func (c *Context) drawControlText(str string, rect image.Rectangle, colorid int,
 }
 
 func (c *Context) mouseOver(rect image.Rectangle) bool {
-	return c.mousePos.In(rect) && c.mousePos.In(c.clipRect()) && c.inHoverRoot()
+	p := image.Pt(ebiten.CursorPosition())
+	return p.In(rect) && p.In(c.clipRect()) && c.inHoverRoot()
 }
 
 func (c *Context) updateControl(id controlID, rect image.Rectangle, opt option) {
@@ -320,7 +322,8 @@ func (c *Context) slider(value *float64, low, high, step float64, digits int, op
 		var res Response
 		// handle input
 		if c.focus == id && (c.mouseDown|c.mousePressed) == mouseLeft {
-			v = low + float64(c.mousePos.X-r.Min.X)*(high-low)/float64(r.Dx())
+			x, _ := ebiten.CursorPosition()
+			v = low + float64(x-r.Min.X)*(high-low)/float64(r.Dx())
 			if step != 0 {
 				v = math.Round(v/step) * step
 			}
@@ -362,7 +365,7 @@ func (c *Context) number(value *float64, step float64, digits int, opt option) R
 		var res Response
 		// handle input
 		if c.focus == id && c.mouseDown == mouseLeft {
-			*value += float64(c.mouseDelta.X) * step
+			*value += float64(c.mouseDelta().X) * step
 		}
 		// set flag if value changed
 		if *value != last {
@@ -477,7 +480,7 @@ func (c *Context) scrollbarVertical(cnt *container, b image.Rectangle, cs image.
 		id := c.idFromBytes([]byte("!scrollbar" + "y"))
 		c.updateControl(id, base, 0)
 		if c.focus == id && c.mouseDown == mouseLeft {
-			cnt.layout.Scroll.Y += c.mouseDelta.Y * cs.Y / base.Dy()
+			cnt.layout.Scroll.Y += c.mouseDelta().Y * cs.Y / base.Dy()
 		}
 		// clamp scroll to limits
 		cnt.layout.Scroll.Y = clamp(cnt.layout.Scroll.Y, 0, maxscroll)
@@ -512,7 +515,7 @@ func (c *Context) scrollbarHorizontal(cnt *container, b image.Rectangle, cs imag
 		id := c.idFromBytes([]byte("!scrollbar" + "x"))
 		c.updateControl(id, base, 0)
 		if c.focus == id && c.mouseDown == mouseLeft {
-			cnt.layout.Scroll.X += c.mouseDelta.X * cs.X / base.Dx()
+			cnt.layout.Scroll.X += c.mouseDelta().X * cs.X / base.Dx()
 		}
 		// clamp scroll to limits
 		cnt.layout.Scroll.X = clamp(cnt.layout.Scroll.X, 0, maxscroll)
@@ -609,7 +612,7 @@ func (c *Context) window(title string, idStr string, rect image.Rectangle, opt o
 
 	// set as hover root if the mouse is overlapping this container and it has a
 	// higher zindex than the current hover root
-	if c.mousePos.In(cnt.layout.Rect) && (c.nextHoverRoot == nil || cnt.zIndex > c.nextHoverRoot.zIndex) {
+	if image.Pt(ebiten.CursorPosition()).In(cnt.layout.Rect) && (c.nextHoverRoot == nil || cnt.zIndex > c.nextHoverRoot.zIndex) {
 		c.nextHoverRoot = cnt
 	}
 
@@ -641,7 +644,7 @@ func (c *Context) window(title string, idStr string, rect image.Rectangle, opt o
 			c.updateControl(id, r, opt)
 			c.drawControlText(title, r, ColorTitleText, opt)
 			if id == c.focus && c.mouseDown == mouseLeft {
-				cnt.layout.Rect = cnt.layout.Rect.Add(c.mouseDelta)
+				cnt.layout.Rect = cnt.layout.Rect.Add(c.mouseDelta())
 			}
 			body.Min.Y += tr.Dy()
 		}
@@ -676,8 +679,8 @@ func (c *Context) window(title string, idStr string, rect image.Rectangle, opt o
 		r := image.Rect(rect.Max.X-sz, rect.Max.Y-sz, rect.Max.X, rect.Max.Y)
 		c.updateControl(id, r, opt)
 		if id == c.focus && c.mouseDown == mouseLeft {
-			cnt.layout.Rect.Max.X = cnt.layout.Rect.Min.X + max(96, cnt.layout.Rect.Dx()+c.mouseDelta.X)
-			cnt.layout.Rect.Max.Y = cnt.layout.Rect.Min.Y + max(64, cnt.layout.Rect.Dy()+c.mouseDelta.Y)
+			cnt.layout.Rect.Max.X = cnt.layout.Rect.Min.X + max(96, cnt.layout.Rect.Dx()+c.mouseDelta().X)
+			cnt.layout.Rect.Max.Y = cnt.layout.Rect.Min.Y + max(64, cnt.layout.Rect.Dy()+c.mouseDelta().Y)
 		}
 	}
 
@@ -705,7 +708,11 @@ func (c *Context) OpenPopup(name string) {
 	c.nextHoverRoot = cnt
 	c.hoverRoot = c.nextHoverRoot
 	// position at mouse cursor, open and bring-to-front
-	cnt.layout.Rect = image.Rect(c.mousePos.X, c.mousePos.Y, c.mousePos.X+1, c.mousePos.Y+1)
+	pt := image.Pt(ebiten.CursorPosition())
+	cnt.layout.Rect = image.Rectangle{
+		Min: pt,
+		Max: pt.Add(image.Pt(1, 1)),
+	}
 	cnt.open = true
 	c.bringToFront(cnt)
 }

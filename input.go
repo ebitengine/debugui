@@ -4,14 +4,8 @@
 package debugui
 
 import (
-	"image"
-
 	"github.com/hajimehoshi/ebiten/v2"
 )
-
-func (c *Context) inputMouseMove(x, y int) {
-	c.mousePos = image.Pt(x, y)
-}
 
 func mouseButtonToInt(btn ebiten.MouseButton) int {
 	switch btn {
@@ -26,13 +20,11 @@ func mouseButtonToInt(btn ebiten.MouseButton) int {
 }
 
 func (c *Context) inputMouseDown(x, y int, btn ebiten.MouseButton) {
-	c.inputMouseMove(x, y)
 	c.mouseDown |= mouseButtonToInt(btn)
 	c.mousePressed |= mouseButtonToInt(btn)
 }
 
 func (c *Context) inputMouseUp(x, y int, btn ebiten.MouseButton) {
-	c.inputMouseMove(x, y)
 	c.mouseDown &= ^mouseButtonToInt(btn)
 }
 

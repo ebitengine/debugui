@@ -135,9 +135,7 @@ type Context struct {
 
 	// input state
 
-	mousePos     image.Point
 	lastMousePos image.Point
-	mouseDelta   image.Point
 	scrollDelta  image.Point
 	mouseDown    int
 	mousePressed int

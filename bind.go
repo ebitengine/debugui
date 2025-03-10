@@ -72,7 +72,6 @@ func iconImage(icon icon) *ebiten.Image {
 
 func (c *Context) updateInput() {
 	cx, cy := ebiten.CursorPosition()
-	c.inputMouseMove(cx, cy)
 	if wx, wy := ebiten.Wheel(); wx != 0 || wy != 0 {
 		c.inputScroll(int(wx*-30), int(wy*-30))
 	}

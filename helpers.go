@@ -7,6 +7,8 @@ import (
 	"image"
 	"sort"
 	"unsafe"
+
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 func clamp(x, a, b int) int {
@@ -174,9 +176,13 @@ func (c *Context) begin() {
 	c.scrollTarget = nil
 	c.hoverRoot = c.nextHoverRoot
 	c.nextHoverRoot = nil
-	c.mouseDelta.X = c.mousePos.X - c.lastMousePos.X
-	c.mouseDelta.Y = c.mousePos.Y - c.lastMousePos.Y
+
 	c.tick++
+}
+
+func (c *Context) mouseDelta() image.Point {
+	p := image.Pt(ebiten.CursorPosition())
+	return p.Sub(c.lastMousePos)
 }
 
 func (c *Context) end() {
@@ -217,7 +223,7 @@ func (c *Context) end() {
 	c.keyPressed = 0
 	c.mousePressed = 0
 	c.scrollDelta = image.Pt(0, 0)
-	c.lastMousePos = c.mousePos
+	c.lastMousePos = image.Pt(ebiten.CursorPosition())
 
 	// sort root containers by zindex
 	sort.SliceStable(c.rootList, func(i, j int) bool {
