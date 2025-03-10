@@ -71,12 +71,6 @@ const (
 )
 
 const (
-	mouseLeft   = (1 << 0)
-	mouseRight  = (1 << 1)
-	mouseMiddle = (1 << 2)
-)
-
-const (
 	keyShift     = (1 << 0)
 	keyControl   = (1 << 1)
 	keyAlt       = (1 << 2)

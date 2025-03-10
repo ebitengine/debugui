@@ -77,7 +77,7 @@ func (c *Context) updateControl(id controlID, rect image.Rectangle, opt option) 
 	if (opt & optionNoInteract) != 0 {
 		return
 	}
-	if mouseover && c.mouseDown == 0 {
+	if mouseover && !ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		c.hover = id
 	}
 
@@ -85,7 +85,7 @@ func (c *Context) updateControl(id controlID, rect image.Rectangle, opt option) 
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && !mouseover {
 			c.setFocus(0)
 		}
-		if c.mouseDown == 0 && (^opt&optionHoldFocus) != 0 {
+		if !ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) && (^opt&optionHoldFocus) != 0 {
 			c.setFocus(0)
 		}
 	}
@@ -365,7 +365,7 @@ func (c *Context) number(value *float64, step float64, digits int, opt option) R
 	return c.control(id, opt, func(r image.Rectangle) Response {
 		var res Response
 		// handle input
-		if c.focus == id && c.mouseDown == mouseLeft {
+		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 			*value += float64(c.mouseDelta().X) * step
 		}
 		// set flag if value changed
@@ -480,7 +480,7 @@ func (c *Context) scrollbarVertical(cnt *container, b image.Rectangle, cs image.
 		// handle input
 		id := c.idFromBytes([]byte("!scrollbar" + "y"))
 		c.updateControl(id, base, 0)
-		if c.focus == id && c.mouseDown == mouseLeft {
+		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 			cnt.layout.Scroll.Y += c.mouseDelta().Y * cs.Y / base.Dy()
 		}
 		// clamp scroll to limits
@@ -515,7 +515,7 @@ func (c *Context) scrollbarHorizontal(cnt *container, b image.Rectangle, cs imag
 		// handle input
 		id := c.idFromBytes([]byte("!scrollbar" + "x"))
 		c.updateControl(id, base, 0)
-		if c.focus == id && c.mouseDown == mouseLeft {
+		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 			cnt.layout.Scroll.X += c.mouseDelta().X * cs.X / base.Dx()
 		}
 		// clamp scroll to limits
@@ -644,7 +644,7 @@ func (c *Context) window(title string, idStr string, rect image.Rectangle, opt o
 			r := image.Rect(tr.Min.X+tr.Dy(), tr.Min.Y, tr.Max.X, tr.Max.Y)
 			c.updateControl(id, r, opt)
 			c.drawControlText(title, r, ColorTitleText, opt)
-			if id == c.focus && c.mouseDown == mouseLeft {
+			if id == c.focus && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 				cnt.layout.Rect = cnt.layout.Rect.Add(c.mouseDelta())
 			}
 			body.Min.Y += tr.Dy()
@@ -679,7 +679,7 @@ func (c *Context) window(title string, idStr string, rect image.Rectangle, opt o
 		id := c.idFromBytes([]byte("!resize"))
 		r := image.Rect(rect.Max.X-sz, rect.Max.Y-sz, rect.Max.X, rect.Max.Y)
 		c.updateControl(id, r, opt)
-		if id == c.focus && c.mouseDown == mouseLeft {
+		if id == c.focus && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 			cnt.layout.Rect.Max.X = cnt.layout.Rect.Min.X + max(96, cnt.layout.Rect.Dx()+c.mouseDelta().X)
 			cnt.layout.Rect.Max.Y = cnt.layout.Rect.Min.Y + max(64, cnt.layout.Rect.Dy()+c.mouseDelta().Y)
 		}

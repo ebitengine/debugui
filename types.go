@@ -137,7 +137,6 @@ type Context struct {
 
 	lastMousePos image.Point
 	scrollDelta  image.Point
-	mouseDown    int
 	keyDown      int
 	keyPressed   int
 

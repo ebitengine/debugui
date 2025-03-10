@@ -74,16 +74,6 @@ func (c *Context) updateInput() {
 	if wx, wy := ebiten.Wheel(); wx != 0 || wy != 0 {
 		c.inputScroll(int(wx*-30), int(wy*-30))
 	}
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-		c.inputMouseDown(ebiten.MouseButtonLeft)
-	} else if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
-		c.inputMouseUp(ebiten.MouseButtonLeft)
-	}
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
-		c.inputMouseDown(ebiten.MouseButtonRight)
-	} else if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonRight) {
-		c.inputMouseUp(ebiten.MouseButtonRight)
-	}
 	for _, k := range []ebiten.Key{ebiten.KeyAlt, ebiten.KeyBackspace, ebiten.KeyControl, ebiten.KeyEnter, ebiten.KeyShift} {
 		if inpututil.IsKeyJustPressed(k) {
 			c.inputKeyDown(k)

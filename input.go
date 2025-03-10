@@ -7,26 +7,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-func mouseButtonToInt(btn ebiten.MouseButton) int {
-	switch btn {
-	case ebiten.MouseButtonLeft:
-		return mouseLeft
-	case ebiten.MouseButtonRight:
-		return mouseRight
-	case ebiten.MouseButtonMiddle:
-		return mouseMiddle
-	}
-	return 0
-}
-
-func (c *Context) inputMouseDown(btn ebiten.MouseButton) {
-	c.mouseDown |= mouseButtonToInt(btn)
-}
-
-func (c *Context) inputMouseUp(btn ebiten.MouseButton) {
-	c.mouseDown &= ^mouseButtonToInt(btn)
-}
-
 func (c *Context) inputScroll(x, y int) {
 	c.scrollDelta.X += x
 	c.scrollDelta.Y += y
