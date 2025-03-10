@@ -11,7 +11,6 @@ import (
 
 	"github.com/hajimehoshi/bitmapfont/v3"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
@@ -73,13 +72,6 @@ func iconImage(icon icon) *ebiten.Image {
 func (c *Context) updateInput() {
 	if wx, wy := ebiten.Wheel(); wx != 0 || wy != 0 {
 		c.inputScroll(int(wx*-30), int(wy*-30))
-	}
-	for _, k := range []ebiten.Key{ebiten.KeyAlt, ebiten.KeyBackspace, ebiten.KeyControl, ebiten.KeyEnter, ebiten.KeyShift} {
-		if inpututil.IsKeyJustPressed(k) {
-			c.inputKeyDown(k)
-		} else if inpututil.IsKeyJustReleased(k) {
-			c.inputKeyUp(k)
-		}
 	}
 }
 

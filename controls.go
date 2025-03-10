@@ -276,7 +276,7 @@ func (c *Context) textBoxRaw(buf *string, id controlID, opt option) Response {
 }
 
 func (c *Context) numberTextBox(value *float64, id controlID) bool {
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && (c.keyDown&keyShift) != 0 &&
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && ebiten.IsKeyPressed(ebiten.KeyShift) &&
 		c.hover == id {
 		c.numberEdit = id
 		c.numberEditBuf = fmt.Sprintf(realFmt, *value)
