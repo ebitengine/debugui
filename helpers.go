@@ -9,6 +9,7 @@ import (
 	"unsafe"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 func clamp(x, a, b int) int {
@@ -213,7 +214,7 @@ func (c *Context) end() {
 	c.keepFocus = false
 
 	// bring hover root to front if mouse was pressed
-	if c.mousePressed != 0 && c.nextHoverRoot != nil &&
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.nextHoverRoot != nil &&
 		c.nextHoverRoot.zIndex < c.lastZIndex &&
 		c.nextHoverRoot.zIndex >= 0 {
 		c.bringToFront(c.nextHoverRoot)
@@ -221,7 +222,6 @@ func (c *Context) end() {
 
 	// reset input state
 	c.keyPressed = 0
-	c.mousePressed = 0
 	c.scrollDelta = image.Pt(0, 0)
 	c.lastMousePos = image.Pt(ebiten.CursorPosition())
 

@@ -21,7 +21,6 @@ func mouseButtonToInt(btn ebiten.MouseButton) int {
 
 func (c *Context) inputMouseDown(btn ebiten.MouseButton) {
 	c.mouseDown |= mouseButtonToInt(btn)
-	c.mousePressed |= mouseButtonToInt(btn)
 }
 
 func (c *Context) inputMouseUp(btn ebiten.MouseButton) {

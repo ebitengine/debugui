@@ -14,6 +14,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/exp/textinput"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 func (c *Context) inHoverRoot() bool {
@@ -81,7 +82,7 @@ func (c *Context) updateControl(id controlID, rect image.Rectangle, opt option) 
 	}
 
 	if c.focus == id {
-		if c.mousePressed != 0 && !mouseover {
+		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && !mouseover {
 			c.setFocus(0)
 		}
 		if c.mouseDown == 0 && (^opt&optionHoldFocus) != 0 {
@@ -90,7 +91,7 @@ func (c *Context) updateControl(id controlID, rect image.Rectangle, opt option) 
 	}
 
 	if c.hover == id {
-		if c.mousePressed != 0 {
+		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 			c.setFocus(id)
 		} else if !mouseover {
 			c.hover = 0
@@ -162,7 +163,7 @@ func (c *Context) button(label string, idStr string, opt option) Response {
 	return c.control(id, opt, func(r image.Rectangle) Response {
 		var res Response
 		// handle click
-		if c.mousePressed == mouseLeft && c.focus == id {
+		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.focus == id {
 			res |= ResponseSubmit
 		}
 		// draw
@@ -183,7 +184,7 @@ func (c *Context) Checkbox(label string, state *bool) Response {
 		box := image.Rect(r.Min.X, r.Min.Y, r.Min.X+r.Dy(), r.Max.Y)
 		c.updateControl(id, r, 0)
 		// handle click
-		if c.mousePressed == mouseLeft && c.focus == id {
+		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.focus == id {
 			res |= ResponseChange
 			*state = !*state
 		}
@@ -275,7 +276,7 @@ func (c *Context) textBoxRaw(buf *string, id controlID, opt option) Response {
 }
 
 func (c *Context) numberTextBox(value *float64, id controlID) bool {
-	if c.mousePressed == mouseLeft && (c.keyDown&keyShift) != 0 &&
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && (c.keyDown&keyShift) != 0 &&
 		c.hover == id {
 		c.numberEdit = id
 		c.numberEditBuf = fmt.Sprintf(realFmt, *value)
@@ -321,7 +322,7 @@ func (c *Context) slider(value *float64, low, high, step float64, digits int, op
 	return c.control(id, opt, func(r image.Rectangle) Response {
 		var res Response
 		// handle input
-		if c.focus == id && (c.mouseDown|c.mousePressed) == mouseLeft {
+		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 			x, _ := ebiten.CursorPosition()
 			v = low + float64(x-r.Min.X)*(high-low)/float64(r.Dx())
 			if step != 0 {
@@ -405,7 +406,7 @@ func (c *Context) header(label string, idStr string, istreenode bool, opt option
 
 	return c.control(id, 0, func(r image.Rectangle) Response {
 		// handle click (TODO (port): check if this is correct)
-		clicked := c.mousePressed == mouseLeft && c.focus == id
+		clicked := inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.focus == id
 		v1, v2 := 0, 0
 		if active {
 			v1 = 1
@@ -659,7 +660,7 @@ func (c *Context) window(title string, idStr string, rect image.Rectangle, opt o
 			}
 			c.drawIcon(icon, r, c.style.colors[ColorTitleText])
 			c.updateControl(id, r, opt)
-			if c.mousePressed == mouseLeft && id == c.focus {
+			if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && id == c.focus {
 				cnt.collapsed = !cnt.collapsed
 			}
 		}
@@ -692,7 +693,7 @@ func (c *Context) window(title string, idStr string, rect image.Rectangle, opt o
 	}
 
 	// close if this is a popup window and elsewhere was clicked
-	if (opt&optionPopup) != 0 && c.mousePressed != 0 && c.hoverRoot != cnt {
+	if (opt&optionPopup) != 0 && inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.hoverRoot != cnt {
 		cnt.open = false
 	}
 
