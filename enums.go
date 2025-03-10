@@ -69,11 +69,3 @@ const (
 	optionClosed
 	optionExpanded
 )
-
-const (
-	keyShift     = (1 << 0)
-	keyControl   = (1 << 1)
-	keyAlt       = (1 << 2)
-	keyBackspace = (1 << 3)
-	keyReturn    = (1 << 4)
-)
