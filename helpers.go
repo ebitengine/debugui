@@ -12,11 +12,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
-func clamp(x, a, b int) int {
-	return min(b, max(a, x))
-}
-
-func clampF(x, a, b float64) float64 {
+func clamp[T int | float64](x, a, b T) T {
 	return min(b, max(a, x))
 }
 

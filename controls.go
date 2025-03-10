@@ -330,7 +330,7 @@ func (c *Context) slider(value *float64, low, high, step float64, digits int, op
 			}
 		}
 		// clamp and store value, update res
-		*value = clampF(v, low, high)
+		*value = clamp(v, low, high)
 		v = *value
 		if last != v {
 			res |= ResponseChange
