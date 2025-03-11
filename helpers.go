@@ -135,7 +135,6 @@ func (c *Context) container(id controlID, opt option) *container {
 	}
 	cnt := &container{}
 	c.idToContainer[id] = cnt
-	*cnt = container{}
 	cnt.headIdx = -1
 	cnt.tailIdx = -1
 	cnt.open = true
