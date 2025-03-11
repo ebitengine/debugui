@@ -393,10 +393,10 @@ func (c *Context) header(label string, idStr string, istreenode bool, opt option
 		defer c.popID()
 	}
 
-	idx := c.poolGet(c.treeNodePool[:], id)
+	_, found := c.idToContainer[id]
 	c.SetLayoutRow([]int{-1}, 0)
 
-	active := idx >= 0
+	active := found
 	var expanded bool
 	if (opt & optionExpanded) != 0 {
 		expanded = !active
@@ -405,26 +405,20 @@ func (c *Context) header(label string, idStr string, istreenode bool, opt option
 	}
 
 	return c.control(id, 0, func(r image.Rectangle) Response {
-		// handle click (TODO (port): check if this is correct)
-		clicked := inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.focus == id
-		v1, v2 := 0, 0
-		if active {
-			v1 = 1
+		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.focus == id {
+			active = !active
 		}
-		if clicked {
-			v2 = 1
-		}
-		active = (v1 ^ v2) == 1
 
 		// update pool ref
-		if idx >= 0 {
-			if active {
-				c.poolUpdate(c.treeNodePool[:], idx)
-			} else {
-				c.treeNodePool[idx] = poolItem{}
+		if found {
+			if !active {
+				delete(c.idToContainer, id)
 			}
 		} else if active {
-			c.poolInit(c.treeNodePool[:], id)
+			if c.idToContainer == nil {
+				c.idToContainer = map[controlID]*container{}
+			}
+			c.idToContainer[id] = nil
 		}
 
 		// draw

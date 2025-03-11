@@ -118,11 +118,11 @@ func (c *Context) SetScroll(scroll image.Point) {
 
 func (c *Context) container(id controlID, opt option) *container {
 	// try to get existing container from pool
-	if idx := c.poolGet(c.containerPool[:], id); idx >= 0 {
-		if c.containers[idx].open || (^opt&optionClosed) != 0 {
-			c.poolUpdate(c.containerPool[:], idx)
+	if container, ok := c.idToContainer[id]; ok {
+		if !container.open && (^opt&optionClosed) == 0 {
+			delete(c.idToContainer, id)
 		}
-		return &c.containers[idx]
+		return container
 	}
 
 	if (opt & optionClosed) != 0 {
@@ -130,8 +130,11 @@ func (c *Context) container(id controlID, opt option) *container {
 	}
 
 	// container not found in pool: init new container
-	idx := c.poolInit(c.containerPool[:], id)
-	cnt := &c.containers[idx]
+	if c.idToContainer == nil {
+		c.idToContainer = map[controlID]*container{}
+	}
+	cnt := &container{}
+	c.idToContainer[id] = cnt
 	*cnt = container{}
 	cnt.headIdx = -1
 	cnt.tailIdx = -1

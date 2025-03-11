@@ -129,9 +129,7 @@ type Context struct {
 
 	// retained state pools
 
-	containerPool [containerPoolSize]poolItem
-	containers    [containerPoolSize]container
-	treeNodePool  [treeNodePoolSize]poolItem
+	idToContainer map[controlID]*container
 
 	// input state
 
