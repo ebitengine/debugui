@@ -412,7 +412,7 @@ func (c *Context) header(label string, idStr string, istreenode bool, opt option
 		// update pool ref
 		if toggledFromInit && toggle {
 			delete(c.idToContainer, id)
-		} else if toggledFromInit != !toggle {
+		} else if toggledFromInit != toggle {
 			if c.idToContainer == nil {
 				c.idToContainer = map[controlID]*container{}
 			}
