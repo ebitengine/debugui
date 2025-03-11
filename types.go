@@ -13,11 +13,6 @@ import (
 
 type controlID uint64
 
-type poolItem struct {
-	id         controlID
-	lastUpdate int
-}
-
 type baseCommand struct {
 	typ int
 }

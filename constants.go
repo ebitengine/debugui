@@ -9,11 +9,6 @@ import (
 )
 
 const (
-	containerPoolSize = 48
-	treeNodePoolSize  = 48
-)
-
-const (
 	realFmt   = "%.3g"
 	sliderFmt = "%.2f"
 )
