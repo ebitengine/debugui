@@ -130,6 +130,7 @@ type Context struct {
 	// retained state pools
 
 	idToContainer map[controlID]*container
+	toggledIDs    map[controlID]struct{}
 
 	// input state
 

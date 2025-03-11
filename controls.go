@@ -393,30 +393,26 @@ func (c *Context) header(label string, idStr string, istreenode bool, opt option
 		defer c.popID()
 	}
 
-	_, toggledFromInit := c.idToContainer[id]
+	_, toggled := c.toggledIDs[id]
 	c.SetLayoutRow([]int{-1}, 0)
 
 	var expanded bool
 	if (opt & optionExpanded) != 0 {
-		expanded = !toggledFromInit
+		expanded = !toggled
 	} else {
-		expanded = toggledFromInit
+		expanded = toggled
 	}
 
 	return c.control(id, 0, func(r image.Rectangle) Response {
-		var toggle bool
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.focus == id {
-			toggle = true
-		}
-
-		// update pool ref
-		if toggledFromInit && toggle {
-			delete(c.idToContainer, id)
-		} else if toggledFromInit != toggle {
-			if c.idToContainer == nil {
-				c.idToContainer = map[controlID]*container{}
+			if toggled {
+				delete(c.toggledIDs, id)
+			} else {
+				if c.toggledIDs == nil {
+					c.toggledIDs = map[controlID]struct{}{}
+				}
+				c.toggledIDs[id] = struct{}{}
 			}
-			c.idToContainer[id] = nil
 		}
 
 		// draw
