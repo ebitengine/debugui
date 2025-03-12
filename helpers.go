@@ -168,8 +168,6 @@ func (c *Context) update(f func(ctx *Context)) {
 }
 
 func (c *Context) begin() {
-	c.updateInput()
-
 	c.commandList = c.commandList[:0]
 	c.rootList = c.rootList[:0]
 	c.scrollTarget = nil
@@ -201,8 +199,9 @@ func (c *Context) end() {
 
 	// handle scroll input
 	if c.scrollTarget != nil {
-		c.scrollTarget.layout.Scroll.X += c.scrollDelta.X
-		c.scrollTarget.layout.Scroll.Y += c.scrollDelta.Y
+		wx, wy := ebiten.Wheel()
+		c.scrollTarget.layout.Scroll.X += int(wx * -30)
+		c.scrollTarget.layout.Scroll.Y += int(wy * -30)
 	}
 
 	// unset focus if focus id was not touched this frame
@@ -219,7 +218,6 @@ func (c *Context) end() {
 	}
 
 	// reset input state
-	c.scrollDelta = image.Pt(0, 0)
 	c.lastMousePos = image.Pt(ebiten.CursorPosition())
 
 	// sort root containers by zindex

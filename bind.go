@@ -69,12 +69,6 @@ func iconImage(icon icon) *ebiten.Image {
 	return iconMap[icon]
 }
 
-func (c *Context) updateInput() {
-	if wx, wy := ebiten.Wheel(); wx != 0 || wy != 0 {
-		c.inputScroll(int(wx*-30), int(wy*-30))
-	}
-}
-
 func (c *Context) draw(screen *ebiten.Image) {
 	target := screen
 	var cmd *command

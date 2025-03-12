@@ -130,7 +130,6 @@ type Context struct {
 	// input state
 
 	lastMousePos image.Point
-	scrollDelta  image.Point
 
 	textFields map[controlID]*textinput.Field
 }
