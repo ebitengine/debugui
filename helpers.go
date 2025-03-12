@@ -5,6 +5,7 @@ package debugui
 
 import (
 	"image"
+	"slices"
 	"sort"
 	"unsafe"
 
@@ -168,8 +169,8 @@ func (c *Context) update(f func(ctx *Context)) {
 }
 
 func (c *Context) begin() {
-	c.commandList = c.commandList[:0]
-	c.rootList = c.rootList[:0]
+	c.commandList = slices.Delete(c.commandList, 0, len(c.commandList))
+	c.rootList = slices.Delete(c.rootList, 0, len(c.rootList))
 	c.scrollTarget = nil
 	c.hoverRoot = c.nextHoverRoot
 	c.nextHoverRoot = nil
