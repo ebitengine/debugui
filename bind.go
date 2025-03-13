@@ -6,6 +6,7 @@ package debugui
 import (
 	"bytes"
 	"embed"
+	"fmt"
 	"image"
 	"sync"
 
@@ -59,11 +60,11 @@ func iconImage(icon icon) *ebiten.Image {
 	}
 	b, err := iconFS.ReadFile("icon/" + name)
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("debugui: %v", err))
 	}
 	img, _, err := image.Decode(bytes.NewReader(b))
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("debugui: %v", err))
 	}
 	iconMap[icon] = ebiten.NewImageFromImage(img)
 	return iconMap[icon]

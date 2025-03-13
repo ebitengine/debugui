@@ -19,8 +19,8 @@ func clamp[T int | float64](x, a, b T) T {
 
 func fnv1a(init controlID, data []byte) controlID {
 	h := init
-	for i := 0; i < len(data); i++ {
-		h = (h ^ controlID(data[i])) * 1099511628211
+	for _, b := range data {
+		h = (h ^ controlID(b)) * 1099511628211
 	}
 	return h
 }
@@ -186,16 +186,16 @@ func (c *Context) mouseDelta() image.Point {
 func (c *Context) end() {
 	// check stacks
 	if len(c.containerStack) > 0 {
-		panic("container stack not empty")
+		panic("debugui: container stack not empty")
 	}
 	if len(c.clipStack) > 0 {
-		panic("clip stack not empty")
+		panic("debugui: clip stack not empty")
 	}
 	if len(c.idStack) > 0 {
-		panic("id stack not empty")
+		panic("debugui: id stack not empty")
 	}
 	if len(c.layoutStack) > 0 {
-		panic("layout stack not empty")
+		panic("debugui: layout stack not empty")
 	}
 
 	// handle scroll input
@@ -227,18 +227,18 @@ func (c *Context) end() {
 	})
 
 	// set root container jump commands
-	for i := 0; i < len(c.rootList); i++ {
+	for i := range c.rootList {
 		cnt := c.rootList[i]
 		// if this is the first container then make the first command jump to it.
 		// otherwise set the previous container's tail to jump to this one
 		if i == 0 {
 			cmd := c.commandList[0]
 			if cmd.typ != commandJump {
-				panic("expected jump command")
+				panic("debugui: expected jump command")
 			}
 			cmd.jump.dstIdx = cnt.headIdx + 1
 			if cnt.headIdx >= len(c.commandList) {
-				panic("invalid head index")
+				panic("debugui: invalid head index")
 			}
 		} else {
 			prev := c.rootList[i-1]
