@@ -17,6 +17,17 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
+func (c *Context) drawFrame(rect image.Rectangle, colorid int) {
+	c.drawRect(rect, c.style.colors[colorid])
+	if colorid == ColorScrollBase || colorid == ColorScrollThumb || colorid == ColorTitleBG {
+		return
+	}
+	// draw border
+	if c.style.colors[ColorBorder].A != 0 {
+		c.drawBox(rect.Inset(-1), c.style.colors[ColorBorder])
+	}
+}
+
 func (c *Context) inHoverRoot() bool {
 	for i := len(c.containerStack) - 1; i >= 0; i-- {
 		if c.containerStack[i] == c.hoverRoot {
