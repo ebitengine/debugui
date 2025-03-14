@@ -24,7 +24,7 @@ func (g *Game) writeLog(text string) {
 }
 
 func (g *Game) testWindow(ctx *debugui.Context) {
-	ctx.Window("Demo Window", image.Rect(40, 40, 340, 500), func(res debugui.Response, layout debugui.Layout) {
+	ctx.Window("Demo Window", image.Rect(40, 40, 340, 500), func(res debugui.Response, layout debugui.ContainerLayout) {
 		// window info
 		if ctx.Header("Window Info", false) != 0 {
 			ctx.SetLayoutRow([]int{54, -1}, 0)
@@ -51,7 +51,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 			if ctx.Button("Popup") != 0 {
 				ctx.OpenPopup("Test Popup")
 			}
-			ctx.Popup("Test Popup", func(res debugui.Response, layout debugui.Layout) {
+			ctx.Popup("Test Popup", func(res debugui.Response, layout debugui.ContainerLayout) {
 				ctx.Button("Hello")
 				ctx.Button("World")
 			})
@@ -116,19 +116,19 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 				ctx.Slider(&g.bg[2], 0, 255, 1, 0)
 			})
 			// color preview
-			ctx.Control("", func(r image.Rectangle) debugui.Response {
+			ctx.Control("", func(bounds image.Rectangle) debugui.Response {
 				ctx.DrawControl(func(screen *ebiten.Image) {
 					vector.DrawFilledRect(
 						screen,
-						float32(r.Min.X),
-						float32(r.Min.Y),
-						float32(r.Dx()),
-						float32(r.Dy()),
+						float32(bounds.Min.X),
+						float32(bounds.Min.Y),
+						float32(bounds.Dx()),
+						float32(bounds.Dy()),
 						color.RGBA{byte(g.bg[0]), byte(g.bg[1]), byte(g.bg[2]), 255},
 						false)
 					txt := fmt.Sprintf("#%02X%02X%02X", int(g.bg[0]), int(g.bg[1]), int(g.bg[2]))
 					op := &text.DrawOptions{}
-					op.GeoM.Translate(float64((r.Min.X+r.Max.X)/2), float64((r.Min.Y+r.Max.Y)/2))
+					op.GeoM.Translate(float64((bounds.Min.X+bounds.Max.X)/2), float64((bounds.Min.Y+bounds.Max.Y)/2))
 					op.PrimaryAlign = text.AlignCenter
 					op.SecondaryAlign = text.AlignCenter
 					debugui.DrawText(screen, txt, op)
@@ -147,10 +147,10 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 }
 
 func (g *Game) logWindow(ctx *debugui.Context) {
-	ctx.Window("Log Window", image.Rect(350, 40, 650, 290), func(res debugui.Response, layout debugui.Layout) {
+	ctx.Window("Log Window", image.Rect(350, 40, 650, 290), func(res debugui.Response, layout debugui.ContainerLayout) {
 		// output text panel
 		ctx.SetLayoutRow([]int{-1}, -25)
-		ctx.Panel("Log Output", func(layout debugui.Layout) {
+		ctx.Panel("Log Output", func(layout debugui.ContainerLayout) {
 			ctx.SetLayoutRow([]int{-1}, -1)
 			ctx.Text(g.logBuf)
 			if g.logUpdated {
@@ -177,7 +177,7 @@ func (g *Game) logWindow(ctx *debugui.Context) {
 }
 
 func (g *Game) buttonWindows(ctx *debugui.Context) {
-	ctx.Window("Button Windows", image.Rect(350, 300, 650, 500), func(res debugui.Response, layout debugui.Layout) {
+	ctx.Window("Button Windows", image.Rect(350, 300, 650, 500), func(res debugui.Response, layout debugui.ContainerLayout) {
 		ctx.SetLayoutRow([]int{100, 100, 100, 100}, 0)
 		for i := 0; i < 100; i++ {
 			if ctx.Button("Button\x00"+fmt.Sprintf("%d", i)) != 0 {

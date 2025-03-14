@@ -110,13 +110,13 @@ func (c *Context) updateControl(id controlID, rect image.Rectangle, opt option) 
 	}
 }
 
-func (c *Context) Control(idStr string, f func(r image.Rectangle) Response) Response {
+func (c *Context) Control(idStr string, f func(bounds image.Rectangle) Response) Response {
 	id := c.pushID([]byte(idStr))
 	defer c.popID()
 	return c.control(id, 0, f)
 }
 
-func (c *Context) control(id controlID, opt option, f func(r image.Rectangle) Response) Response {
+func (c *Context) control(id controlID, opt option, f func(bounds image.Rectangle) Response) Response {
 	r := c.layoutNext()
 	c.updateControl(id, r, opt)
 	return f(r)
@@ -128,7 +128,7 @@ func (c *Context) Text(text string) {
 		var endIdx, p int
 		c.SetLayoutRow([]int{-1}, lineHeight())
 		for endIdx < len(text) {
-			c.control(0, 0, func(r image.Rectangle) Response {
+			c.control(0, 0, func(bounds image.Rectangle) Response {
 				w := 0
 				endIdx = p
 				startIdx := endIdx
@@ -138,7 +138,7 @@ func (c *Context) Text(text string) {
 						p++
 					}
 					w += textWidth(text[word:p])
-					if w > r.Dx() && endIdx != startIdx {
+					if w > bounds.Dx() && endIdx != startIdx {
 						break
 					}
 					if p < len(text) {
@@ -147,7 +147,7 @@ func (c *Context) Text(text string) {
 					endIdx = p
 					p++
 				}
-				c.drawText(text[startIdx:endIdx], r.Min, color)
+				c.drawText(text[startIdx:endIdx], bounds.Min, color)
 				p = endIdx + 1
 				return 0
 			})
@@ -156,8 +156,8 @@ func (c *Context) Text(text string) {
 }
 
 func (c *Context) Label(text string) {
-	c.control(0, 0, func(r image.Rectangle) Response {
-		c.drawControlText(text, r, ColorText, 0)
+	c.control(0, 0, func(bounds image.Rectangle) Response {
+		c.drawControlText(text, bounds, ColorText, 0)
 		return 0
 	})
 }
@@ -171,16 +171,16 @@ func (c *Context) button(label string, idStr string, opt option) Response {
 		id = c.pushID([]byte(label))
 		defer c.popID()
 	}
-	return c.control(id, opt, func(r image.Rectangle) Response {
+	return c.control(id, opt, func(bounds image.Rectangle) Response {
 		var res Response
 		// handle click
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.focus == id {
 			res |= ResponseSubmit
 		}
 		// draw
-		c.drawControlFrame(id, r, ColorButton, opt)
+		c.drawControlFrame(id, bounds, ColorButton, opt)
 		if len(label) > 0 {
-			c.drawControlText(label, r, ColorText, opt)
+			c.drawControlText(label, bounds, ColorText, opt)
 		}
 		return res
 	})
@@ -190,10 +190,10 @@ func (c *Context) Checkbox(label string, state *bool) Response {
 	id := c.pushID(ptrToBytes(unsafe.Pointer(state)))
 	defer c.popID()
 
-	return c.control(id, 0, func(r image.Rectangle) Response {
+	return c.control(id, 0, func(bounds image.Rectangle) Response {
 		var res Response
-		box := image.Rect(r.Min.X, r.Min.Y, r.Min.X+r.Dy(), r.Max.Y)
-		c.updateControl(id, r, 0)
+		box := image.Rect(bounds.Min.X, bounds.Min.Y, bounds.Min.X+bounds.Dy(), bounds.Max.Y)
+		c.updateControl(id, bounds, 0)
 		// handle click
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.focus == id {
 			res |= ResponseChange
@@ -204,8 +204,8 @@ func (c *Context) Checkbox(label string, state *bool) Response {
 		if *state {
 			c.drawIcon(iconCheck, box, c.style.colors[ColorText])
 		}
-		r = image.Rect(r.Min.X+box.Dx(), r.Min.Y, r.Max.X, r.Max.Y)
-		c.drawControlText(label, r, ColorText, 0)
+		bounds = image.Rect(bounds.Min.X+box.Dx(), bounds.Min.Y, bounds.Max.X, bounds.Max.Y)
+		c.drawControlText(label, bounds, ColorText, 0)
 		return res
 	})
 }
@@ -224,15 +224,15 @@ func (c *Context) textField(id controlID) *textinput.Field {
 }
 
 func (c *Context) textBoxRaw(buf *string, id controlID, opt option) Response {
-	return c.control(id, opt|optionHoldFocus, func(r image.Rectangle) Response {
+	return c.control(id, opt|optionHoldFocus, func(bounds image.Rectangle) Response {
 		var res Response
 
 		if c.focus == id {
 			// handle text input
 			f := c.textField(id)
 			f.Focus()
-			x := r.Min.X + c.style.padding + textWidth(*buf)
-			y := r.Min.Y + lineHeight()
+			x := bounds.Min.X + c.style.padding + textWidth(*buf)
+			y := bounds.Min.Y + lineHeight()
 			handled, err := f.HandleInput(x, y)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
@@ -267,20 +267,20 @@ func (c *Context) textBoxRaw(buf *string, id controlID, opt option) Response {
 		}
 
 		// draw
-		c.drawControlFrame(id, r, ColorBase, opt)
+		c.drawControlFrame(id, bounds, ColorBase, opt)
 		if c.focus == id {
 			color := c.style.colors[ColorText]
 			textw := textWidth(*buf)
 			texth := lineHeight()
-			ofx := r.Dx() - c.style.padding - textw - 1
-			textx := r.Min.X + min(ofx, c.style.padding)
-			texty := r.Min.Y + (r.Dy()-texth)/2
-			c.pushClipRect(r)
+			ofx := bounds.Dx() - c.style.padding - textw - 1
+			textx := bounds.Min.X + min(ofx, c.style.padding)
+			texty := bounds.Min.Y + (bounds.Dy()-texth)/2
+			c.pushClipRect(bounds)
 			c.drawText(*buf, image.Pt(textx, texty), color)
 			c.drawRect(image.Rect(textx+textw, texty, textx+textw+1, texty+texth), color)
 			c.popClipRect()
 		} else {
-			c.drawControlText(*buf, r, ColorText, opt)
+			c.drawControlText(*buf, bounds, ColorText, opt)
 		}
 		return res
 	})
@@ -330,12 +330,12 @@ func (c *Context) slider(value *float64, low, high, step float64, digits int, op
 	}
 
 	// handle normal mode
-	return c.control(id, opt, func(r image.Rectangle) Response {
+	return c.control(id, opt, func(bounds image.Rectangle) Response {
 		var res Response
 		// handle input
 		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 			x, _ := ebiten.CursorPosition()
-			v = low + float64(x-r.Min.X)*(high-low)/float64(r.Dx())
+			v = low + float64(x-bounds.Min.X)*(high-low)/float64(bounds.Dx())
 			if step != 0 {
 				v = math.Round(v/step) * step
 			}
@@ -348,15 +348,15 @@ func (c *Context) slider(value *float64, low, high, step float64, digits int, op
 		}
 
 		// draw base
-		c.drawControlFrame(id, r, ColorBase, opt)
+		c.drawControlFrame(id, bounds, ColorBase, opt)
 		// draw thumb
 		w := c.style.thumbSize
-		x := int((v - low) * float64(r.Dx()-w) / (high - low))
-		thumb := image.Rect(r.Min.X+x, r.Min.Y, r.Min.X+x+w, r.Max.Y)
+		x := int((v - low) * float64(bounds.Dx()-w) / (high - low))
+		thumb := image.Rect(bounds.Min.X+x, bounds.Min.Y, bounds.Min.X+x+w, bounds.Max.Y)
 		c.drawControlFrame(id, thumb, ColorButton, opt)
 		// draw text
 		text := formatNumber(v, digits)
-		c.drawControlText(text, r, ColorText, opt)
+		c.drawControlText(text, bounds, ColorText, opt)
 
 		return res
 	})
@@ -373,7 +373,7 @@ func (c *Context) number(value *float64, step float64, digits int, opt option) R
 	}
 
 	// handle normal mode
-	return c.control(id, opt, func(r image.Rectangle) Response {
+	return c.control(id, opt, func(bounds image.Rectangle) Response {
 		var res Response
 		// handle input
 		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
@@ -385,10 +385,10 @@ func (c *Context) number(value *float64, step float64, digits int, opt option) R
 		}
 
 		// draw base
-		c.drawControlFrame(id, r, ColorBase, opt)
+		c.drawControlFrame(id, bounds, ColorBase, opt)
 		// draw text
 		text := formatNumber(*value, digits)
-		c.drawControlText(text, r, ColorText, opt)
+		c.drawControlText(text, bounds, ColorText, opt)
 
 		return res
 	})
@@ -414,7 +414,7 @@ func (c *Context) header(label string, idStr string, istreenode bool, opt option
 		expanded = toggled
 	}
 
-	return c.control(id, 0, func(r image.Rectangle) Response {
+	return c.control(id, 0, func(bounds image.Rectangle) Response {
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.focus == id {
 			if toggled {
 				delete(c.toggledIDs, id)
@@ -429,10 +429,10 @@ func (c *Context) header(label string, idStr string, istreenode bool, opt option
 		// draw
 		if istreenode {
 			if c.hover == id {
-				c.drawFrame(r, ColorButtonHover)
+				c.drawFrame(bounds, ColorButtonHover)
 			}
 		} else {
-			c.drawControlFrame(id, r, ColorButton, 0)
+			c.drawControlFrame(id, bounds, ColorButton, 0)
 		}
 		var icon icon
 		if expanded {
@@ -442,11 +442,11 @@ func (c *Context) header(label string, idStr string, istreenode bool, opt option
 		}
 		c.drawIcon(
 			icon,
-			image.Rect(r.Min.X, r.Min.Y, r.Min.X+r.Dy(), r.Max.Y),
+			image.Rect(bounds.Min.X, bounds.Min.Y, bounds.Min.X+bounds.Dy(), bounds.Max.Y),
 			c.style.colors[ColorText],
 		)
-		r.Min.X += r.Dy() - c.style.padding
-		c.drawControlText(label, r, ColorText, 0)
+		bounds.Min.X += bounds.Dy() - c.style.padding
+		c.drawControlText(label, bounds, ColorText, 0)
 
 		if expanded {
 			return ResponseActive
@@ -575,7 +575,7 @@ func (c *Context) pushContainerBodyLayout(cnt *container, body image.Rectangle, 
 	cnt.layout.BodyBounds = body
 }
 
-func (c *Context) window(title string, idStr string, rect image.Rectangle, opt option, f func(res Response, layout Layout)) {
+func (c *Context) window(title string, idStr string, rect image.Rectangle, opt option, f func(res Response, layout ContainerLayout)) {
 	var id controlID
 	if len(idStr) > 0 {
 		id = c.pushID([]byte(idStr))
@@ -717,12 +717,12 @@ func (c *Context) OpenPopup(name string) {
 	c.bringToFront(cnt)
 }
 
-func (c *Context) Popup(name string, f func(res Response, layout Layout)) {
+func (c *Context) Popup(name string, f func(res Response, layout ContainerLayout)) {
 	opt := optionPopup | optionAutoSize | optionNoResize | optionNoScroll | optionNoTitle | optionClosed
 	c.window(name, "", image.Rectangle{}, opt, f)
 }
 
-func (c *Context) panel(name string, opt option, f func(layout Layout)) {
+func (c *Context) panel(name string, opt option, f func(layout ContainerLayout)) {
 	id := c.pushID([]byte(name))
 	defer c.popID()
 

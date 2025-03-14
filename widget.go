@@ -41,11 +41,11 @@ func (c *Context) TreeNode(label string, f func(res Response)) {
 	c.treeNode(label, idStr, 0, f)
 }
 
-func (c *Context) Window(title string, rect image.Rectangle, f func(res Response, layout Layout)) {
+func (c *Context) Window(title string, rect image.Rectangle, f func(res Response, layout ContainerLayout)) {
 	title, idStr, _ := strings.Cut(title, idSeparator)
 	c.window(title, idStr, rect, 0, f)
 }
 
-func (c *Context) Panel(name string, f func(layout Layout)) {
+func (c *Context) Panel(name string, f func(layout ContainerLayout)) {
 	c.panel(name, 0, f)
 }

@@ -82,12 +82,12 @@ func (c *Context) clipRect() image.Rectangle {
 	return c.clipStack[len(c.clipStack)-1]
 }
 
-func (c *Context) checkClip(r image.Rectangle) int {
+func (c *Context) checkClip(bounds image.Rectangle) int {
 	cr := c.clipRect()
-	if !r.Overlaps(cr) {
+	if !bounds.Overlaps(cr) {
 		return clipAll
 	}
-	if r.In(cr) {
+	if bounds.In(cr) {
 		return 0
 	}
 	return clipPart

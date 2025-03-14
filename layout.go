@@ -15,8 +15,8 @@ func (c *Context) pushLayout(body image.Rectangle, scroll image.Point) {
 }
 
 func (c *Context) LayoutColumn(f func()) {
-	c.control(0, 0, func(r image.Rectangle) Response {
-		c.pushLayout(r, image.Pt(0, 0))
+	c.control(0, 0, func(bounds image.Rectangle) Response {
+		c.pushLayout(bounds, image.Pt(0, 0))
 		defer c.popLayout()
 		f()
 		b := &c.layoutStack[len(c.layoutStack)-1]

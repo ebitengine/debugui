@@ -70,7 +70,7 @@ type command struct {
 }
 
 type container struct {
-	layout    Layout
+	layout    ContainerLayout
 	headIdx   int
 	tailIdx   int
 	zIndex    int
@@ -78,13 +78,12 @@ type container struct {
 	collapsed bool
 }
 
-// Layout represents the layout of a control.
-type Layout struct {
+// ContainerLayout represents the layout of a container control.
+type ContainerLayout struct {
 	// Bounds is the bounds of the control.
 	Bounds image.Rectangle
 
-	// BodyBounds is the bounds of the body area of the container, when the control is a container.
-	// BodyBounds is the same as Bounds otherwise.
+	// BodyBounds is the bounds of the body area of the container.
 	BodyBounds image.Rectangle
 
 	// ContentSize is the size of the content.
