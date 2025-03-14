@@ -49,8 +49,6 @@ func iconImage(icon icon) *ebiten.Image {
 	switch icon {
 	case iconCheck:
 		name = "check.png"
-	case iconClose:
-		name = "close.png"
 	case iconCollapsed:
 		name = "collapsed.png"
 	case iconExpanded:

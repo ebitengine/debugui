@@ -38,8 +38,7 @@ const (
 type icon int
 
 const (
-	iconClose icon = 1 + iota
-	iconCheck
+	iconCheck icon = 1 + iota
 	iconCollapsed
 	iconExpanded
 )
