@@ -114,7 +114,7 @@ func (c *Context) currentContainer() *container {
 }
 
 func (c *Context) SetScroll(scroll image.Point) {
-	c.currentContainer().layout.Scroll = scroll
+	c.currentContainer().layout.ScrollOffset = scroll
 }
 
 func (c *Context) container(id controlID, opt option) *container {
@@ -201,8 +201,8 @@ func (c *Context) end() {
 	// handle scroll input
 	if c.scrollTarget != nil {
 		wx, wy := ebiten.Wheel()
-		c.scrollTarget.layout.Scroll.X += int(wx * -30)
-		c.scrollTarget.layout.Scroll.Y += int(wy * -30)
+		c.scrollTarget.layout.ScrollOffset.X += int(wx * -30)
+		c.scrollTarget.layout.ScrollOffset.Y += int(wy * -30)
 	}
 
 	// unset focus if focus id was not touched this frame

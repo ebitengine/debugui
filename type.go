@@ -78,11 +78,21 @@ type container struct {
 	collapsed bool
 }
 
+// Layout represents the layout of a control.
 type Layout struct {
-	Rect        image.Rectangle
-	Body        image.Rectangle
+	// Bounds is the bounds of the control.
+	Bounds image.Rectangle
+
+	// BodyBounds is the bounds of the body area of the container, when the control is a container.
+	// BodyBounds is the same as Bounds otherwise.
+	BodyBounds image.Rectangle
+
+	// ContentSize is the size of the content.
+	// ContentSize can be larger than Bounds or BodyBounds. In this case, the control should be scrollable.
 	ContentSize image.Point
-	Scroll      image.Point
+
+	// ScrollOffset is the offset of the scroll.
+	ScrollOffset image.Point
 }
 
 type style struct {

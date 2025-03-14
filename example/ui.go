@@ -29,9 +29,9 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 		if ctx.Header("Window Info", false) != 0 {
 			ctx.SetLayoutRow([]int{54, -1}, 0)
 			ctx.Label("Position:")
-			ctx.Label(fmt.Sprintf("%d, %d", layout.Rect.Min.X, layout.Rect.Min.Y))
+			ctx.Label(fmt.Sprintf("%d, %d", layout.Bounds.Min.X, layout.Bounds.Min.Y))
 			ctx.Label("Size:")
-			ctx.Label(fmt.Sprintf("%d, %d", layout.Rect.Dx(), layout.Rect.Dy()))
+			ctx.Label(fmt.Sprintf("%d, %d", layout.Bounds.Dx(), layout.Bounds.Dy()))
 		}
 
 		// labels + buttons
@@ -154,7 +154,7 @@ func (g *Game) logWindow(ctx *debugui.Context) {
 			ctx.SetLayoutRow([]int{-1}, -1)
 			ctx.Text(g.logBuf)
 			if g.logUpdated {
-				ctx.SetScroll(image.Pt(layout.Scroll.X, layout.ContentSize.Y))
+				ctx.SetScroll(image.Pt(layout.ScrollOffset.X, layout.ContentSize.Y))
 				g.logUpdated = false
 			}
 		})
