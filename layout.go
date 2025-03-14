@@ -23,7 +23,7 @@ func (c *Context) LayoutColumn(f func()) {
 		// inherit position/next_row/max from child layout if they are greater
 		a := &c.layoutStack[len(c.layoutStack)-2]
 		a.position.X = max(a.position.X, b.position.X+b.body.Min.X-a.body.Min.X)
-		a.nextRow = max(a.nextRow, b.nextRow+b.body.Min.Y-a.body.Min.Y)
+		a.nextRowY = max(a.nextRowY, b.nextRowY+b.body.Min.Y-a.body.Min.Y)
 		a.max.X = max(a.max.X, b.max.X)
 		a.max.Y = max(a.max.Y, b.max.Y)
 		return 0
@@ -39,7 +39,7 @@ func (c *Context) SetLayoutRow(widths []int, height int) {
 	copy(layout.widths, widths)
 	layout.widths = layout.widths[:len(widths)]
 
-	layout.position = image.Pt(layout.indent, layout.nextRow)
+	layout.position = image.Pt(layout.indent, layout.nextRowY)
 	layout.height = height
 	layout.itemIndex = 0
 }
@@ -47,45 +47,45 @@ func (c *Context) SetLayoutRow(widths []int, height int) {
 func (c *Context) layoutNext() image.Rectangle {
 	layout := c.layout()
 
-	// handle next row
+	// If the item reaches the end of the row, start a new row with the same rule.
 	if layout.itemIndex == len(layout.widths) {
 		c.SetLayoutRow(layout.widths, layout.height)
 	}
 
 	// position
-	res := image.Rect(layout.position.X, layout.position.Y, layout.position.X, layout.position.Y)
+	r := image.Rect(layout.position.X, layout.position.Y, layout.position.X, layout.position.Y)
 
 	// size
 	if len(layout.widths) > 0 {
-		res.Max.X = res.Min.X + layout.widths[layout.itemIndex]
+		r.Max.X = r.Min.X + layout.widths[layout.itemIndex]
 	}
-	res.Max.Y = res.Min.Y + layout.height
-	if res.Dx() == 0 {
-		res.Max.X = res.Min.X + c.style.size.X + c.style.padding*2
+	r.Max.Y = r.Min.Y + layout.height
+	if r.Dx() == 0 {
+		r.Max.X = r.Min.X + c.style.size.X + c.style.padding*2
 	}
-	if res.Dy() == 0 {
-		res.Max.Y = res.Min.Y + c.style.size.Y + c.style.padding*2
+	if r.Dy() == 0 {
+		r.Max.Y = r.Min.Y + c.style.size.Y + c.style.padding*2
 	}
-	if res.Dx() < 0 {
-		res.Max.X += layout.body.Dx() - res.Min.X + 1
+	if r.Dx() < 0 {
+		r.Max.X += layout.body.Dx() - r.Min.X + 1
 	}
-	if res.Dy() < 0 {
-		res.Max.Y += layout.body.Dy() - res.Min.Y + 1
+	if r.Dy() < 0 {
+		r.Max.Y += layout.body.Dy() - r.Min.Y + 1
 	}
 
 	layout.itemIndex++
 
 	// update position
-	layout.position.X += res.Dx() + c.style.spacing
-	layout.nextRow = max(layout.nextRow, res.Max.Y+c.style.spacing)
+	layout.position.X += r.Dx() + c.style.spacing
+	layout.nextRowY = max(layout.nextRowY, r.Max.Y+c.style.spacing)
 
 	// apply body offset
-	res = res.Add(layout.body.Min)
+	r = r.Add(layout.body.Min)
 
 	// update max position
-	layout.max.X = max(layout.max.X, res.Max.X)
-	layout.max.Y = max(layout.max.Y, res.Max.Y)
+	layout.max.X = max(layout.max.X, r.Max.X)
+	layout.max.Y = max(layout.max.Y, r.Max.Y)
 
-	c.lastRect = res
+	c.lastRect = r
 	return c.lastRect
 }
