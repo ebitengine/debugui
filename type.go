@@ -103,7 +103,6 @@ type Context struct {
 	hover         controlID
 	focus         controlID
 	lastID        controlID
-	lastRect      image.Rectangle
 	lastZIndex    int
 	keepFocus     bool
 	tick          int

@@ -86,6 +86,5 @@ func (c *Context) layoutNext() image.Rectangle {
 	layout.max.X = max(layout.max.X, r.Max.X)
 	layout.max.Y = max(layout.max.Y, r.Max.Y)
 
-	c.lastRect = r
-	return c.lastRect
+	return r
 }
