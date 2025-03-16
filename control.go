@@ -124,7 +124,7 @@ func (c *Context) control(id controlID, opt option, f func(bounds image.Rectangl
 
 func (c *Context) Text(text string) {
 	color := c.style.colors[ColorText]
-	c.LayoutColumn(func() {
+	c.Division(func() {
 		var endIdx, p int
 		c.SetGridLayout([]int{-1}, []int{lineHeight()})
 		for endIdx < len(text) {
