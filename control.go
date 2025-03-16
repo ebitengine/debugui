@@ -394,16 +394,7 @@ func (c *Context) number(value *float64, step float64, digits int, opt option) R
 	})
 }
 
-func (c *Context) header(label string, idStr string, istreenode bool, opt option) Response {
-	var id controlID
-	if len(idStr) > 0 {
-		id = c.pushID([]byte(idStr))
-		defer c.popID()
-	} else if len(label) > 0 {
-		id = c.pushID([]byte(label))
-		defer c.popID()
-	}
-
+func (c *Context) header(label string, id controlID, istreenode bool, opt option) Response {
 	_, toggled := c.toggledIDs[id]
 	c.SetGridLayout([]int{-1}, nil)
 
@@ -456,7 +447,15 @@ func (c *Context) header(label string, idStr string, istreenode bool, opt option
 }
 
 func (c *Context) treeNode(label string, idStr string, opt option, f func(res Response)) {
-	res := c.header(label, idStr, true, opt)
+	var id controlID
+	if len(idStr) > 0 {
+		id = c.pushID([]byte(idStr))
+		defer c.popID()
+	} else if len(label) > 0 {
+		id = c.pushID([]byte(label))
+		defer c.popID()
+	}
+	res := c.header(label, id, true, opt)
 	if res&ResponseActive == 0 {
 		return
 	}

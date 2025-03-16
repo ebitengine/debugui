@@ -58,7 +58,6 @@ func (c *Context) idFromBytes(data []byte) controlID {
 }
 
 func (c *Context) pushID(data []byte) controlID {
-	// push()
 	id := c.idFromBytes(data)
 	c.idStack = append(c.idStack, id)
 	return id
@@ -70,7 +69,6 @@ func (c *Context) popID() {
 
 func (c *Context) pushClipRect(rect image.Rectangle) {
 	last := c.clipRect()
-	// push()
 	c.clipStack = append(c.clipStack, rect.Intersect(last))
 }
 
