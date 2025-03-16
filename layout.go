@@ -88,18 +88,22 @@ func (c *Context) layoutNext() image.Rectangle {
 	r := image.Rect(layout.position.X, layout.position.Y, layout.position.X, layout.position.Y)
 
 	// size
-	r.Max.X = r.Min.X + layout.widths[layout.itemIndex%len(layout.widths)]
-	r.Max.Y = r.Min.Y + layout.heights[layout.itemIndex/len(layout.widths)]
-	if r.Dx() == 0 {
+	w := layout.widths[layout.itemIndex%len(layout.widths)]
+	h := layout.heights[layout.itemIndex/len(layout.widths)]
+	switch {
+	default:
+		r.Max.X = r.Min.X + w
+	case w == 0:
 		r.Max.X = r.Min.X + c.style.size.X + c.style.padding*2
-	}
-	if r.Dy() == 0 {
-		r.Max.Y = r.Min.Y + c.style.size.Y + c.style.padding*2
-	}
-	if r.Dx() < 0 {
+	case w < 0:
 		r.Max.X += layout.body.Dx() - r.Min.X + 1
 	}
-	if r.Dy() < 0 {
+	switch {
+	default:
+		r.Max.Y = r.Min.Y + h
+	case h == 0:
+		r.Max.Y = r.Min.Y + c.style.size.Y + c.style.padding*2
+	case h < 0:
 		r.Max.Y += layout.body.Dy() - r.Min.Y + 1
 	}
 
