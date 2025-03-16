@@ -36,7 +36,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 
 		// labels + buttons
 		if ctx.Header("Test Buttons", true) != 0 {
-			ctx.SetGridLayout([]int{100, -110, -1}, nil)
+			ctx.SetGridLayout([]int{100, -1, -1}, nil)
 			ctx.Label("Test buttons 1:")
 			if ctx.Button("Button 1") != 0 {
 				g.writeLog("Pressed button 1")
@@ -104,7 +104,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 
 		// background color sliders
 		if ctx.Header("Background Color", true) != 0 {
-			ctx.SetGridLayout([]int{-78, -1}, []int{74})
+			ctx.SetGridLayout([]int{-1, 78}, []int{74})
 			// sliders
 			ctx.Division(func() {
 				ctx.SetGridLayout([]int{46, -1}, nil)
@@ -161,7 +161,7 @@ func (g *Game) logWindow(ctx *debugui.Context) {
 		ctx.Division(func() {
 			// input textbox + submit button
 			var submitted bool
-			ctx.SetGridLayout([]int{-70, -1}, nil)
+			ctx.SetGridLayout([]int{-1, 70}, nil)
 			if ctx.TextBox(&g.logSubmitBuf)&debugui.ResponseSubmit != 0 {
 				ctx.SetFocus()
 				submitted = true

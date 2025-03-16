@@ -46,17 +46,6 @@ type drawCommand struct {
 	f func(screen *ebiten.Image)
 }
 
-type layout struct {
-	body      image.Rectangle
-	position  image.Point
-	max       image.Point
-	widths    []int
-	heights   []int
-	itemIndex int
-	nextRowY  int
-	indent    int
-}
-
 type command struct {
 	typ  int
 	idx  int
