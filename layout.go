@@ -45,8 +45,8 @@ func (c *Context) SetGridLayout(widths []int, heights []int) {
 	}
 	copy(layout.widths, widths)
 	layout.widths = layout.widths[:len(widths)]
-	if len(layout.heights) == 0 {
-		layout.heights = append(layout.heights, 0) // TODO: This should be -1?
+	if len(layout.widths) == 0 {
+		layout.widths = append(layout.widths, 0)
 	}
 
 	if len(layout.heights) < len(heights) {
@@ -54,8 +54,8 @@ func (c *Context) SetGridLayout(widths []int, heights []int) {
 	}
 	copy(layout.heights, heights)
 	layout.heights = layout.heights[:len(heights)]
-	if len(layout.widths) == 0 {
-		layout.widths = append(layout.widths, 0)
+	if len(layout.heights) == 0 {
+		layout.heights = append(layout.heights, 0) // TODO: This should be -1?
 	}
 
 	layout.position = image.Pt(layout.indent, layout.nextRowY)
@@ -64,6 +64,12 @@ func (c *Context) SetGridLayout(widths []int, heights []int) {
 
 func (c *Context) layoutNext() image.Rectangle {
 	layout := c.layout()
+	if len(layout.widths) == 0 {
+		panic("not reached")
+	}
+	if len(layout.heights) == 0 {
+		panic("not reached")
+	}
 
 	// If the item reaches the end of the row, start a new row with the same rule.
 	if layout.itemIndex == len(layout.widths)*len(layout.heights) {
@@ -76,12 +82,8 @@ func (c *Context) layoutNext() image.Rectangle {
 	r := image.Rect(layout.position.X, layout.position.Y, layout.position.X, layout.position.Y)
 
 	// size
-	if len(layout.widths) > 0 {
-		r.Max.X = r.Min.X + layout.widths[layout.itemIndex%len(layout.widths)]
-	}
-	if len(layout.heights) > 0 {
-		r.Max.Y = r.Min.Y + layout.heights[layout.itemIndex/len(layout.widths)]
-	}
+	r.Max.X = r.Min.X + layout.widths[layout.itemIndex%len(layout.widths)]
+	r.Max.Y = r.Min.Y + layout.heights[layout.itemIndex/len(layout.widths)]
 	if r.Dx() == 0 {
 		r.Max.X = r.Min.X + c.style.size.X + c.style.padding*2
 	}
