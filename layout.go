@@ -17,32 +17,36 @@ type layout struct {
 }
 
 func (l *layout) widthInPixels(style *style) int {
-	return l.sizeInPixels(l.widths, l.itemIndex%len(l.widths), style.size.X+style.padding*2, style)
+	return l.sizeInPixels(l.widths, l.itemIndex%len(l.widths), style.size.X+style.padding*2, l.body.Dx(), style)
 }
 
-func (l *layout) sizeInPixels(values []int, index int, defaultValue int, style *style) int {
-	v := values[index]
-	if v > 0 {
-		return v
+func (l *layout) heightInPixels(style *style) int {
+	return l.sizeInPixels(l.heights, l.itemIndex/len(l.widths), style.size.Y+style.padding*2, l.body.Dy(), style)
+}
+
+func (l *layout) sizeInPixels(sizes []int, index int, defaultSize int, entireSize int, style *style) int {
+	s := sizes[index]
+	if s > 0 {
+		return s
 	}
-	if v == 0 {
-		return defaultValue
+	if s == 0 {
+		return defaultSize
 	}
 
-	remain := l.body.Dx() - (len(values)-1)*style.spacing
+	remain := entireSize - (len(sizes)-1)*style.spacing
 	var denom int
-	for _, v := range values {
-		if v > 0 {
-			remain -= v
+	for _, s := range sizes {
+		if s > 0 {
+			remain -= s
 		}
-		if v == 0 {
-			remain -= defaultValue
+		if s == 0 {
+			remain -= defaultSize
 		}
-		if v < 0 {
-			denom += -v
+		if s < 0 {
+			denom += -s
 		}
 	}
-	return int(float64(remain) * -float64(v) / float64(denom))
+	return int(float64(remain) * -float64(s) / float64(denom))
 }
 
 func (c *Context) pushLayout(body image.Rectangle, scroll image.Point) {
@@ -129,13 +133,7 @@ func (c *Context) layoutNext() image.Rectangle {
 
 	// size
 	r.Max.X = r.Min.X + layout.widthInPixels(c.style)
-	r.Max.Y = r.Min.Y + layout.heights[layout.itemIndex/len(layout.widths)]
-	if r.Dy() == 0 {
-		r.Max.Y = r.Min.Y + c.style.size.Y + c.style.padding*2
-	}
-	if r.Dy() < 0 {
-		r.Max.Y += layout.body.Dy() - r.Min.Y + 1
-	}
+	r.Max.Y = r.Min.Y + layout.heightInPixels(c.style)
 
 	layout.itemIndex++
 	// update position

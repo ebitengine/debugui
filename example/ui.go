@@ -149,7 +149,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 func (g *Game) logWindow(ctx *debugui.Context) {
 	ctx.Window("Log Window", image.Rect(350, 40, 650, 290), func(res debugui.Response, layout debugui.ContainerLayout) {
 		// output text panel
-		ctx.SetGridLayout([]int{-1}, []int{-25, 0})
+		ctx.SetGridLayout([]int{-1}, []int{-1, 0})
 		ctx.Panel("Log Output", func(layout debugui.ContainerLayout) {
 			ctx.SetGridLayout([]int{-1}, []int{-1})
 			ctx.Text(g.logBuf)
