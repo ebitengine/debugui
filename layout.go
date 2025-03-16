@@ -87,6 +87,17 @@ func (c *Context) layout() *layout {
 	return &c.layoutStack[len(c.layoutStack)-1]
 }
 
+// SetGridLayout sets the grid layout.
+// widths and heights are the sizes of each column and row.
+//
+// If a size is 0, the default size is used.
+// If a size is negative, the size represents the ratio of the remaining space.
+// For example, if widths is []int{100, -1}, the first column is 100 pixels and the second column takes the remaining space.
+// If widths is []int{100, -1, -2}, the first column is 100 pixels, the second column takes 1/3 of the remaining space, and the third column takes 2/3 of the remaining space.
+//
+// If widths or heights is nil, the default size is used. This is the same as []int{0}.
+//
+// When the number of items exceeds the number of grid cells, a new row is started with the same grid layout.
 func (c *Context) SetGridLayout(widths []int, heights []int) {
 	layout := c.layout()
 
