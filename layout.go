@@ -7,8 +7,10 @@ import "image"
 
 func (c *Context) pushLayout(body image.Rectangle, scroll image.Point) {
 	c.layoutStack = append(c.layoutStack, layout{
-		body: body.Sub(scroll),
-		max:  image.Pt(-0x1000000, -0x1000000),
+		body:    body.Sub(scroll),
+		max:     image.Pt(-0x1000000, -0x1000000),
+		widths:  []int{0},
+		heights: []int{0},
 	})
 	c.SetGridLayout(nil, nil)
 }
@@ -35,6 +37,10 @@ func (c *Context) Division(f func()) {
 		a.max.Y = max(a.max.Y, b.max.Y)
 		return 0
 	})
+}
+
+func (c *Context) layout() *layout {
+	return &c.layoutStack[len(c.layoutStack)-1]
 }
 
 func (c *Context) SetGridLayout(widths []int, heights []int) {

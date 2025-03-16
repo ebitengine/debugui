@@ -93,10 +93,6 @@ func (c *Context) checkClip(bounds image.Rectangle) int {
 	return clipPart
 }
 
-func (c *Context) layout() *layout {
-	return &c.layoutStack[len(c.layoutStack)-1]
-}
-
 func (c *Context) popContainer() {
 	c.containerStack = c.containerStack[:len(c.containerStack)-1]
 }
