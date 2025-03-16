@@ -126,7 +126,7 @@ func (c *Context) Text(text string) {
 	color := c.style.colors[ColorText]
 	c.LayoutColumn(func() {
 		var endIdx, p int
-		c.SetLayoutRow([]int{-1}, lineHeight())
+		c.SetGridLayout([]int{-1}, []int{lineHeight()})
 		for endIdx < len(text) {
 			c.control(0, 0, func(bounds image.Rectangle) Response {
 				w := 0
@@ -405,7 +405,7 @@ func (c *Context) header(label string, idStr string, istreenode bool, opt option
 	}
 
 	_, toggled := c.toggledIDs[id]
-	c.SetLayoutRow([]int{-1}, 0)
+	c.SetGridLayout([]int{-1}, nil)
 
 	var expanded bool
 	if (opt & optionExpanded) != 0 {

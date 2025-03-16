@@ -6,12 +6,11 @@ package debugui
 import "image"
 
 func (c *Context) pushLayout(body image.Rectangle, scroll image.Point) {
-	// push()
 	c.layoutStack = append(c.layoutStack, layout{
 		body: body.Sub(scroll),
 		max:  image.Pt(-0x1000000, -0x1000000),
 	})
-	c.SetLayoutRow([]int{0}, 0)
+	c.SetGridLayout([]int{0}, nil)
 }
 
 func (c *Context) LayoutColumn(f func()) {
@@ -30,7 +29,7 @@ func (c *Context) LayoutColumn(f func()) {
 	})
 }
 
-func (c *Context) SetLayoutRow(widths []int, height int) {
+func (c *Context) SetGridLayout(widths []int, heights []int) {
 	layout := c.layout()
 
 	if len(layout.widths) < len(widths) {
@@ -38,9 +37,20 @@ func (c *Context) SetLayoutRow(widths []int, height int) {
 	}
 	copy(layout.widths, widths)
 	layout.widths = layout.widths[:len(widths)]
+	if len(layout.heights) == 0 {
+		layout.heights = append(layout.heights, 0) // TODO: This should be -1?
+	}
+
+	if len(layout.heights) < len(heights) {
+		layout.heights = append(layout.heights, make([]int, len(heights)-len(layout.heights))...)
+	}
+	copy(layout.heights, heights)
+	layout.heights = layout.heights[:len(heights)]
+	if len(layout.widths) == 0 {
+		layout.widths = append(layout.widths, 0)
+	}
 
 	layout.position = image.Pt(layout.indent, layout.nextRowY)
-	layout.height = height
 	layout.itemIndex = 0
 }
 
@@ -48,8 +58,10 @@ func (c *Context) layoutNext() image.Rectangle {
 	layout := c.layout()
 
 	// If the item reaches the end of the row, start a new row with the same rule.
-	if layout.itemIndex == len(layout.widths) {
-		c.SetLayoutRow(layout.widths, layout.height)
+	if layout.itemIndex == len(layout.widths)*len(layout.heights) {
+		c.SetGridLayout(layout.widths, layout.heights)
+	} else if layout.itemIndex%len(layout.widths) == 0 {
+		layout.position = image.Pt(layout.indent, layout.nextRowY)
 	}
 
 	// position
@@ -57,9 +69,11 @@ func (c *Context) layoutNext() image.Rectangle {
 
 	// size
 	if len(layout.widths) > 0 {
-		r.Max.X = r.Min.X + layout.widths[layout.itemIndex]
+		r.Max.X = r.Min.X + layout.widths[layout.itemIndex%len(layout.widths)]
 	}
-	r.Max.Y = r.Min.Y + layout.height
+	if len(layout.heights) > 0 {
+		r.Max.Y = r.Min.Y + layout.heights[layout.itemIndex/len(layout.widths)]
+	}
 	if r.Dx() == 0 {
 		r.Max.X = r.Min.X + c.style.size.X + c.style.padding*2
 	}
@@ -74,7 +88,6 @@ func (c *Context) layoutNext() image.Rectangle {
 	}
 
 	layout.itemIndex++
-
 	// update position
 	layout.position.X += r.Dx() + c.style.spacing
 	layout.nextRowY = max(layout.nextRowY, r.Max.Y+c.style.spacing)

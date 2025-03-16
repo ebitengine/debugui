@@ -49,9 +49,9 @@ type drawCommand struct {
 type layout struct {
 	body      image.Rectangle
 	position  image.Point
-	height    int
 	max       image.Point
 	widths    []int
+	heights   []int
 	itemIndex int
 	nextRowY  int
 	indent    int
