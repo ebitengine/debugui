@@ -10,7 +10,15 @@ func (c *Context) pushLayout(body image.Rectangle, scroll image.Point) {
 		body: body.Sub(scroll),
 		max:  image.Pt(-0x1000000, -0x1000000),
 	})
-	c.SetGridLayout([]int{0}, nil)
+	c.SetGridLayout(nil, nil)
+}
+
+func (c *Context) popLayout() {
+	cnt := c.currentContainer()
+	layout := c.layout()
+	cnt.layout.ContentSize.X = layout.max.X - layout.body.Min.X
+	cnt.layout.ContentSize.Y = layout.max.Y - layout.body.Min.Y
+	c.layoutStack = c.layoutStack[:len(c.layoutStack)-1]
 }
 
 func (c *Context) LayoutColumn(f func()) {
