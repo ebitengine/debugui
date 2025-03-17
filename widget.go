@@ -10,7 +10,7 @@ import (
 
 const idSeparator = "\x00"
 
-func (c *Context) Button(label string) Response {
+func (c *Context) Button(label string) bool {
 	label, idStr, _ := strings.Cut(label, idSeparator)
 	return c.button(label, idStr, optionAlignCenter)
 }
@@ -19,11 +19,11 @@ func (c *Context) TextBox(buf *string) Response {
 	return c.textBox(buf, 0)
 }
 
-func (c *Context) Slider(value *float64, lo, hi float64, step float64, digits int) Response {
+func (c *Context) Slider(value *float64, lo, hi float64, step float64, digits int) bool {
 	return c.slider(value, lo, hi, step, digits, optionAlignCenter)
 }
 
-func (c *Context) Number(value *float64, step float64, digits int) Response {
+func (c *Context) Number(value *float64, step float64, digits int) bool {
 	return c.number(value, step, digits, optionAlignCenter)
 }
 

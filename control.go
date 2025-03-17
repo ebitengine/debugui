@@ -152,7 +152,7 @@ func (c *Context) Label(text string) {
 	})
 }
 
-func (c *Context) button(label string, idStr string, opt option) Response {
+func (c *Context) button(label string, idStr string, opt option) bool {
 	id := c.idFromString(idStr)
 	return c.control(id, opt, func(bounds image.Rectangle) Response {
 		var res Response
@@ -166,10 +166,10 @@ func (c *Context) button(label string, idStr string, opt option) Response {
 			c.drawControlText(label, bounds, ColorText, opt)
 		}
 		return res
-	})
+	}) != 0
 }
 
-func (c *Context) Checkbox(label string, state *bool) Response {
+func (c *Context) Checkbox(label string, state *bool) bool {
 	id := c.idFromString(fmt.Sprintf("%p", state))
 
 	return c.control(id, 0, func(bounds image.Rectangle) Response {
@@ -189,7 +189,7 @@ func (c *Context) Checkbox(label string, state *bool) Response {
 		bounds = image.Rect(bounds.Min.X+box.Dx(), bounds.Min.Y, bounds.Max.X, bounds.Max.Y)
 		c.drawControlText(label, bounds, ColorText, 0)
 		return res
-	})
+	}) != 0
 }
 
 func (c *Context) textField(id controlID) *textinput.Field {
@@ -298,14 +298,14 @@ func formatNumber(v float64, digits int) string {
 	return fmt.Sprintf("%."+strconv.Itoa(digits)+"f", v)
 }
 
-func (c *Context) slider(value *float64, low, high, step float64, digits int, opt option) Response {
+func (c *Context) slider(value *float64, low, high, step float64, digits int, opt option) bool {
 	last := *value
 	v := last
 	id := c.idFromString(fmt.Sprintf("%p", value))
 
 	// handle text input mode
 	if c.numberTextBox(&v, id) {
-		return 0
+		return false
 	}
 
 	// handle normal mode
@@ -338,16 +338,16 @@ func (c *Context) slider(value *float64, low, high, step float64, digits int, op
 		c.drawControlText(text, bounds, ColorText, opt)
 
 		return res
-	})
+	}) != 0
 }
 
-func (c *Context) number(value *float64, step float64, digits int, opt option) Response {
+func (c *Context) number(value *float64, step float64, digits int, opt option) bool {
 	id := c.idFromString(fmt.Sprintf("%p", value))
 	last := *value
 
 	// handle text input mode
 	if c.numberTextBox(value, id) {
-		return 0
+		return false
 	}
 
 	// handle normal mode
@@ -369,7 +369,7 @@ func (c *Context) number(value *float64, step float64, digits int, opt option) R
 		c.drawControlText(text, bounds, ColorText, opt)
 
 		return res
-	})
+	}) != 0
 }
 
 func (c *Context) header(label string, idStr string, istreenode bool, opt option, f func()) {

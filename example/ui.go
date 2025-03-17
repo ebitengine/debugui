@@ -38,17 +38,17 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 		ctx.Header("Test Buttons", true, func() {
 			ctx.SetGridLayout([]int{100, -1, -1}, nil)
 			ctx.Label("Test buttons 1:")
-			if ctx.Button("Button 1") != 0 {
+			if ctx.Button("Button 1") {
 				g.writeLog("Pressed button 1")
 			}
-			if ctx.Button("Button 2") != 0 {
+			if ctx.Button("Button 2") {
 				g.writeLog("Pressed button 2")
 			}
 			ctx.Label("Test buttons 2:")
-			if ctx.Button("Button 3") != 0 {
+			if ctx.Button("Button 3") {
 				g.writeLog("Pressed button 3")
 			}
-			if ctx.Button("Popup") != 0 {
+			if ctx.Button("Popup") {
 				ctx.OpenPopup("Test Popup")
 			}
 			ctx.Popup("Test Popup", func(layout debugui.ContainerLayout) {
@@ -67,26 +67,26 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 						ctx.Label("World")
 					})
 					ctx.TreeNode("Test 1b", func() {
-						if ctx.Button("Button 1") != 0 {
+						if ctx.Button("Button 1") {
 							g.writeLog("Pressed button 1")
 						}
-						if ctx.Button("Button 2") != 0 {
+						if ctx.Button("Button 2") {
 							g.writeLog("Pressed button 2")
 						}
 					})
 				})
 				ctx.TreeNode("Test 2", func() {
 					ctx.SetGridLayout([]int{54, 54}, nil)
-					if ctx.Button("Button 3") != 0 {
+					if ctx.Button("Button 3") {
 						g.writeLog("Pressed button 3")
 					}
-					if ctx.Button("Button 4") != 0 {
+					if ctx.Button("Button 4") {
 						g.writeLog("Pressed button 4")
 					}
-					if ctx.Button("Button 5") != 0 {
+					if ctx.Button("Button 5") {
 						g.writeLog("Pressed button 5")
 					}
-					if ctx.Button("Button 6") != 0 {
+					if ctx.Button("Button 6") {
 						g.writeLog("Pressed button 6")
 					}
 				})
@@ -166,7 +166,7 @@ func (g *Game) logWindow(ctx *debugui.Context) {
 				ctx.SetFocus()
 				submitted = true
 			}
-			if ctx.Button("Submit") != 0 {
+			if ctx.Button("Submit") {
 				submitted = true
 			}
 			if submitted {
@@ -181,7 +181,7 @@ func (g *Game) buttonWindows(ctx *debugui.Context) {
 	ctx.Window("Button Windows", image.Rect(350, 300, 650, 500), func(layout debugui.ContainerLayout) {
 		ctx.SetGridLayout([]int{-1, -1, -1, -1}, nil)
 		for i := 0; i < 100; i++ {
-			if ctx.Button("Button\x00"+fmt.Sprintf("%d", i)) != 0 {
+			if ctx.Button("Button\x00" + fmt.Sprintf("%d", i)) {
 				g.writeLog(fmt.Sprintf("Pressed button %d in Button Window", i))
 			}
 		}
