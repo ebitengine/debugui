@@ -5,7 +5,6 @@ package debugui
 
 import (
 	"image"
-	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2/exp/textinput"
 )
@@ -35,17 +34,6 @@ type ContainerLayout struct {
 
 	// ScrollOffset is the offset of the scroll.
 	ScrollOffset image.Point
-}
-
-type style struct {
-	size          image.Point
-	padding       int
-	spacing       int
-	indent        int
-	titleHeight   int
-	scrollbarSize int
-	thumbSize     int
-	colors        [ColorMax + 1]color.RGBA
 }
 
 type Context struct {

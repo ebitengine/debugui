@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// SPDX-FileCopyrightText: 2024 The Ebitengine Authors
+// SPDX-FileCopyrightText: 2025 The Ebitengine Authors
 
 package debugui
 
@@ -8,9 +8,33 @@ import (
 	"image/color"
 )
 
+type style struct {
+	size          image.Point
+	padding       int
+	spacing       int
+	indent        int
+	titleHeight   int
+	scrollbarSize int
+	thumbSize     int
+	colors        [ColorMax + 1]color.RGBA
+}
+
 const (
-	realFmt   = "%.3g"
-	sliderFmt = "%.2f"
+	ColorText = iota
+	ColorBorder
+	ColorWindowBG
+	ColorTitleBG
+	ColorTitleText
+	ColorPanelBG
+	ColorButton
+	ColorButtonHover
+	ColorButtonFocus
+	ColorBase
+	ColorBaseHover
+	ColorBaseFocus
+	ColorScrollBase
+	ColorScrollThumb
+	ColorMax = ColorScrollThumb
 )
 
 var defaultStyle style = style{
@@ -38,7 +62,3 @@ var defaultStyle style = style{
 		{30, 30, 30, 255},    // MU_COLOR_SCROLLTHUMB
 	},
 }
-
-var (
-	unclippedRect = image.Rect(0, 0, 0x1000000, 0x1000000)
-)

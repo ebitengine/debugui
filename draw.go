@@ -17,6 +17,15 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
+const (
+	clipPart = 1 + iota
+	clipAll
+)
+
+var (
+	unclippedRect = image.Rect(0, 0, 0x1000000, 0x1000000)
+)
+
 var fontFace = text.NewGoXFace(bitmapfont.Face)
 
 func DrawText(dst *ebiten.Image, str string, op *text.DrawOptions) {

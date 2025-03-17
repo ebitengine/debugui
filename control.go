@@ -16,6 +16,37 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
+const (
+	realFmt   = "%.3g"
+	sliderFmt = "%.2f"
+)
+
+type Response int
+
+const (
+	ResponseActive Response = (1 << 0)
+	ResponseSubmit Response = (1 << 1)
+	ResponseChange Response = (1 << 2)
+)
+
+type option int
+
+const (
+	optionAlignCenter option = (1 << iota)
+	optionAlignRight
+	optionNoInteract
+	optionNoFrame
+	optionNoResize
+	optionNoScroll
+	optionNoClose
+	optionNoTitle
+	optionHoldFocus
+	optionAutoSize
+	optionPopup
+	optionClosed
+	optionExpanded
+)
+
 func (c *Context) inHoverRoot() bool {
 	for i := len(c.containerStack) - 1; i >= 0; i-- {
 		if c.containerStack[i] == c.hoverRoot {
@@ -533,12 +564,12 @@ func (c *Context) window(title string, rect image.Rectangle, opt option, f func(
 
 	// push container to roots list and push head command
 	c.rootList = append(c.rootList, cnt)
-	cnt.headIdx = c.pushJump(-1)
+	cnt.headIdx = c.appendJumpCommand(-1)
 	defer func() {
 		// push tail 'goto' jump command and set head 'skip' command. the final steps
 		// on initing these are done in End
 		cnt := c.currentContainer()
-		cnt.tailIdx = c.pushJump(-1)
+		cnt.tailIdx = c.appendJumpCommand(-1)
 		c.commandList[cnt.headIdx].jump.dstIdx = len(c.commandList) //- 1
 	}()
 
