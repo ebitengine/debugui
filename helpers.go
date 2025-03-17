@@ -5,6 +5,7 @@ package debugui
 
 import (
 	"fmt"
+	"hash/fnv"
 	"image"
 	"slices"
 	"sort"
@@ -16,19 +17,6 @@ import (
 
 func clamp[T int | float64](x, a, b T) T {
 	return min(b, max(a, x))
-}
-
-func fnv1a(data []byte) controlID {
-	const (
-		// hashInitial is the initial value for the FNV-1a hash.
-		// https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
-		hashInitial = 14695981039346656037
-	)
-	var h controlID = hashInitial
-	for _, b := range data {
-		h = (h ^ controlID(b)) * 1099511628211
-	}
-	return h
 }
 
 func (c *Context) idFromGlobalUniqueString(str string) controlID {
@@ -49,7 +37,11 @@ func (c *Context) idFromBytes(data []byte) controlID {
 		return 0
 	}
 
-	id := fnv1a(data)
+	h := fnv.New64a()
+	if _, err := h.Write(data); err != nil {
+		panic(err)
+	}
+	id := controlID(h.Sum64())
 	c.lastID = id
 	return id
 }
