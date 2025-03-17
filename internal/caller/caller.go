@@ -17,8 +17,8 @@ var (
 	debugUIFileDirOnce sync.Once
 )
 
-// FirstCaller returns the file and line number of the first caller outside of DebugUI module.
-func FirstCaller() (file string, line int) {
+// Caller returns the file and line number of the caller outside of this module.
+func Caller() (file string, line int) {
 	debugUIFileDirOnce.Do(func() {
 		pkg, err := build.Default.Import("github.com/ebitengine/debugui", "", build.FindOnly)
 		if err != nil {
