@@ -674,7 +674,8 @@ func (c *Context) window(title string, rect image.Rectangle, opt option, f func(
 }
 
 func (c *Context) OpenPopup(name string) {
-	cnt := c.Container(name)
+	id := c.idFromGlobalUniqueString(name)
+	cnt := c.container(id, 0)
 	// set as hover root so popup isn't closed in begin_window_ex()
 	c.nextHoverRoot = cnt
 	c.hoverRoot = c.nextHoverRoot

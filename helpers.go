@@ -117,11 +117,6 @@ func (c *Context) container(id controlID, opt option) *container {
 	return cnt
 }
 
-func (c *Context) Container(name string) *container {
-	id := c.idFromGlobalUniqueString(name)
-	return c.container(id, 0)
-}
-
 func (c *Context) bringToFront(cnt *container) {
 	c.lastZIndex++
 	cnt.zIndex = c.lastZIndex
