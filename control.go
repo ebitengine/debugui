@@ -554,7 +554,7 @@ func (c *Context) pushContainerBodyLayout(cnt *container, body image.Rectangle, 
 }
 
 func (c *Context) window(title string, rect image.Rectangle, opt option, f func(res Response, layout ContainerLayout)) {
-	id := c.idFromString(title)
+	id := c.idFromGlobalUniqueString(title)
 
 	cnt := c.container(id, opt)
 	if cnt == nil || !cnt.open {
@@ -694,7 +694,7 @@ func (c *Context) Popup(name string, f func(res Response, layout ContainerLayout
 }
 
 func (c *Context) panel(name string, opt option, f func(layout ContainerLayout)) {
-	id := c.idFromString(name)
+	id := c.idFromGlobalUniqueString(name)
 
 	cnt := c.container(id, opt)
 	cnt.layout.Bounds = c.layoutNext()

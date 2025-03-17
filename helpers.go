@@ -26,15 +26,20 @@ func fnv1a(init controlID, data []byte) controlID {
 	return h
 }
 
+func (c *Context) idFromGlobalUniqueString(str string) controlID {
+	return c.idFromBytes([]byte(str))
+}
+
 // idFromString returns a hash value based on the caller's file and line number.
 func (c *Context) idFromString(str string) controlID {
-	var data []byte
 	file, line := caller.FirstCaller()
 	if len(str) > 0 {
-		data = []byte(str)
-	} else {
-		data = []byte(fmt.Sprintf("%s:%d", file, line))
+		return c.idFromBytes([]byte(fmt.Sprintf("%s:%d:%s", file, line, str)))
 	}
+	return c.idFromBytes([]byte(fmt.Sprintf("%s:%d", file, line)))
+}
+
+func (c *Context) idFromBytes(data []byte) controlID {
 	if len(data) == 0 {
 		return 0
 	}
@@ -113,7 +118,7 @@ func (c *Context) container(id controlID, opt option) *container {
 }
 
 func (c *Context) Container(name string) *container {
-	id := c.idFromString(name)
+	id := c.idFromGlobalUniqueString(name)
 	return c.container(id, 0)
 }
 
