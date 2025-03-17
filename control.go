@@ -380,7 +380,8 @@ func (c *Context) number(value *float64, step float64, digits int, opt option) R
 	})
 }
 
-func (c *Context) header(label string, id controlID, istreenode bool, opt option) Response {
+func (c *Context) header(label string, idStr string, istreenode bool, opt option, f func()) {
+	id := c.idFromString(idStr)
 	_, toggled := c.toggledIDs[id]
 	c.SetGridLayout([]int{-1}, nil)
 
@@ -391,7 +392,7 @@ func (c *Context) header(label string, id controlID, istreenode bool, opt option
 		expanded = toggled
 	}
 
-	return c.control(id, 0, func(bounds image.Rectangle) Response {
+	if c.control(id, 0, func(bounds image.Rectangle) Response {
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.focus == id {
 			if toggled {
 				delete(c.toggledIDs, id)
@@ -429,20 +430,19 @@ func (c *Context) header(label string, id controlID, istreenode bool, opt option
 			return ResponseActive
 		}
 		return 0
-	})
+	}) != 0 {
+		f()
+	}
 }
 
-func (c *Context) treeNode(label string, idStr string, opt option, f func(res Response)) {
-	id := c.idFromString(idStr)
-	res := c.header(label, id, true, opt)
-	if res&ResponseActive == 0 {
-		return
-	}
-	c.layout().indent += c.style.indent
-	defer func() {
-		c.layout().indent -= c.style.indent
-	}()
-	f(res)
+func (c *Context) treeNode(label string, idStr string, opt option, f func()) {
+	c.header(label, idStr, true, opt, func() {
+		c.layout().indent += c.style.indent
+		defer func() {
+			c.layout().indent -= c.style.indent
+		}()
+		f()
+	})
 }
 
 // x = x, y = y, w = w, h = h

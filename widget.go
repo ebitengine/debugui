@@ -27,17 +27,16 @@ func (c *Context) Number(value *float64, step float64, digits int) Response {
 	return c.number(value, step, digits, optionAlignCenter)
 }
 
-func (c *Context) Header(label string, expanded bool) Response {
+func (c *Context) Header(label string, expanded bool, f func()) {
 	var opt option
 	if expanded {
 		opt |= optionExpanded
 	}
 	label, idStr, _ := strings.Cut(label, idSeparator)
-	id := c.idFromString(idStr)
-	return c.header(label, id, false, opt)
+	c.header(label, idStr, false, opt, f)
 }
 
-func (c *Context) TreeNode(label string, f func(res Response)) {
+func (c *Context) TreeNode(label string, f func()) {
 	label, idStr, _ := strings.Cut(label, idSeparator)
 	c.treeNode(label, idStr, 0, f)
 }

@@ -26,16 +26,16 @@ func (g *Game) writeLog(text string) {
 func (g *Game) testWindow(ctx *debugui.Context) {
 	ctx.Window("Demo Window", image.Rect(40, 40, 340, 500), func(res debugui.Response, layout debugui.ContainerLayout) {
 		// window info
-		if ctx.Header("Window Info", false) != 0 {
+		ctx.Header("Window Info", false, func() {
 			ctx.SetGridLayout([]int{54, -1}, nil)
 			ctx.Label("Position:")
 			ctx.Label(fmt.Sprintf("%d, %d", layout.Bounds.Min.X, layout.Bounds.Min.Y))
 			ctx.Label("Size:")
 			ctx.Label(fmt.Sprintf("%d, %d", layout.Bounds.Dx(), layout.Bounds.Dy()))
-		}
+		})
 
 		// labels + buttons
-		if ctx.Header("Test Buttons", true) != 0 {
+		ctx.Header("Test Buttons", true, func() {
 			ctx.SetGridLayout([]int{100, -1, -1}, nil)
 			ctx.Label("Test buttons 1:")
 			if ctx.Button("Button 1") != 0 {
@@ -55,18 +55,18 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 				ctx.Button("Hello")
 				ctx.Button("World")
 			})
-		}
+		})
 
 		// tree
-		if ctx.Header("Tree and Text", true) != 0 {
+		ctx.Header("Tree and Text", true, func() {
 			ctx.SetGridLayout([]int{140, -1}, nil)
 			ctx.Division(func() {
-				ctx.TreeNode("Test 1", func(res debugui.Response) {
-					ctx.TreeNode("Test 1a", func(res debugui.Response) {
+				ctx.TreeNode("Test 1", func() {
+					ctx.TreeNode("Test 1a", func() {
 						ctx.Label("Hello")
 						ctx.Label("World")
 					})
-					ctx.TreeNode("Test 1b", func(res debugui.Response) {
+					ctx.TreeNode("Test 1b", func() {
 						if ctx.Button("Button 1") != 0 {
 							g.writeLog("Pressed button 1")
 						}
@@ -75,7 +75,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 						}
 					})
 				})
-				ctx.TreeNode("Test 2", func(res debugui.Response) {
+				ctx.TreeNode("Test 2", func() {
 					ctx.SetGridLayout([]int{54, 54}, nil)
 					if ctx.Button("Button 3") != 0 {
 						g.writeLog("Pressed button 3")
@@ -90,7 +90,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 						g.writeLog("Pressed button 6")
 					}
 				})
-				ctx.TreeNode("Test 3", func(res debugui.Response) {
+				ctx.TreeNode("Test 3", func() {
 					ctx.Checkbox("Checkbox 1", &g.checks[0])
 					ctx.Checkbox("Checkbox 2", &g.checks[1])
 					ctx.Checkbox("Checkbox 3", &g.checks[2])
@@ -100,10 +100,10 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 			ctx.Text("Lorem ipsum dolor sit amet, consectetur adipiscing " +
 				"elit. Maecenas lacinia, sem eu lacinia molestie, mi risus faucibus " +
 				"ipsum, eu varius magna felis a nulla.")
-		}
+		})
 
 		// background color sliders
-		if ctx.Header("Background Color", true) != 0 {
+		ctx.Header("Background Color", true, func() {
 			ctx.SetGridLayout([]int{-1, 78}, []int{74})
 			// sliders
 			ctx.Division(func() {
@@ -135,14 +135,14 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 				})
 				return 0
 			})
-		}
+		})
 
 		// Number
-		if ctx.Header("Number", true) != 0 {
+		ctx.Header("Number", true, func() {
 			ctx.SetGridLayout([]int{-1}, nil)
 			ctx.Number(&g.num1, 0.1, 2)
 			ctx.Slider(&g.num2, 0, 10, 0.1, 2)
-		}
+		})
 	})
 }
 
