@@ -18,8 +18,13 @@ func clamp[T int | float64](x, a, b T) T {
 	return min(b, max(a, x))
 }
 
-func fnv1a(init controlID, data []byte) controlID {
-	h := init
+func fnv1a(data []byte) controlID {
+	const (
+		// hashInitial is the initial value for the FNV-1a hash.
+		// https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
+		hashInitial = 14695981039346656037
+	)
+	var h controlID = hashInitial
 	for _, b := range data {
 		h = (h ^ controlID(b)) * 1099511628211
 	}
@@ -44,39 +49,9 @@ func (c *Context) idFromBytes(data []byte) controlID {
 		return 0
 	}
 
-	const (
-		// hashInitial is the initial value for the FNV-1a hash.
-		// https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
-		hashInitial = 14695981039346656037
-	)
-
-	id := fnv1a(hashInitial, data)
+	id := fnv1a(data)
 	c.lastID = id
 	return id
-}
-
-func (c *Context) pushClipRect(rect image.Rectangle) {
-	last := c.clipRect()
-	c.clipStack = append(c.clipStack, rect.Intersect(last))
-}
-
-func (c *Context) popClipRect() {
-	c.clipStack = c.clipStack[:len(c.clipStack)-1]
-}
-
-func (c *Context) clipRect() image.Rectangle {
-	return c.clipStack[len(c.clipStack)-1]
-}
-
-func (c *Context) checkClip(bounds image.Rectangle) int {
-	cr := c.clipRect()
-	if !bounds.Overlaps(cr) {
-		return clipAll
-	}
-	if bounds.In(cr) {
-		return 0
-	}
-	return clipPart
 }
 
 func (c *Context) popContainer() {

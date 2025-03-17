@@ -16,17 +16,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
-func (c *Context) drawFrame(rect image.Rectangle, colorid int) {
-	c.drawRect(rect, c.style.colors[colorid])
-	if colorid == ColorScrollBase || colorid == ColorScrollThumb || colorid == ColorTitleBG {
-		return
-	}
-	// draw border
-	if c.style.colors[ColorBorder].A != 0 {
-		c.drawBox(rect.Inset(-1), c.style.colors[ColorBorder])
-	}
-}
-
 func (c *Context) inHoverRoot() bool {
 	for i := len(c.containerStack) - 1; i >= 0; i-- {
 		if c.containerStack[i] == c.hoverRoot {
@@ -39,34 +28,6 @@ func (c *Context) inHoverRoot() bool {
 		}
 	}
 	return false
-}
-
-func (c *Context) drawControlFrame(id controlID, rect image.Rectangle, colorid int, opt option) {
-	if (opt & optionNoFrame) != 0 {
-		return
-	}
-	if c.focus == id {
-		colorid += 2
-	} else if c.hover == id {
-		colorid++
-	}
-	c.drawFrame(rect, colorid)
-}
-
-func (c *Context) drawControlText(str string, rect image.Rectangle, colorid int, opt option) {
-	var pos image.Point
-	tw := textWidth(str)
-	c.pushClipRect(rect)
-	pos.Y = rect.Min.Y + (rect.Dy()-lineHeight())/2
-	if (opt & optionAlignCenter) != 0 {
-		pos.X = rect.Min.X + (rect.Dx()-tw)/2
-	} else if (opt & optionAlignRight) != 0 {
-		pos.X = rect.Min.X + rect.Dx() - tw - c.style.padding
-	} else {
-		pos.X = rect.Min.X + c.style.padding
-	}
-	c.drawText(str, pos, c.style.colors[colorid])
-	c.popClipRect()
 }
 
 func (c *Context) mouseOver(rect image.Rectangle) bool {
