@@ -33,15 +33,7 @@ func (c *Context) Header(label string, expanded bool) Response {
 		opt |= optionExpanded
 	}
 	label, idStr, _ := strings.Cut(label, idSeparator)
-
-	var id controlID
-	if len(idStr) > 0 {
-		id = c.pushID([]byte(idStr))
-		defer c.popID()
-	} else if len(label) > 0 {
-		id = c.pushID([]byte(label))
-		defer c.popID()
-	}
+	id := c.idFromString(idStr)
 	return c.header(label, id, false, opt)
 }
 
@@ -51,8 +43,7 @@ func (c *Context) TreeNode(label string, f func(res Response)) {
 }
 
 func (c *Context) Window(title string, rect image.Rectangle, f func(res Response, layout ContainerLayout)) {
-	title, idStr, _ := strings.Cut(title, idSeparator)
-	c.window(title, idStr, rect, 0, f)
+	c.window(title, rect, 0, f)
 }
 
 func (c *Context) Panel(name string, f func(layout ContainerLayout)) {

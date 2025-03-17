@@ -116,7 +116,6 @@ type Context struct {
 	rootList       []*container
 	containerStack []*container
 	clipStack      []image.Rectangle
-	idStack        []controlID
 	layoutStack    []layout
 
 	// retained state pools

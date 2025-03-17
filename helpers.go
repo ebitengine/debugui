@@ -4,11 +4,12 @@
 package debugui
 
 import (
+	"fmt"
 	"image"
 	"slices"
 	"sort"
-	"unsafe"
 
+	"github.com/ebitengine/debugui/internal/caller"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
@@ -25,19 +26,15 @@ func fnv1a(init controlID, data []byte) controlID {
 	return h
 }
 
-func ptrToBytes(ptr unsafe.Pointer) []byte {
-	slice := unsafe.Slice((*byte)(unsafe.Pointer(&ptr)), unsafe.Sizeof(ptr))
-
-	// `slice` points to `ptr`, which is currently allocated on the stack.
-	// after this function returns, `slice` will point to freed memory, so
-	// we need to copy it to the heap for this to be safe
-	heapSlice := make([]byte, len(slice))
-	copy(heapSlice, slice)
-	return heapSlice
-}
-
-// idFromBytes returns a hash value based on the data and the last ID on the stack.
-func (c *Context) idFromBytes(data []byte) controlID {
+// idFromString returns a hash value based on the caller's file and line number.
+func (c *Context) idFromString(str string) controlID {
+	var data []byte
+	file, line := caller.FirstCaller()
+	if len(str) > 0 {
+		data = []byte(str)
+	} else {
+		data = []byte(fmt.Sprintf("%s:%d", file, line))
+	}
 	if len(data) == 0 {
 		return 0
 	}
@@ -48,23 +45,9 @@ func (c *Context) idFromBytes(data []byte) controlID {
 		hashInitial = 14695981039346656037
 	)
 
-	var init controlID = hashInitial
-	if len(c.idStack) > 0 {
-		init = c.idStack[len(c.idStack)-1]
-	}
-	id := fnv1a(init, data)
+	id := fnv1a(hashInitial, data)
 	c.lastID = id
 	return id
-}
-
-func (c *Context) pushID(data []byte) controlID {
-	id := c.idFromBytes(data)
-	c.idStack = append(c.idStack, id)
-	return id
-}
-
-func (c *Context) popID() {
-	c.idStack = c.idStack[:len(c.idStack)-1]
 }
 
 func (c *Context) pushClipRect(rect image.Rectangle) {
@@ -130,7 +113,7 @@ func (c *Context) container(id controlID, opt option) *container {
 }
 
 func (c *Context) Container(name string) *container {
-	id := c.idFromBytes([]byte(name))
+	id := c.idFromString(name)
 	return c.container(id, 0)
 }
 
@@ -176,9 +159,6 @@ func (c *Context) end() {
 	}
 	if len(c.clipStack) > 0 {
 		panic("debugui: clip stack not empty")
-	}
-	if len(c.idStack) > 0 {
-		panic("debugui: id stack not empty")
 	}
 	if len(c.layoutStack) > 0 {
 		panic("debugui: layout stack not empty")

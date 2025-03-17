@@ -10,7 +10,6 @@ import (
 	"os"
 	"strconv"
 	"unicode/utf8"
-	"unsafe"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/exp/textinput"
@@ -111,8 +110,7 @@ func (c *Context) updateControl(id controlID, rect image.Rectangle, opt option) 
 }
 
 func (c *Context) Control(idStr string, f func(bounds image.Rectangle) Response) Response {
-	id := c.pushID([]byte(idStr))
-	defer c.popID()
+	id := c.idFromString(idStr)
 	return c.control(id, 0, f)
 }
 
@@ -163,14 +161,7 @@ func (c *Context) Label(text string) {
 }
 
 func (c *Context) button(label string, idStr string, opt option) Response {
-	var id controlID
-	if len(idStr) > 0 {
-		id = c.pushID([]byte(idStr))
-		defer c.popID()
-	} else if len(label) > 0 {
-		id = c.pushID([]byte(label))
-		defer c.popID()
-	}
+	id := c.idFromString(idStr)
 	return c.control(id, opt, func(bounds image.Rectangle) Response {
 		var res Response
 		// handle click
@@ -187,8 +178,7 @@ func (c *Context) button(label string, idStr string, opt option) Response {
 }
 
 func (c *Context) Checkbox(label string, state *bool) Response {
-	id := c.pushID(ptrToBytes(unsafe.Pointer(state)))
-	defer c.popID()
+	id := c.idFromString(fmt.Sprintf("%p", state))
 
 	return c.control(id, 0, func(bounds image.Rectangle) Response {
 		var res Response
@@ -308,9 +298,7 @@ func (c *Context) numberTextBox(value *float64, id controlID) bool {
 }
 
 func (c *Context) textBox(buf *string, opt option) Response {
-	id := c.pushID(ptrToBytes(unsafe.Pointer(buf)))
-	defer c.popID()
-
+	id := c.idFromString(fmt.Sprintf("%p", buf))
 	return c.textBoxRaw(buf, id, opt)
 }
 
@@ -321,8 +309,7 @@ func formatNumber(v float64, digits int) string {
 func (c *Context) slider(value *float64, low, high, step float64, digits int, opt option) Response {
 	last := *value
 	v := last
-	id := c.pushID(ptrToBytes(unsafe.Pointer(value)))
-	defer c.popID()
+	id := c.idFromString(fmt.Sprintf("%p", value))
 
 	// handle text input mode
 	if c.numberTextBox(&v, id) {
@@ -363,8 +350,7 @@ func (c *Context) slider(value *float64, low, high, step float64, digits int, op
 }
 
 func (c *Context) number(value *float64, step float64, digits int, opt option) Response {
-	id := c.pushID(ptrToBytes(unsafe.Pointer(value)))
-	defer c.popID()
+	id := c.idFromString(fmt.Sprintf("%p", value))
 	last := *value
 
 	// handle text input mode
@@ -447,14 +433,7 @@ func (c *Context) header(label string, id controlID, istreenode bool, opt option
 }
 
 func (c *Context) treeNode(label string, idStr string, opt option, f func(res Response)) {
-	var id controlID
-	if len(idStr) > 0 {
-		id = c.pushID([]byte(idStr))
-		defer c.popID()
-	} else if len(label) > 0 {
-		id = c.pushID([]byte(label))
-		defer c.popID()
-	}
+	id := c.idFromString(idStr)
 	res := c.header(label, id, true, opt)
 	if res&ResponseActive == 0 {
 		return
@@ -476,7 +455,7 @@ func (c *Context) scrollbarVertical(cnt *container, b image.Rectangle, cs image.
 		base.Max.X = base.Min.X + c.style.scrollbarSize
 
 		// handle input
-		id := c.idFromBytes([]byte("!scrollbar" + "y"))
+		id := c.idFromString("!scrollbar" + "y")
 		c.updateControl(id, base, 0)
 		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 			cnt.layout.ScrollOffset.Y += c.mouseDelta().Y * cs.Y / base.Dy()
@@ -511,7 +490,7 @@ func (c *Context) scrollbarHorizontal(cnt *container, b image.Rectangle, cs imag
 		base.Max.Y = base.Min.Y + c.style.scrollbarSize
 
 		// handle input
-		id := c.idFromBytes([]byte("!scrollbar" + "x"))
+		id := c.idFromString("!scrollbar" + "x")
 		c.updateControl(id, base, 0)
 		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 			cnt.layout.ScrollOffset.X += c.mouseDelta().X * cs.X / base.Dx()
@@ -574,15 +553,8 @@ func (c *Context) pushContainerBodyLayout(cnt *container, body image.Rectangle, 
 	cnt.layout.BodyBounds = body
 }
 
-func (c *Context) window(title string, idStr string, rect image.Rectangle, opt option, f func(res Response, layout ContainerLayout)) {
-	var id controlID
-	if len(idStr) > 0 {
-		id = c.pushID([]byte(idStr))
-		defer c.popID()
-	} else if len(title) > 0 {
-		id = c.pushID([]byte(title))
-		defer c.popID()
-	}
+func (c *Context) window(title string, rect image.Rectangle, opt option, f func(res Response, layout ContainerLayout)) {
+	id := c.idFromString(title)
 
 	cnt := c.container(id, opt)
 	if cnt == nil || !cnt.open {
@@ -638,7 +610,7 @@ func (c *Context) window(title string, idStr string, rect image.Rectangle, opt o
 
 		// do title text
 		if (^opt & optionNoTitle) != 0 {
-			id := c.idFromBytes([]byte("!title"))
+			id := c.idFromString("!title")
 			r := image.Rect(tr.Min.X+tr.Dy(), tr.Min.Y, tr.Max.X, tr.Max.Y)
 			c.updateControl(id, r, opt)
 			c.drawControlText(title, r, ColorTitleText, opt)
@@ -650,7 +622,7 @@ func (c *Context) window(title string, idStr string, rect image.Rectangle, opt o
 
 		// do `close` button
 		if (^opt & optionNoClose) != 0 {
-			id := c.idFromBytes([]byte("!close"))
+			id := c.idFromString("!close")
 			r := image.Rect(tr.Min.X, tr.Min.Y, tr.Min.X+tr.Dy(), tr.Max.Y)
 			icon := iconExpanded
 			if collapsed {
@@ -674,7 +646,7 @@ func (c *Context) window(title string, idStr string, rect image.Rectangle, opt o
 	// do `resize` handle
 	if (^opt & optionNoResize) != 0 {
 		sz := c.style.titleHeight
-		id := c.idFromBytes([]byte("!resize"))
+		id := c.idFromString("!resize")
 		r := image.Rect(rect.Max.X-sz, rect.Max.Y-sz, rect.Max.X, rect.Max.Y)
 		c.updateControl(id, r, opt)
 		if id == c.focus && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
@@ -718,12 +690,11 @@ func (c *Context) OpenPopup(name string) {
 
 func (c *Context) Popup(name string, f func(res Response, layout ContainerLayout)) {
 	opt := optionPopup | optionAutoSize | optionNoResize | optionNoScroll | optionNoTitle | optionClosed
-	c.window(name, "", image.Rectangle{}, opt, f)
+	c.window(name, image.Rectangle{}, opt, f)
 }
 
 func (c *Context) panel(name string, opt option, f func(layout ContainerLayout)) {
-	id := c.pushID([]byte(name))
-	defer c.popID()
+	id := c.idFromString(name)
 
 	cnt := c.container(id, opt)
 	cnt.layout.Bounds = c.layoutNext()
