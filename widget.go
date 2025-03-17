@@ -41,7 +41,7 @@ func (c *Context) TreeNode(label string, f func()) {
 	c.treeNode(label, idStr, 0, f)
 }
 
-func (c *Context) Window(title string, rect image.Rectangle, f func(res Response, layout ContainerLayout)) {
+func (c *Context) Window(title string, rect image.Rectangle, f func(layout ContainerLayout)) {
 	c.window(title, rect, 0, f)
 }
 

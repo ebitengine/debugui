@@ -24,7 +24,7 @@ func (g *Game) writeLog(text string) {
 }
 
 func (g *Game) testWindow(ctx *debugui.Context) {
-	ctx.Window("Demo Window", image.Rect(40, 40, 340, 500), func(res debugui.Response, layout debugui.ContainerLayout) {
+	ctx.Window("Demo Window", image.Rect(40, 40, 340, 500), func(layout debugui.ContainerLayout) {
 		// window info
 		ctx.Header("Window Info", false, func() {
 			ctx.SetGridLayout([]int{54, -1}, nil)
@@ -51,7 +51,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 			if ctx.Button("Popup") != 0 {
 				ctx.OpenPopup("Test Popup")
 			}
-			ctx.Popup("Test Popup", func(res debugui.Response, layout debugui.ContainerLayout) {
+			ctx.Popup("Test Popup", func(layout debugui.ContainerLayout) {
 				ctx.Button("Hello")
 				ctx.Button("World")
 			})
@@ -147,7 +147,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 }
 
 func (g *Game) logWindow(ctx *debugui.Context) {
-	ctx.Window("Log Window", image.Rect(350, 40, 650, 290), func(res debugui.Response, layout debugui.ContainerLayout) {
+	ctx.Window("Log Window", image.Rect(350, 40, 650, 290), func(layout debugui.ContainerLayout) {
 		// output text panel
 		ctx.SetGridLayout([]int{-1}, []int{-1, 0})
 		ctx.Panel("Log Output", func(layout debugui.ContainerLayout) {
@@ -178,7 +178,7 @@ func (g *Game) logWindow(ctx *debugui.Context) {
 }
 
 func (g *Game) buttonWindows(ctx *debugui.Context) {
-	ctx.Window("Button Windows", image.Rect(350, 300, 650, 500), func(res debugui.Response, layout debugui.ContainerLayout) {
+	ctx.Window("Button Windows", image.Rect(350, 300, 650, 500), func(layout debugui.ContainerLayout) {
 		ctx.SetGridLayout([]int{100, 100, 100, 100}, nil)
 		for i := 0; i < 100; i++ {
 			if ctx.Button("Button\x00"+fmt.Sprintf("%d", i)) != 0 {

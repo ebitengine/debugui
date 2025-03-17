@@ -553,7 +553,7 @@ func (c *Context) pushContainerBodyLayout(cnt *container, body image.Rectangle, 
 	cnt.layout.BodyBounds = body
 }
 
-func (c *Context) window(title string, rect image.Rectangle, opt option, f func(res Response, layout ContainerLayout)) {
+func (c *Context) window(title string, rect image.Rectangle, opt option, f func(layout ContainerLayout)) {
 	id := c.idFromGlobalUniqueString(title)
 
 	cnt := c.container(id, opt)
@@ -670,7 +670,7 @@ func (c *Context) window(title string, rect image.Rectangle, opt option, f func(
 	c.pushClipRect(cnt.layout.BodyBounds)
 	defer c.popClipRect()
 
-	f(ResponseActive, c.currentContainer().layout)
+	f(c.currentContainer().layout)
 }
 
 func (c *Context) OpenPopup(name string) {
@@ -689,7 +689,7 @@ func (c *Context) OpenPopup(name string) {
 	c.bringToFront(cnt)
 }
 
-func (c *Context) Popup(name string, f func(res Response, layout ContainerLayout)) {
+func (c *Context) Popup(name string, f func(layout ContainerLayout)) {
 	opt := optionPopup | optionAutoSize | optionNoResize | optionNoScroll | optionNoTitle | optionClosed
 	c.window(name, image.Rectangle{}, opt, f)
 }
