@@ -18,7 +18,7 @@ var (
 )
 
 // Caller returns a program counter of the caller outside of this module.
-func Caller() (pc uintptr) {
+func Caller() uintptr {
 	debugUIFileDirOnce.Do(func() {
 		pkg, err := build.Default.Import("github.com/ebitengine/debugui", "", build.FindOnly)
 		if err != nil {
@@ -40,7 +40,8 @@ func Caller() (pc uintptr) {
 		// The file should be with a slash, but just in case, convert it.
 		file = filepath.ToSlash(file)
 
-		if strings.HasSuffix(path.Base(file), "_test.go") {
+		// TODO: This is heuristic. Use a file set.
+		if strings.HasSuffix(path.Base(file), "_test.go") && path.Base(file) != "export_test.go" {
 			return pc
 		}
 

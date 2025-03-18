@@ -152,9 +152,9 @@ func (c *Context) Label(text string) {
 	})
 }
 
-func (c *Context) button(label string, idStr string, opt option) bool {
+func (c *Context) button(label string, idStr string, opt option) (controlID, bool) {
 	id := c.idFromString(idStr)
-	return c.control(id, opt, func(bounds image.Rectangle) Response {
+	return id, c.control(id, opt, func(bounds image.Rectangle) Response {
 		var res Response
 		// handle click
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.focus == id {

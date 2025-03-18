@@ -12,7 +12,8 @@ const idSeparator = "\x00"
 
 func (c *Context) Button(label string) bool {
 	label, idStr, _ := strings.Cut(label, idSeparator)
-	return c.button(label, idStr, optionAlignCenter)
+	_, result := c.button(label, idStr, optionAlignCenter)
+	return result
 }
 
 func (c *Context) TextBox(buf *string) Response {
