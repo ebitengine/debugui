@@ -40,14 +40,14 @@ func TestMultipleButtonsOnOneLine(t *testing.T) {
 	d := debugui.New()
 	d.Update(func(ctx *debugui.Context) {
 		ctx.Window("Window", image.Rect(0, 0, 100, 100), func(layout debugui.ContainerLayout) {
-			idA := ctx.ButtonID("a")
-			idB := ctx.ButtonID("b")
-			if idA == idB {
-				t.Errorf("Button() returned the same value twice: %d", idA)
+			idA1 := ctx.ButtonID("a")
+			idA2 := ctx.ButtonID("a")
+			if idA1 == idA2 {
+				t.Errorf("Button() returned the same value twice: %d", idA1)
 			}
-			idC, idD := ctx.ButtonID("c"), ctx.ButtonID("d")
-			if idC == idD {
-				t.Errorf("Button() returned the same value twice: %d", idC)
+			idB1, idB2 := ctx.ButtonID("b"), ctx.ButtonID("b")
+			if idB1 == idB2 {
+				t.Errorf("Button() returned the same value twice: %d", idB1)
 			}
 		})
 	})
