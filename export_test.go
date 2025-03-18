@@ -3,12 +3,9 @@
 
 package debugui
 
-import "strings"
-
 type ControlID = controlID
 
 func (c *Context) ButtonID(label string) ControlID {
-	label, idStr, _ := strings.Cut(label, idSeparator)
-	id, _ := c.button(label, idStr, optionAlignCenter)
+	id, _ := c.button(label, optionAlignCenter)
 	return id
 }

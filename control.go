@@ -9,12 +9,15 @@ import (
 	"math"
 	"os"
 	"strconv"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/exp/textinput"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
+
+const idSeparator = "\x00"
 
 const (
 	realFmt   = "%.3g"
@@ -152,7 +155,8 @@ func (c *Context) Label(text string) {
 	})
 }
 
-func (c *Context) button(label string, idStr string, opt option) (controlID, bool) {
+func (c *Context) button(label string, opt option) (controlID, bool) {
+	label, idStr, _ := strings.Cut(label, idSeparator)
 	id := c.idFromString(idStr)
 	return id, c.control(id, opt, func(bounds image.Rectangle) Response {
 		var res Response
@@ -372,7 +376,8 @@ func (c *Context) number(value *float64, step float64, digits int, opt option) b
 	}) != 0
 }
 
-func (c *Context) header(label string, idStr string, istreenode bool, opt option, f func()) {
+func (c *Context) header(label string, istreenode bool, opt option, f func()) {
+	label, idStr, _ := strings.Cut(label, idSeparator)
 	id := c.idFromString(idStr)
 	_, toggled := c.toggledIDs[id]
 	c.SetGridLayout([]int{-1}, nil)
@@ -427,8 +432,8 @@ func (c *Context) header(label string, idStr string, istreenode bool, opt option
 	}
 }
 
-func (c *Context) treeNode(label string, idStr string, opt option, f func()) {
-	c.header(label, idStr, true, opt, func() {
+func (c *Context) treeNode(label string, opt option, f func()) {
+	c.header(label, true, opt, func() {
 		c.layout().indent += c.style.indent
 		defer func() {
 			c.layout().indent -= c.style.indent

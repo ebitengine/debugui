@@ -5,14 +5,10 @@ package debugui
 
 import (
 	"image"
-	"strings"
 )
 
-const idSeparator = "\x00"
-
 func (c *Context) Button(label string) bool {
-	label, idStr, _ := strings.Cut(label, idSeparator)
-	_, result := c.button(label, idStr, optionAlignCenter)
+	_, result := c.button(label, optionAlignCenter)
 	return result
 }
 
@@ -33,13 +29,11 @@ func (c *Context) Header(label string, expanded bool, f func()) {
 	if expanded {
 		opt |= optionExpanded
 	}
-	label, idStr, _ := strings.Cut(label, idSeparator)
-	c.header(label, idStr, false, opt, f)
+	c.header(label, false, opt, f)
 }
 
 func (c *Context) TreeNode(label string, f func()) {
-	label, idStr, _ := strings.Cut(label, idSeparator)
-	c.treeNode(label, idStr, 0, f)
+	c.treeNode(label, 0, f)
 }
 
 func (c *Context) Window(title string, rect image.Rectangle, f func(layout ContainerLayout)) {
