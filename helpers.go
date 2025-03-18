@@ -25,11 +25,11 @@ func (c *Context) idFromGlobalUniqueString(str string) controlID {
 
 // idFromString returns a hash value based on the caller's file and line number.
 func (c *Context) idFromString(str string) controlID {
-	file, line := caller.Caller()
+	pc := caller.Caller()
 	if len(str) > 0 {
-		return c.idFromBytes([]byte(fmt.Sprintf("%s:%d:%s", file, line, str)))
+		return c.idFromBytes([]byte(fmt.Sprintf("%d:%s", pc, str)))
 	}
-	return c.idFromBytes([]byte(fmt.Sprintf("%s:%d", file, line)))
+	return c.idFromBytes([]byte(fmt.Sprintf("%d", pc)))
 }
 
 func (c *Context) idFromBytes(data []byte) controlID {

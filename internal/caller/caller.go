@@ -17,8 +17,8 @@ var (
 	debugUIFileDirOnce sync.Once
 )
 
-// Caller returns the file and line number of the caller outside of this module.
-func Caller() (file string, line int) {
+// Caller returns a program counter of the caller outside of this module.
+func Caller() (pc uintptr) {
 	debugUIFileDirOnce.Do(func() {
 		pkg, err := build.Default.Import("github.com/ebitengine/debugui", "", build.FindOnly)
 		if err != nil {
@@ -28,17 +28,21 @@ func Caller() (file string, line int) {
 	})
 
 	if debugUIFileDir == "" {
-		return "", 0
+		return 0
 	}
 
 	var debugUIPackageReached bool
 	for i := 0; ; i++ {
-		_, file, line, ok := runtime.Caller(i)
+		pc, file, _, ok := runtime.Caller(i)
 		if !ok {
 			break
 		}
 		// The file should be with a slash, but just in case, convert it.
 		file = filepath.ToSlash(file)
+
+		if strings.HasSuffix(path.Base(file), "_test.go") {
+			return pc
+		}
 
 		if !debugUIPackageReached {
 			if path.Dir(file) == debugUIFileDir {
@@ -53,8 +57,8 @@ func Caller() (file string, line int) {
 		if strings.HasPrefix(path.Dir(file), debugUIFileDir+"/") && !strings.HasPrefix(path.Dir(file), debugUIFileDir+"/example") {
 			continue
 		}
-		return file, line
+		return pc
 	}
 
-	return "", 0
+	return 0
 }
