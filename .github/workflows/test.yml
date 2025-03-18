@@ -10,6 +10,8 @@ jobs:
         go: ['1.22.x', '1.23.x', '1.24.x']
     name: Test with Go ${{ matrix.go }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    env:
+      DISPLAY: ':99.0'
     defaults:
       run:
         shell: bash
@@ -27,6 +29,11 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install libasound2-dev libgl1-mesa-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev libxxf86vm-dev
+
+    - name: Xvfb
+      if: runner.os == 'Linux'
+      run: |
+        Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
 
     - name: Test
       run: |
