@@ -25,6 +25,9 @@ func TestMultipleCallersInForLoop(t *testing.T) {
 			t.Errorf("Caller() returned different values: %d and %d", pc, pc2)
 		}
 	}
+	if pc == 0 {
+		t.Errorf("Caller() returned 0")
+	}
 }
 
 func TestMultipleCallersOnOneLine(t *testing.T) {
