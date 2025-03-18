@@ -22,6 +22,12 @@ jobs:
       with:
         go-version: ${{ matrix.go }}
 
+    - name: Install dependencies
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install libasound2-dev libgl1-mesa-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev libxxf86vm-dev
+
     - name: Test
       run: |
         go test -v ./...
