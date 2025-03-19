@@ -46,7 +46,7 @@ func (l *layout) sizeInPixels(sizes []int, index int, defaultSize int, entireSiz
 			denom += -s
 		}
 	}
-	return int(float64(remain) * -float64(s) / float64(denom))
+	return max(8, int(float64(remain)*-float64(s)/float64(denom)))
 }
 
 func (c *Context) pushLayout(body image.Rectangle, scroll image.Point) {
