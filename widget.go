@@ -12,8 +12,8 @@ func (c *Context) Button(label string) bool {
 	return result
 }
 
-func (c *Context) TextBox(buf *string) bool {
-	return c.textBox(buf, 0)
+func (c *Context) TextField(buf *string) bool {
+	return c.textField(buf, 0)
 }
 
 func (c *Context) Slider(value *float64, lo, hi float64, step float64, digits int) bool {

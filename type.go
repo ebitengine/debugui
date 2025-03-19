@@ -69,5 +69,5 @@ type Context struct {
 
 	lastMousePos image.Point
 
-	textFields map[controlID]*textinput.Field
+	textInputTextFields map[controlID]*textinput.Field
 }

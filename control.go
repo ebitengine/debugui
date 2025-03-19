@@ -188,26 +188,27 @@ func (c *Context) Checkbox(label string, state *bool) bool {
 	})
 }
 
-func (c *Context) textField(id controlID) *textinput.Field {
+func (c *Context) textInputTextField(id controlID) *textinput.Field {
 	if id == 0 {
 		return nil
 	}
-	if _, ok := c.textFields[id]; !ok {
-		if c.textFields == nil {
-			c.textFields = make(map[controlID]*textinput.Field)
+	if _, ok := c.textInputTextFields[id]; !ok {
+		if c.textInputTextFields == nil {
+			c.textInputTextFields = make(map[controlID]*textinput.Field)
 		}
-		c.textFields[id] = &textinput.Field{}
+		// TODO: Remove unused fields.
+		c.textInputTextFields[id] = &textinput.Field{}
 	}
-	return c.textFields[id]
+	return c.textInputTextFields[id]
 }
 
-func (c *Context) textBoxRaw(buf *string, id controlID, opt option) bool {
+func (c *Context) textFieldRaw(buf *string, id controlID, opt option) bool {
 	return c.control(id, opt|optionHoldFocus, func(bounds image.Rectangle) bool {
 		var res bool
 
 		if c.focus == id {
 			// handle text input
-			f := c.textField(id)
+			f := c.textInputTextField(id)
 			f.Focus()
 			x := bounds.Min.X + c.style.padding + textWidth(*buf)
 			y := bounds.Min.Y + lineHeight()
@@ -236,7 +237,7 @@ func (c *Context) textBoxRaw(buf *string, id controlID, opt option) bool {
 				}
 			}
 		} else {
-			f := c.textField(id)
+			f := c.textInputTextField(id)
 			if *buf != f.TextForRendering() {
 				f.SetTextAndSelection(*buf, len(*buf), len(*buf))
 			}
@@ -262,14 +263,14 @@ func (c *Context) textBoxRaw(buf *string, id controlID, opt option) bool {
 	})
 }
 
-func (c *Context) numberTextBox(value *float64, id controlID) bool {
+func (c *Context) numberTextField(value *float64, id controlID) bool {
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && ebiten.IsKeyPressed(ebiten.KeyShift) &&
 		c.hover == id {
 		c.numberEdit = id
 		c.numberEditBuf = fmt.Sprintf(realFmt, *value)
 	}
 	if c.numberEdit == id {
-		res := c.textBoxRaw(&c.numberEditBuf, id, 0)
+		res := c.textFieldRaw(&c.numberEditBuf, id, 0)
 		if res || c.focus != id {
 			nval, err := strconv.ParseFloat(c.numberEditBuf, 32)
 			if err != nil {
@@ -283,9 +284,9 @@ func (c *Context) numberTextBox(value *float64, id controlID) bool {
 	return false
 }
 
-func (c *Context) textBox(buf *string, opt option) bool {
+func (c *Context) textField(buf *string, opt option) bool {
 	id := c.idFromString(fmt.Sprintf("%p", buf))
-	return c.textBoxRaw(buf, id, opt)
+	return c.textFieldRaw(buf, id, opt)
 }
 
 func formatNumber(v float64, digits int) string {
@@ -298,7 +299,7 @@ func (c *Context) slider(value *float64, low, high, step float64, digits int, op
 	id := c.idFromString(fmt.Sprintf("%p", value))
 
 	// handle text input mode
-	if c.numberTextBox(&v, id) {
+	if c.numberTextField(&v, id) {
 		return false
 	}
 
@@ -340,7 +341,7 @@ func (c *Context) number(value *float64, step float64, digits int, opt option) b
 	last := *value
 
 	// handle text input mode
-	if c.numberTextBox(value, id) {
+	if c.numberTextField(value, id) {
 		return false
 	}
 
