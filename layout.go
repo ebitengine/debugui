@@ -67,7 +67,7 @@ func (c *Context) popLayout() {
 	c.layoutStack = c.layoutStack[:len(c.layoutStack)-1]
 }
 
-func (c *Context) Division(f func()) {
+func (c *Context) GridCell(f func()) {
 	c.control(0, 0, func(bounds image.Rectangle) bool {
 		c.pushLayout(bounds, image.Pt(0, 0))
 		defer c.popLayout()

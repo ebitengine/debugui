@@ -60,7 +60,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 		// tree
 		ctx.Header("Tree and Text", true, func() {
 			ctx.SetGridLayout([]int{140, -1}, nil)
-			ctx.Division(func() {
+			ctx.GridCell(func() {
 				ctx.TreeNode("Test 1", func() {
 					ctx.TreeNode("Test 1a", func() {
 						ctx.Label("Hello")
@@ -106,7 +106,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 		ctx.Header("Background Color", true, func() {
 			ctx.SetGridLayout([]int{-1, 78}, []int{74})
 			// sliders
-			ctx.Division(func() {
+			ctx.GridCell(func() {
 				ctx.SetGridLayout([]int{46, -1}, nil)
 				ctx.Label("Red:")
 				ctx.Slider(&g.bg[0], 0, 255, 1, 0)
@@ -158,7 +158,7 @@ func (g *Game) logWindow(ctx *debugui.Context) {
 				g.logUpdated = false
 			}
 		})
-		ctx.Division(func() {
+		ctx.GridCell(func() {
 			// input textbox + submit button
 			var submitted bool
 			ctx.SetGridLayout([]int{-1, 70}, nil)
