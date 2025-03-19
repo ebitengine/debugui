@@ -54,6 +54,9 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 			ctx.Popup("Test Popup", func(layout debugui.ContainerLayout) {
 				ctx.Button("Hello")
 				ctx.Button("World")
+				if ctx.Button("Close") {
+					ctx.ClosePopup("Test Popup")
+				}
 			})
 		})
 

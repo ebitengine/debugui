@@ -674,6 +674,12 @@ func (c *Context) OpenPopup(name string) {
 	c.bringToFront(cnt)
 }
 
+func (c *Context) ClosePopup(name string) {
+	id := c.idFromGlobalUniqueString(name)
+	cnt := c.container(id, 0)
+	cnt.open = false
+}
+
 func (c *Context) Popup(name string, f func(layout ContainerLayout)) {
 	opt := optionPopup | optionAutoSize | optionNoResize | optionNoScroll | optionNoTitle | optionClosed
 	c.window(name, image.Rectangle{}, opt, f)
