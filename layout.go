@@ -68,7 +68,7 @@ func (c *Context) popLayout() {
 }
 
 func (c *Context) Division(f func()) {
-	c.control(0, 0, func(bounds image.Rectangle) Response {
+	c.control(0, 0, func(bounds image.Rectangle) bool {
 		c.pushLayout(bounds, image.Pt(0, 0))
 		defer c.popLayout()
 		f()
@@ -79,7 +79,7 @@ func (c *Context) Division(f func()) {
 		a.nextRowY = max(a.nextRowY, b.nextRowY+b.body.Min.Y-a.body.Min.Y)
 		a.max.X = max(a.max.X, b.max.X)
 		a.max.Y = max(a.max.Y, b.max.Y)
-		return 0
+		return false
 	})
 }
 

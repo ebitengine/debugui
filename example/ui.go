@@ -116,7 +116,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 				ctx.Slider(&g.bg[2], 0, 255, 1, 0)
 			})
 			// color preview
-			ctx.Control("", func(bounds image.Rectangle) debugui.Response {
+			ctx.Control("", func(bounds image.Rectangle) bool {
 				ctx.DrawControl(func(screen *ebiten.Image) {
 					vector.DrawFilledRect(
 						screen,
@@ -133,7 +133,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 					op.SecondaryAlign = text.AlignCenter
 					debugui.DrawText(screen, txt, op)
 				})
-				return 0
+				return false
 			})
 		})
 

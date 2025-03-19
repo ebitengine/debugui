@@ -24,14 +24,6 @@ const (
 	sliderFmt = "%.2f"
 )
 
-type Response int
-
-const (
-	ResponseActive Response = (1 << 0)
-	ResponseSubmit Response = (1 << 1)
-	ResponseChange Response = (1 << 2)
-)
-
 type option int
 
 const (
@@ -104,12 +96,12 @@ func (c *Context) updateControl(id controlID, rect image.Rectangle, opt option) 
 	}
 }
 
-func (c *Context) Control(idStr string, f func(bounds image.Rectangle) Response) Response {
+func (c *Context) Control(idStr string, f func(bounds image.Rectangle) bool) bool {
 	id := c.idFromString(idStr)
 	return c.control(id, 0, f)
 }
 
-func (c *Context) control(id controlID, opt option, f func(bounds image.Rectangle) Response) Response {
+func (c *Context) control(id controlID, opt option, f func(bounds image.Rectangle) bool) bool {
 	r := c.layoutNext()
 	c.updateControl(id, r, opt)
 	return f(r)
@@ -121,7 +113,7 @@ func (c *Context) Text(text string) {
 		var endIdx, p int
 		c.SetGridLayout([]int{-1}, []int{lineHeight()})
 		for endIdx < len(text) {
-			c.control(0, 0, func(bounds image.Rectangle) Response {
+			c.control(0, 0, func(bounds image.Rectangle) bool {
 				w := 0
 				endIdx = p
 				startIdx := endIdx
@@ -142,27 +134,27 @@ func (c *Context) Text(text string) {
 				}
 				c.drawText(text[startIdx:endIdx], bounds.Min, color)
 				p = endIdx + 1
-				return 0
+				return false
 			})
 		}
 	})
 }
 
 func (c *Context) Label(text string) {
-	c.control(0, 0, func(bounds image.Rectangle) Response {
+	c.control(0, 0, func(bounds image.Rectangle) bool {
 		c.drawControlText(text, bounds, ColorText, 0)
-		return 0
+		return false
 	})
 }
 
 func (c *Context) button(label string, opt option) (controlID, bool) {
 	label, idStr, _ := strings.Cut(label, idSeparator)
 	id := c.idFromString(idStr)
-	return id, c.control(id, opt, func(bounds image.Rectangle) Response {
-		var res Response
+	return id, c.control(id, opt, func(bounds image.Rectangle) bool {
+		var res bool
 		// handle click
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.focus == id {
-			res |= ResponseSubmit
+			res = true
 		}
 		// draw
 		c.drawControlFrame(id, bounds, ColorButton, opt)
@@ -170,19 +162,19 @@ func (c *Context) button(label string, opt option) (controlID, bool) {
 			c.drawControlText(label, bounds, ColorText, opt)
 		}
 		return res
-	}) != 0
+	})
 }
 
 func (c *Context) Checkbox(label string, state *bool) bool {
 	id := c.idFromString(fmt.Sprintf("%p", state))
 
-	return c.control(id, 0, func(bounds image.Rectangle) Response {
-		var res Response
+	return c.control(id, 0, func(bounds image.Rectangle) bool {
+		var res bool
 		box := image.Rect(bounds.Min.X, bounds.Min.Y, bounds.Min.X+bounds.Dy(), bounds.Max.Y)
 		c.updateControl(id, bounds, 0)
 		// handle click
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.focus == id {
-			res |= ResponseChange
+			res = true
 			*state = !*state
 		}
 		// draw
@@ -193,7 +185,7 @@ func (c *Context) Checkbox(label string, state *bool) bool {
 		bounds = image.Rect(bounds.Min.X+box.Dx(), bounds.Min.Y, bounds.Max.X, bounds.Max.Y)
 		c.drawControlText(label, bounds, ColorText, 0)
 		return res
-	}) != 0
+	})
 }
 
 func (c *Context) textField(id controlID) *textinput.Field {
@@ -209,9 +201,9 @@ func (c *Context) textField(id controlID) *textinput.Field {
 	return c.textFields[id]
 }
 
-func (c *Context) textBoxRaw(buf *string, id controlID, opt option) Response {
-	return c.control(id, opt|optionHoldFocus, func(bounds image.Rectangle) Response {
-		var res Response
+func (c *Context) textBoxRaw(buf *string, id controlID, opt option) bool {
+	return c.control(id, opt|optionHoldFocus, func(bounds image.Rectangle) bool {
+		var res bool
 
 		if c.focus == id {
 			// handle text input
@@ -222,11 +214,10 @@ func (c *Context) textBoxRaw(buf *string, id controlID, opt option) Response {
 			handled, err := f.HandleInput(x, y)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
-				return 0
+				return false
 			}
 			if *buf != f.TextForRendering() {
 				*buf = f.TextForRendering()
-				res |= ResponseChange
 			}
 
 			if !handled {
@@ -235,13 +226,12 @@ func (c *Context) textBoxRaw(buf *string, id controlID, opt option) Response {
 					_, size := utf8.DecodeLastRuneInString(*buf)
 					*buf = (*buf)[:len(*buf)-size]
 					f.SetTextAndSelection(*buf, len(*buf), len(*buf))
-					res |= ResponseChange
 				}
 
 				// handle return
 				if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
 					c.setFocus(0)
-					res |= ResponseSubmit
+					res = true
 					f.SetTextAndSelection("", 0, 0)
 				}
 			}
@@ -280,7 +270,7 @@ func (c *Context) numberTextBox(value *float64, id controlID) bool {
 	}
 	if c.numberEdit == id {
 		res := c.textBoxRaw(&c.numberEditBuf, id, 0)
-		if (res&ResponseSubmit) != 0 || c.focus != id {
+		if res || c.focus != id {
 			nval, err := strconv.ParseFloat(c.numberEditBuf, 32)
 			if err != nil {
 				nval = 0
@@ -295,7 +285,7 @@ func (c *Context) numberTextBox(value *float64, id controlID) bool {
 
 func (c *Context) textBox(buf *string, opt option) bool {
 	id := c.idFromString(fmt.Sprintf("%p", buf))
-	return c.textBoxRaw(buf, id, opt)&ResponseSubmit != 0
+	return c.textBoxRaw(buf, id, opt)
 }
 
 func formatNumber(v float64, digits int) string {
@@ -313,8 +303,8 @@ func (c *Context) slider(value *float64, low, high, step float64, digits int, op
 	}
 
 	// handle normal mode
-	return c.control(id, opt, func(bounds image.Rectangle) Response {
-		var res Response
+	return c.control(id, opt, func(bounds image.Rectangle) bool {
+		var res bool
 		// handle input
 		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 			x, _ := ebiten.CursorPosition()
@@ -327,7 +317,7 @@ func (c *Context) slider(value *float64, low, high, step float64, digits int, op
 		*value = clamp(v, low, high)
 		v = *value
 		if last != v {
-			res |= ResponseChange
+			res = true
 		}
 
 		// draw base
@@ -342,7 +332,7 @@ func (c *Context) slider(value *float64, low, high, step float64, digits int, op
 		c.drawControlText(text, bounds, ColorText, opt)
 
 		return res
-	}) != 0
+	})
 }
 
 func (c *Context) number(value *float64, step float64, digits int, opt option) bool {
@@ -355,15 +345,15 @@ func (c *Context) number(value *float64, step float64, digits int, opt option) b
 	}
 
 	// handle normal mode
-	return c.control(id, opt, func(bounds image.Rectangle) Response {
-		var res Response
+	return c.control(id, opt, func(bounds image.Rectangle) bool {
+		var res bool
 		// handle input
 		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 			*value += float64(c.mouseDelta().X) * step
 		}
 		// set flag if value changed
 		if *value != last {
-			res |= ResponseChange
+			res = true
 		}
 
 		// draw base
@@ -373,7 +363,7 @@ func (c *Context) number(value *float64, step float64, digits int, opt option) b
 		c.drawControlText(text, bounds, ColorText, opt)
 
 		return res
-	}) != 0
+	})
 }
 
 func (c *Context) header(label string, istreenode bool, opt option, f func()) {
@@ -389,7 +379,7 @@ func (c *Context) header(label string, istreenode bool, opt option, f func()) {
 		expanded = toggled
 	}
 
-	if c.control(id, 0, func(bounds image.Rectangle) Response {
+	if c.control(id, 0, func(bounds image.Rectangle) bool {
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.focus == id {
 			if toggled {
 				delete(c.toggledIDs, id)
@@ -423,11 +413,8 @@ func (c *Context) header(label string, istreenode bool, opt option, f func()) {
 		bounds.Min.X += bounds.Dy() - c.style.padding
 		c.drawControlText(label, bounds, ColorText, 0)
 
-		if expanded {
-			return ResponseActive
-		}
-		return 0
-	}) != 0 {
+		return expanded
+	}) {
 		f()
 	}
 }
