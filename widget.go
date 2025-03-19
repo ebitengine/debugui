@@ -12,7 +12,7 @@ func (c *Context) Button(label string) bool {
 	return result
 }
 
-func (c *Context) TextBox(buf *string) Response {
+func (c *Context) TextBox(buf *string) bool {
 	return c.textBox(buf, 0)
 }
 

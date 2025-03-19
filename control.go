@@ -293,9 +293,9 @@ func (c *Context) numberTextBox(value *float64, id controlID) bool {
 	return false
 }
 
-func (c *Context) textBox(buf *string, opt option) Response {
+func (c *Context) textBox(buf *string, opt option) bool {
 	id := c.idFromString(fmt.Sprintf("%p", buf))
-	return c.textBoxRaw(buf, id, opt)
+	return c.textBoxRaw(buf, id, opt)&ResponseSubmit != 0
 }
 
 func formatNumber(v float64, digits int) string {
