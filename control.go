@@ -161,18 +161,18 @@ func (c *Context) Checkbox(state *bool, label string) bool {
 		var res bool
 		box := image.Rect(bounds.Min.X, bounds.Min.Y+(bounds.Dy()-lineHeight())/2, bounds.Min.X+lineHeight(), bounds.Max.Y-(bounds.Dy()-lineHeight())/2)
 		c.updateControl(id, bounds, 0)
-		// handle click
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.focus == id {
 			res = true
 			*state = !*state
 		}
-		// draw
 		c.drawControlFrame(id, box, ColorBase, 0)
 		if *state {
 			c.drawIcon(iconCheck, box, c.style().colors[ColorText])
 		}
-		bounds = image.Rect(bounds.Min.X+lineHeight(), bounds.Min.Y, bounds.Max.X, bounds.Max.Y)
-		c.drawControlText(label, bounds, ColorText, 0)
+		if label != "" {
+			bounds = image.Rect(bounds.Min.X+lineHeight(), bounds.Min.Y, bounds.Max.X, bounds.Max.Y)
+			c.drawControlText(label, bounds, ColorText, 0)
+		}
 		return res
 	})
 }
