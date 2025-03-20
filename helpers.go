@@ -119,7 +119,10 @@ func (c *Context) mouseDelta() image.Point {
 }
 
 func (c *Context) cursorPosition() image.Point {
-	return image.Pt(ebiten.CursorPosition())
+	p := image.Pt(ebiten.CursorPosition())
+	p.X /= c.scale
+	p.Y /= c.scale
+	return p
 }
 
 func (c *Context) end() {

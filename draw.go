@@ -94,16 +94,17 @@ func (c *Context) draw(screen *ebiten.Image) {
 		case commandRect:
 			vector.DrawFilledRect(
 				target,
-				float32(cmd.rect.rect.Min.X),
-				float32(cmd.rect.rect.Min.Y),
-				float32(cmd.rect.rect.Dx()),
-				float32(cmd.rect.rect.Dy()),
+				float32(cmd.rect.rect.Min.X*c.scale),
+				float32(cmd.rect.rect.Min.Y*c.scale),
+				float32(cmd.rect.rect.Dx()*c.scale),
+				float32(cmd.rect.rect.Dy()*c.scale),
 				cmd.rect.color,
 				false,
 			)
 		case commandText:
 			op := &text.DrawOptions{}
 			op.GeoM.Translate(float64(cmd.text.pos.X), float64(cmd.text.pos.Y))
+			op.GeoM.Scale(float64(c.scale), float64(c.scale))
 			op.ColorScale.ScaleWithColor(cmd.text.color)
 			text.Draw(target, cmd.text.str, fontFace, op)
 		case commandIcon:
@@ -115,12 +116,18 @@ func (c *Context) draw(screen *ebiten.Image) {
 			x := cmd.icon.rect.Min.X + (cmd.icon.rect.Dx()-img.Bounds().Dx())/2
 			y := cmd.icon.rect.Min.Y + (cmd.icon.rect.Dy()-img.Bounds().Dy())/2
 			op.GeoM.Translate(float64(x), float64(y))
+			op.GeoM.Scale(float64(c.scale), float64(c.scale))
 			op.ColorScale.ScaleWithColor(cmd.icon.color)
 			target.DrawImage(img, op)
 		case commandDraw:
 			cmd.draw.f(target)
 		case commandClip:
-			target = screen.SubImage(cmd.clip.rect).(*ebiten.Image)
+			r := cmd.clip.rect
+			r.Min.X *= c.scale
+			r.Min.Y *= c.scale
+			r.Max.X *= c.scale
+			r.Max.Y *= c.scale
+			target = screen.SubImage(r).(*ebiten.Image)
 		}
 	}
 }

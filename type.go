@@ -37,8 +37,7 @@ type ContainerLayout struct {
 }
 
 type Context struct {
-	// core state
-
+	scale         int
 	style         *style
 	hover         controlID
 	focus         controlID
@@ -52,20 +51,14 @@ type Context struct {
 	numberEditBuf string
 	numberEdit    controlID
 
-	// stacks
-
 	commandList    []*command
 	rootList       []*container
 	containerStack []*container
 	clipStack      []image.Rectangle
 	layoutStack    []layout
 
-	// retained state pools
-
 	idToContainer map[controlID]*container
 	toggledIDs    map[controlID]struct{}
-
-	// input state
 
 	lastMousePos image.Point
 

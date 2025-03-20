@@ -32,6 +32,16 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 			ctx.Text("Size:")
 			ctx.Text(fmt.Sprintf("%d, %d", layout.Bounds.Dx(), layout.Bounds.Dy()))
 		})
+		ctx.Header("Game Config", true, func() {
+			if ctx.Checkbox("Hi-Res", &g.hiRes) {
+				if g.hiRes {
+					ctx.SetScale(2)
+				} else {
+					ctx.SetScale(1)
+				}
+				g.resetPosition()
+			}
+		})
 		ctx.Header("Test Buttons", true, func() {
 			ctx.SetGridLayout([]int{100, -1, -1}, nil)
 			ctx.Text("Test buttons 1:")
@@ -112,17 +122,19 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 			})
 			ctx.Control("", func(bounds image.Rectangle) bool {
 				ctx.DrawControl(func(screen *ebiten.Image) {
+					scale := ctx.Scale()
 					vector.DrawFilledRect(
 						screen,
-						float32(bounds.Min.X),
-						float32(bounds.Min.Y),
-						float32(bounds.Dx()),
-						float32(bounds.Dy()),
+						float32(bounds.Min.X*scale),
+						float32(bounds.Min.Y*scale),
+						float32(bounds.Dx()*scale),
+						float32(bounds.Dy()*scale),
 						color.RGBA{byte(g.bg[0]), byte(g.bg[1]), byte(g.bg[2]), 255},
 						false)
 					txt := fmt.Sprintf("#%02X%02X%02X", int(g.bg[0]), int(g.bg[1]), int(g.bg[2]))
 					op := &text.DrawOptions{}
 					op.GeoM.Translate(float64((bounds.Min.X+bounds.Max.X)/2), float64((bounds.Min.Y+bounds.Max.Y)/2))
+					op.GeoM.Scale(float64(scale), float64(scale))
 					op.PrimaryAlign = text.AlignCenter
 					op.SecondaryAlign = text.AlignCenter
 					debugui.DrawText(screen, txt, op)

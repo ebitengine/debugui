@@ -12,6 +12,7 @@ type DebugUI struct {
 func New() *DebugUI {
 	return &DebugUI{
 		ctx: &Context{
+			scale: 1,
 			style: &defaultStyle,
 		},
 	}

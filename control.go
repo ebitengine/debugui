@@ -390,3 +390,20 @@ func (c *Context) pushContainerBodyLayout(cnt *container, body image.Rectangle, 
 	c.pushLayout(body.Inset(c.style.padding), cnt.layout.ScrollOffset)
 	cnt.layout.BodyBounds = body
 }
+
+// SetScale sets the scale of the UI.
+//
+// The scale affects the rendering result of the UI.
+//
+// The default scale is 1.
+func (c *Context) SetScale(scale int) {
+	if scale < 1 {
+		panic("debugui: scale must be >= 1")
+	}
+	c.scale = scale
+}
+
+// Scale returns the scale of the UI.
+func (c *Context) Scale() int {
+	return c.scale
+}
