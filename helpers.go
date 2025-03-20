@@ -89,7 +89,7 @@ func (c *Context) bringToFront(cnt *container) {
 	cnt.zIndex = c.lastZIndex
 }
 
-func (c *Context) SetFocus() {
+func (c *Context) Focus() {
 	c.setFocus(c.lastID)
 }
 
