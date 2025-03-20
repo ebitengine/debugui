@@ -3,10 +3,6 @@
 
 package debugui
 
-import (
-	"image"
-)
-
 func (c *Context) Button(label string) bool {
 	_, result := c.button(label, optionAlignCenter)
 	return result
@@ -34,10 +30,6 @@ func (c *Context) Header(label string, expanded bool, f func()) {
 
 func (c *Context) TreeNode(label string, f func()) {
 	c.treeNode(label, 0, f)
-}
-
-func (c *Context) Window(title string, rect image.Rectangle, f func(layout ContainerLayout)) {
-	c.window(title, rect, 0, f)
 }
 
 func (c *Context) Panel(name string, f func(layout ContainerLayout)) {
