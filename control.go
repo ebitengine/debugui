@@ -231,7 +231,6 @@ func (c *Context) textFieldRaw(buf *string, id controlID, opt option) bool {
 
 				// handle return
 				if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
-					c.setFocus(0)
 					res = true
 					f.SetTextAndSelection("", 0, 0)
 				}
