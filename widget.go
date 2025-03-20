@@ -31,7 +31,3 @@ func (c *Context) Header(label string, expanded bool, f func()) {
 func (c *Context) TreeNode(label string, f func()) {
 	c.treeNode(label, 0, f)
 }
-
-func (c *Context) Panel(name string, f func(layout ContainerLayout)) {
-	c.panel(name, 0, f)
-}

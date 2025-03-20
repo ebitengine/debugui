@@ -21,9 +21,6 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, f fun
 	if cnt == nil || !cnt.open {
 		return
 	}
-	// This is popped at endRootContainer.
-	// TODO: This is tricky. Refactor this.
-
 	if cnt.layout.Bounds.Dx() == 0 {
 		cnt.layout.Bounds = bounds
 	}
