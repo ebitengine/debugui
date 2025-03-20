@@ -164,7 +164,9 @@ func (g *Game) logWindow(ctx *debugui.Context) {
 			var submitted bool
 			ctx.SetGridLayout([]int{-1, 70}, nil)
 			if ctx.TextField(&g.logSubmitBuf) {
-				submitted = true
+				if ebiten.IsKeyPressed(ebiten.KeyEnter) {
+					submitted = true
+				}
 			}
 			if ctx.Button("Submit") {
 				submitted = true
@@ -172,6 +174,7 @@ func (g *Game) logWindow(ctx *debugui.Context) {
 			if submitted {
 				g.writeLog(g.logSubmitBuf)
 				g.logSubmitBuf = ""
+				ctx.SetTextFieldValue(&g.logSubmitBuf)
 			}
 		})
 	})

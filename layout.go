@@ -68,7 +68,7 @@ func (c *Context) popLayout() {
 }
 
 func (c *Context) GridCell(f func()) {
-	c.control(0, 0, func(bounds image.Rectangle) bool {
+	c.control(0, 0, func(bounds image.Rectangle, wasFocused bool) bool {
 		c.pushLayout(bounds, image.Pt(0, 0))
 		defer c.popLayout()
 		f()
