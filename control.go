@@ -4,10 +4,10 @@
 package debugui
 
 import (
-	"fmt"
 	"image"
 	"math"
 	"strings"
+	"unsafe"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -155,7 +155,7 @@ func (c *Context) button(label string, opt option) (controlID, bool) {
 }
 
 func (c *Context) Checkbox(state *bool, label string) bool {
-	id := c.idFromGlobalUniqueString(fmt.Sprintf("%p", state))
+	id := c.idFromGlobalUniquePointer(unsafe.Pointer(state))
 
 	return c.control(id, 0, func(bounds image.Rectangle, wasFocused bool) bool {
 		var res bool
@@ -180,7 +180,7 @@ func (c *Context) Checkbox(state *bool, label string) bool {
 func (c *Context) slider(value *float64, low, high, step float64, digits int, opt option) bool {
 	last := *value
 	v := last
-	id := c.idFromGlobalUniqueString(fmt.Sprintf("%p", value))
+	id := c.idFromGlobalUniquePointer(unsafe.Pointer(value))
 
 	// handle text input mode
 	if c.numberTextField(&v, id) {

@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"unicode/utf8"
+	"unsafe"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/exp/textinput"
@@ -97,13 +98,13 @@ func (c *Context) textFieldRaw(buf *string, id controlID, opt option) bool {
 }
 
 func (c *Context) SetTextFieldValue(value *string) {
-	id := c.idFromGlobalUniqueString(fmt.Sprintf("%p", value))
+	id := c.idFromGlobalUniquePointer(unsafe.Pointer(value))
 	f := c.textInputTextField(id)
 	f.SetTextAndSelection(*value, 0, 0)
 }
 
 func (c *Context) textField(buf *string, opt option) bool {
-	id := c.idFromGlobalUniqueString(fmt.Sprintf("%p", buf))
+	id := c.idFromGlobalUniquePointer(unsafe.Pointer(buf))
 	return c.textFieldRaw(buf, id, opt)
 }
 
@@ -112,7 +113,7 @@ func (c *Context) NumberField(value *float64, step float64, digits int) bool {
 }
 
 func (c *Context) numberField(value *float64, step float64, digits int, opt option) bool {
-	id := c.idFromGlobalUniqueString(fmt.Sprintf("%p", value))
+	id := c.idFromGlobalUniquePointer(unsafe.Pointer(value))
 	last := *value
 
 	// handle text input mode

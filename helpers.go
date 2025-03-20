@@ -9,6 +9,7 @@ import (
 	"image"
 	"slices"
 	"sort"
+	"unsafe"
 
 	"github.com/ebitengine/debugui/internal/caller"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -19,17 +20,21 @@ func clamp[T int | float64](x, a, b T) T {
 	return min(b, max(a, x))
 }
 
+func (c *Context) idFromGlobalUniquePointer(pointer unsafe.Pointer) controlID {
+	return c.idFromBytes([]byte(fmt.Sprintf("!pointer:%p", pointer)))
+}
+
 func (c *Context) idFromGlobalUniqueString(str string) controlID {
-	return c.idFromBytes([]byte(str))
+	return c.idFromBytes([]byte(fmt.Sprintf("!string:%s", str)))
 }
 
 // idFromString returns a hash value based on the caller's file and line number.
 func (c *Context) idFromString(str string) controlID {
 	pc := caller.Caller()
 	if len(str) > 0 {
-		return c.idFromBytes([]byte(fmt.Sprintf("%d:%s", pc, str)))
+		return c.idFromBytes([]byte(fmt.Sprintf("!caller:%d:%s", pc, str)))
 	}
-	return c.idFromBytes([]byte(fmt.Sprintf("%d", pc)))
+	return c.idFromBytes([]byte(fmt.Sprintf("!caller:%d", pc)))
 }
 
 func (c *Context) idFromBytes(data []byte) controlID {
