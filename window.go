@@ -41,7 +41,7 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, f fun
 
 	// set as hover root if the mouse is overlapping this container and it has a
 	// higher zindex than the current hover root
-	if image.Pt(ebiten.CursorPosition()).In(cnt.layout.Bounds) && (c.nextHoverRoot == nil || cnt.zIndex > c.nextHoverRoot.zIndex) {
+	if c.cursorPosition().In(cnt.layout.Bounds) && (c.nextHoverRoot == nil || cnt.zIndex > c.nextHoverRoot.zIndex) {
 		c.nextHoverRoot = cnt
 	}
 
@@ -138,7 +138,7 @@ func (c *Context) OpenPopup(name string) {
 	c.nextHoverRoot = cnt
 	c.hoverRoot = c.nextHoverRoot
 	// position at mouse cursor, open and bring-to-front
-	pt := image.Pt(ebiten.CursorPosition())
+	pt := c.cursorPosition()
 	cnt.layout.Bounds = image.Rectangle{
 		Min: pt,
 		Max: pt.Add(image.Pt(1, 1)),

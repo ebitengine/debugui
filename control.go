@@ -48,7 +48,7 @@ func (c *Context) inHoverRoot() bool {
 }
 
 func (c *Context) mouseOver(bounds image.Rectangle) bool {
-	p := image.Pt(ebiten.CursorPosition())
+	p := c.cursorPosition()
 	return p.In(bounds) && p.In(c.clipRect()) && c.inHoverRoot()
 }
 
@@ -193,8 +193,7 @@ func (c *Context) slider(value *float64, low, high, step float64, digits int, op
 		var res bool
 		// handle input
 		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-			x, _ := ebiten.CursorPosition()
-			v = low + float64(x-bounds.Min.X)*(high-low)/float64(bounds.Dx())
+			v = low + float64(c.cursorPosition().X-bounds.Min.X)*(high-low)/float64(bounds.Dx())
 			if step != 0 {
 				v = math.Round(v/step) * step
 			}

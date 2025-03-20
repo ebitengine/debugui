@@ -115,8 +115,11 @@ func (c *Context) begin() {
 }
 
 func (c *Context) mouseDelta() image.Point {
-	p := image.Pt(ebiten.CursorPosition())
-	return p.Sub(c.lastMousePos)
+	return c.cursorPosition().Sub(c.lastMousePos)
+}
+
+func (c *Context) cursorPosition() image.Point {
+	return image.Pt(ebiten.CursorPosition())
 }
 
 func (c *Context) end() {
@@ -152,7 +155,7 @@ func (c *Context) end() {
 	}
 
 	// reset input state
-	c.lastMousePos = image.Pt(ebiten.CursorPosition())
+	c.lastMousePos = c.cursorPosition()
 
 	// sort root containers by zindex
 	sort.SliceStable(c.rootList, func(i, j int) bool {
