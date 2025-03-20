@@ -56,17 +56,17 @@ func (c *Context) inHoverRoot() bool {
 	return false
 }
 
-func (c *Context) mouseOver(rect image.Rectangle) bool {
+func (c *Context) mouseOver(bounds image.Rectangle) bool {
 	p := image.Pt(ebiten.CursorPosition())
-	return p.In(rect) && p.In(c.clipRect()) && c.inHoverRoot()
+	return p.In(bounds) && p.In(c.clipRect()) && c.inHoverRoot()
 }
 
-func (c *Context) updateControl(id controlID, rect image.Rectangle, opt option) (wasFocused bool) {
+func (c *Context) updateControl(id controlID, bounds image.Rectangle, opt option) (wasFocused bool) {
 	if id == 0 {
 		return false
 	}
 
-	mouseover := c.mouseOver(rect)
+	mouseover := c.mouseOver(bounds)
 
 	if c.focus == id {
 		c.keepFocus = true
@@ -549,7 +549,7 @@ func (c *Context) pushContainerBodyLayout(cnt *container, body image.Rectangle, 
 	cnt.layout.BodyBounds = body
 }
 
-func (c *Context) window(title string, rect image.Rectangle, opt option, f func(layout ContainerLayout)) {
+func (c *Context) window(title string, bounds image.Rectangle, opt option, f func(layout ContainerLayout)) {
 	id := c.idFromGlobalUniqueString(title)
 
 	cnt := c.container(id, opt)
@@ -560,7 +560,7 @@ func (c *Context) window(title string, rect image.Rectangle, opt option, f func(
 	// TODO: This is tricky. Refactor this.
 
 	if cnt.layout.Bounds.Dx() == 0 {
-		cnt.layout.Bounds = rect
+		cnt.layout.Bounds = bounds
 	}
 
 	c.containerStack = append(c.containerStack, cnt)
@@ -590,17 +590,17 @@ func (c *Context) window(title string, rect image.Rectangle, opt option, f func(
 	defer c.popClipRect()
 
 	body := cnt.layout.Bounds
-	rect = body
+	bounds = body
 
 	// draw frame
 	collapsed := cnt.collapsed
 	if (^opt&optionNoFrame) != 0 && !collapsed {
-		c.drawFrame(rect, ColorWindowBG)
+		c.drawFrame(bounds, ColorWindowBG)
 	}
 
 	// do title bar
 	if (^opt & optionNoTitle) != 0 {
-		tr := rect
+		tr := bounds
 		tr.Max.Y = tr.Min.Y + c.style.titleHeight
 		c.drawFrame(tr, ColorTitleBG)
 
@@ -643,7 +643,7 @@ func (c *Context) window(title string, rect image.Rectangle, opt option, f func(
 	if (^opt & optionNoResize) != 0 {
 		sz := c.style.titleHeight
 		id := c.idFromString("!resize")
-		r := image.Rect(rect.Max.X-sz, rect.Max.Y-sz, rect.Max.X, rect.Max.Y)
+		r := image.Rect(bounds.Max.X-sz, bounds.Max.Y-sz, bounds.Max.X, bounds.Max.Y)
 		c.updateControl(id, r, opt)
 		if id == c.focus && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 			cnt.layout.Bounds.Max.X = cnt.layout.Bounds.Min.X + max(96, cnt.layout.Bounds.Dx()+c.mouseDelta().X)
