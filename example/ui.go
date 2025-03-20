@@ -109,7 +109,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 				"elit. Maecenas lacinia, sem eu lacinia molestie, mi risus faucibus " +
 				"ipsum, eu varius magna felis a nulla.")
 		})
-		ctx.Header("Background Color", true, func() {
+		ctx.Header("Color", true, func() {
 			ctx.SetGridLayout([]int{-1, 78}, []int{74})
 			ctx.GridCell(func() {
 				ctx.SetGridLayout([]int{46, -1}, nil)

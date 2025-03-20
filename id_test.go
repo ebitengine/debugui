@@ -11,7 +11,7 @@ import (
 )
 
 func TestMultipleButtonsInForLoop(t *testing.T) {
-	d := debugui.New()
+	var d debugui.DebugUI
 	d.Update(func(ctx *debugui.Context) {
 		ctx.Window("Window", image.Rect(0, 0, 100, 100), func(layout debugui.ContainerLayout) {
 			var id debugui.ControlID
@@ -37,7 +37,7 @@ func TestMultipleButtonsInForLoop(t *testing.T) {
 }
 
 func TestMultipleButtonsOnOneLine(t *testing.T) {
-	d := debugui.New()
+	var d debugui.DebugUI
 	d.Update(func(ctx *debugui.Context) {
 		ctx.Window("Window", image.Rect(0, 0, 100, 100), func(layout debugui.ContainerLayout) {
 			idA1 := ctx.ButtonID("a")

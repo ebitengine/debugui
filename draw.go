@@ -88,23 +88,24 @@ func iconImage(icon icon) *ebiten.Image {
 
 func (c *Context) draw(screen *ebiten.Image) {
 	target := screen
+	scale := c.Scale()
 	var cmd *command
 	for c.nextCommand(&cmd) {
 		switch cmd.typ {
 		case commandRect:
 			vector.DrawFilledRect(
 				target,
-				float32(cmd.rect.rect.Min.X*c.scale),
-				float32(cmd.rect.rect.Min.Y*c.scale),
-				float32(cmd.rect.rect.Dx()*c.scale),
-				float32(cmd.rect.rect.Dy()*c.scale),
+				float32(cmd.rect.rect.Min.X*scale),
+				float32(cmd.rect.rect.Min.Y*scale),
+				float32(cmd.rect.rect.Dx()*scale),
+				float32(cmd.rect.rect.Dy()*scale),
 				cmd.rect.color,
 				false,
 			)
 		case commandText:
 			op := &text.DrawOptions{}
 			op.GeoM.Translate(float64(cmd.text.pos.X), float64(cmd.text.pos.Y))
-			op.GeoM.Scale(float64(c.scale), float64(c.scale))
+			op.GeoM.Scale(float64(scale), float64(scale))
 			op.ColorScale.ScaleWithColor(cmd.text.color)
 			text.Draw(target, cmd.text.str, fontFace, op)
 		case commandIcon:
@@ -116,17 +117,17 @@ func (c *Context) draw(screen *ebiten.Image) {
 			x := cmd.icon.rect.Min.X + (cmd.icon.rect.Dx()-img.Bounds().Dx())/2
 			y := cmd.icon.rect.Min.Y + (cmd.icon.rect.Dy()-img.Bounds().Dy())/2
 			op.GeoM.Translate(float64(x), float64(y))
-			op.GeoM.Scale(float64(c.scale), float64(c.scale))
+			op.GeoM.Scale(float64(scale), float64(scale))
 			op.ColorScale.ScaleWithColor(cmd.icon.color)
 			target.DrawImage(img, op)
 		case commandDraw:
 			cmd.draw.f(target)
 		case commandClip:
 			r := cmd.clip.rect
-			r.Min.X *= c.scale
-			r.Min.Y *= c.scale
-			r.Max.X *= c.scale
-			r.Max.Y *= c.scale
+			r.Min.X *= scale
+			r.Min.Y *= scale
+			r.Max.X *= scale
+			r.Max.Y *= scale
 			target = screen.SubImage(r).(*ebiten.Image)
 		}
 	}
@@ -196,13 +197,13 @@ func (c *Context) DrawControl(f func(screen *ebiten.Image)) {
 }
 
 func (c *Context) drawFrame(rect image.Rectangle, colorid int) {
-	c.drawRect(rect, c.style.colors[colorid])
+	c.drawRect(rect, c.style().colors[colorid])
 	if colorid == ColorScrollBase || colorid == ColorScrollThumb || colorid == ColorTitleBG {
 		return
 	}
 	// draw border
-	if c.style.colors[ColorBorder].A != 0 {
-		c.drawBox(rect.Inset(-1), c.style.colors[ColorBorder])
+	if c.style().colors[ColorBorder].A != 0 {
+		c.drawBox(rect.Inset(-1), c.style().colors[ColorBorder])
 	}
 }
 
@@ -226,11 +227,11 @@ func (c *Context) drawControlText(str string, rect image.Rectangle, colorid int,
 	if (opt & optionAlignCenter) != 0 {
 		pos.X = rect.Min.X + (rect.Dx()-tw)/2
 	} else if (opt & optionAlignRight) != 0 {
-		pos.X = rect.Min.X + rect.Dx() - tw - c.style.padding
+		pos.X = rect.Min.X + rect.Dx() - tw - c.style().padding
 	} else {
-		pos.X = rect.Min.X + c.style.padding
+		pos.X = rect.Min.X + c.style().padding
 	}
-	c.drawText(str, pos, c.style.colors[colorid])
+	c.drawText(str, pos, c.style().colors[colorid])
 	c.popClipRect()
 }
 

@@ -29,7 +29,7 @@ type Game struct {
 	vy          int
 	hiRes       bool
 
-	debugUI *debugui.DebugUI
+	debugUI debugui.DebugUI
 
 	logBuf       string
 	logSubmitBuf string
@@ -50,7 +50,6 @@ func NewGame() (*Game, error) {
 		gopherImage: ebiten.NewImageFromImage(img),
 		vx:          2,
 		vy:          2,
-		debugUI:     debugui.New(),
 		bg:          [3]float64{90, 95, 100},
 		checks:      [3]bool{true, false, true},
 	}

@@ -37,8 +37,7 @@ type ContainerLayout struct {
 }
 
 type Context struct {
-	scale         int
-	style         *style
+	scaleMinus1   int
 	hover         controlID
 	focus         controlID
 	lastID        controlID

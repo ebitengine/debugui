@@ -119,7 +119,7 @@ func (c *Context) Text(text string) {
 						p++
 					}
 					w += textWidth(text[word:p])
-					if w > bounds.Dx()-c.style.padding && endIdx != startIdx {
+					if w > bounds.Dx()-c.style().padding && endIdx != startIdx {
 						break
 					}
 					if p < len(text) {
@@ -169,7 +169,7 @@ func (c *Context) Checkbox(label string, state *bool) bool {
 		// draw
 		c.drawControlFrame(id, box, ColorBase, 0)
 		if *state {
-			c.drawIcon(iconCheck, box, c.style.colors[ColorText])
+			c.drawIcon(iconCheck, box, c.style().colors[ColorText])
 		}
 		bounds = image.Rect(bounds.Min.X+box.Dx(), bounds.Min.Y, bounds.Max.X, bounds.Max.Y)
 		c.drawControlText(label, bounds, ColorText, 0)
@@ -208,7 +208,7 @@ func (c *Context) slider(value *float64, low, high, step float64, digits int, op
 		// draw base
 		c.drawControlFrame(id, bounds, ColorBase, opt)
 		// draw thumb
-		w := c.style.thumbSize
+		w := c.style().thumbSize
 		x := int((v - low) * float64(bounds.Dx()-w) / (high - low))
 		thumb := image.Rect(bounds.Min.X+x, bounds.Min.Y, bounds.Min.X+x+w, bounds.Max.Y)
 		c.drawControlFrame(id, thumb, ColorButton, opt)
@@ -262,9 +262,9 @@ func (c *Context) header(label string, istreenode bool, opt option, f func()) {
 		c.drawIcon(
 			icon,
 			image.Rect(bounds.Min.X, bounds.Min.Y, bounds.Min.X+bounds.Dy(), bounds.Max.Y),
-			c.style.colors[ColorText],
+			c.style().colors[ColorText],
 		)
-		bounds.Min.X += bounds.Dy() - c.style.padding
+		bounds.Min.X += bounds.Dy() - c.style().padding
 		c.drawControlText(label, bounds, ColorText, 0)
 
 		return expanded
@@ -275,9 +275,9 @@ func (c *Context) header(label string, istreenode bool, opt option, f func()) {
 
 func (c *Context) treeNode(label string, opt option, f func()) {
 	c.header(label, true, opt, func() {
-		c.layout().indent += c.style.indent
+		c.layout().indent += c.style().indent
 		defer func() {
-			c.layout().indent -= c.style.indent
+			c.layout().indent -= c.style().indent
 		}()
 		f()
 	})
@@ -290,7 +290,7 @@ func (c *Context) scrollbarVertical(cnt *container, b image.Rectangle, cs image.
 		// get sizing / positioning
 		base := b
 		base.Min.X = b.Max.X
-		base.Max.X = base.Min.X + c.style.scrollbarSize
+		base.Max.X = base.Min.X + c.style().scrollbarSize
 
 		// handle input
 		id := c.idFromString("!scrollbar" + "y")
@@ -304,7 +304,7 @@ func (c *Context) scrollbarVertical(cnt *container, b image.Rectangle, cs image.
 		// draw base and thumb
 		c.drawFrame(base, ColorScrollBase)
 		thumb := base
-		thumb.Max.Y = thumb.Min.Y + max(c.style.thumbSize, base.Dy()*b.Dy()/cs.Y)
+		thumb.Max.Y = thumb.Min.Y + max(c.style().thumbSize, base.Dy()*b.Dy()/cs.Y)
 		thumb = thumb.Add(image.Pt(0, cnt.layout.ScrollOffset.Y*(base.Dy()-thumb.Dy())/maxscroll))
 		c.drawFrame(thumb, ColorScrollThumb)
 
@@ -325,7 +325,7 @@ func (c *Context) scrollbarHorizontal(cnt *container, b image.Rectangle, cs imag
 		// get sizing / positioning
 		base := b
 		base.Min.Y = b.Max.Y
-		base.Max.Y = base.Min.Y + c.style.scrollbarSize
+		base.Max.Y = base.Min.Y + c.style().scrollbarSize
 
 		// handle input
 		id := c.idFromString("!scrollbar" + "x")
@@ -339,7 +339,7 @@ func (c *Context) scrollbarHorizontal(cnt *container, b image.Rectangle, cs imag
 		// draw base and thumb
 		c.drawFrame(base, ColorScrollBase)
 		thumb := base
-		thumb.Max.X = thumb.Min.X + max(c.style.thumbSize, base.Dx()*b.Dx()/cs.X)
+		thumb.Max.X = thumb.Min.X + max(c.style().thumbSize, base.Dx()*b.Dx()/cs.X)
 		thumb = thumb.Add(image.Pt(cnt.layout.ScrollOffset.X*(base.Dx()-thumb.Dx())/maxscroll, 0))
 		c.drawFrame(thumb, ColorScrollThumb)
 
@@ -363,10 +363,10 @@ func (c *Context) scrollbar(cnt *container, b image.Rectangle, cs image.Point, s
 }
 
 func (c *Context) scrollbars(cnt *container, body image.Rectangle) image.Rectangle {
-	sz := c.style.scrollbarSize
+	sz := c.style().scrollbarSize
 	cs := cnt.layout.ContentSize
-	cs.X += c.style.padding * 2
-	cs.Y += c.style.padding * 2
+	cs.X += c.style().padding * 2
+	cs.Y += c.style().padding * 2
 	c.pushClipRect(body)
 	// resize body to make room for scrollbars
 	if cs.Y > cnt.layout.BodyBounds.Dy() {
@@ -387,7 +387,7 @@ func (c *Context) pushContainerBodyLayout(cnt *container, body image.Rectangle, 
 	if (^opt & optionNoScroll) != 0 {
 		body = c.scrollbars(cnt, body)
 	}
-	c.pushLayout(body.Inset(c.style.padding), cnt.layout.ScrollOffset)
+	c.pushLayout(body.Inset(c.style().padding), cnt.layout.ScrollOffset)
 	cnt.layout.BodyBounds = body
 }
 
@@ -400,10 +400,14 @@ func (c *Context) SetScale(scale int) {
 	if scale < 1 {
 		panic("debugui: scale must be >= 1")
 	}
-	c.scale = scale
+	c.scaleMinus1 = scale - 1
 }
 
 // Scale returns the scale of the UI.
 func (c *Context) Scale() int {
-	return c.scale
+	return c.scaleMinus1 + 1
+}
+
+func (c *Context) style() *style {
+	return &defaultStyle
 }

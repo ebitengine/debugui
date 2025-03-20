@@ -46,7 +46,7 @@ func (c *Context) textFieldRaw(buf *string, id controlID, opt option) bool {
 			// handle text input
 			f := c.textInputTextField(id)
 			f.Focus()
-			x := bounds.Min.X + c.style.padding + textWidth(*buf)
+			x := bounds.Min.X + c.style().padding + textWidth(*buf)
 			y := bounds.Min.Y + lineHeight()
 			handled, err := f.HandleInput(x, y)
 			if err != nil {
@@ -80,11 +80,11 @@ func (c *Context) textFieldRaw(buf *string, id controlID, opt option) bool {
 		// draw
 		c.drawControlFrame(id, bounds, ColorBase, opt)
 		if c.focus == id {
-			color := c.style.colors[ColorText]
+			color := c.style().colors[ColorText]
 			textw := textWidth(*buf)
 			texth := lineHeight()
-			ofx := bounds.Dx() - c.style.padding - textw - 1
-			textx := bounds.Min.X + min(ofx, c.style.padding)
+			ofx := bounds.Dx() - c.style().padding - textw - 1
+			textx := bounds.Min.X + min(ofx, c.style().padding)
 			texty := bounds.Min.Y + (bounds.Dy()-texth)/2
 			c.pushClipRect(bounds)
 			c.drawText(*buf, image.Pt(textx, texty), color)

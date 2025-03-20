@@ -6,16 +6,7 @@ package debugui
 import "github.com/hajimehoshi/ebiten/v2"
 
 type DebugUI struct {
-	ctx *Context
-}
-
-func New() *DebugUI {
-	return &DebugUI{
-		ctx: &Context{
-			scale: 1,
-			style: &defaultStyle,
-		},
-	}
+	ctx Context
 }
 
 func (d *DebugUI) Update(f func(ctx *Context)) {

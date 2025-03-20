@@ -143,13 +143,13 @@ func (c *Context) layoutNext() image.Rectangle {
 	r := image.Rect(layout.position.X, layout.position.Y, layout.position.X, layout.position.Y)
 
 	// size
-	r.Max.X = r.Min.X + layout.widthInPixels(c.style)
-	r.Max.Y = r.Min.Y + layout.heightInPixels(c.style)
+	r.Max.X = r.Min.X + layout.widthInPixels(c.style())
+	r.Max.Y = r.Min.Y + layout.heightInPixels(c.style())
 
 	layout.itemIndex++
 	// update position
-	layout.position.X += r.Dx() + c.style.spacing
-	layout.nextRowY = max(layout.nextRowY, r.Max.Y+c.style.spacing)
+	layout.position.X += r.Dx() + c.style().spacing
+	layout.nextRowY = max(layout.nextRowY, r.Max.Y+c.style().spacing)
 
 	// apply body offset
 	r = r.Add(layout.body.Min)

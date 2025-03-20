@@ -63,13 +63,13 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, f fun
 	// do title bar
 	if (^opt & optionNoTitle) != 0 {
 		tr := bounds
-		tr.Max.Y = tr.Min.Y + c.style.titleHeight
+		tr.Max.Y = tr.Min.Y + c.style().titleHeight
 		c.drawFrame(tr, ColorTitleBG)
 
 		// do title text
 		if (^opt & optionNoTitle) != 0 {
 			id := c.idFromString("!title")
-			r := image.Rect(tr.Min.X+tr.Dy()-c.style.padding, tr.Min.Y, tr.Max.X, tr.Max.Y)
+			r := image.Rect(tr.Min.X+tr.Dy()-c.style().padding, tr.Min.Y, tr.Max.X, tr.Max.Y)
 			c.updateControl(id, r, opt)
 			c.drawControlText(title, r, ColorTitleText, opt)
 			if id == c.focus && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
@@ -86,7 +86,7 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, f fun
 			if collapsed {
 				icon = iconCollapsed
 			}
-			c.drawIcon(icon, r, c.style.colors[ColorTitleText])
+			c.drawIcon(icon, r, c.style().colors[ColorTitleText])
 			c.updateControl(id, r, opt)
 			if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && id == c.focus {
 				cnt.collapsed = !cnt.collapsed
@@ -103,7 +103,7 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, f fun
 
 	// do `resize` handle
 	if (^opt & optionNoResize) != 0 {
-		sz := c.style.titleHeight
+		sz := c.style().titleHeight
 		id := c.idFromString("!resize")
 		r := image.Rect(bounds.Max.X-sz, bounds.Max.Y-sz, bounds.Max.X, bounds.Max.Y)
 		c.updateControl(id, r, opt)
