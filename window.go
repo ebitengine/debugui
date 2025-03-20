@@ -69,7 +69,7 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, f fun
 		// do title text
 		if (^opt & optionNoTitle) != 0 {
 			id := c.idFromString("!title")
-			r := image.Rect(tr.Min.X+tr.Dy(), tr.Min.Y, tr.Max.X, tr.Max.Y)
+			r := image.Rect(tr.Min.X+tr.Dy()-c.style.padding, tr.Min.Y, tr.Max.X, tr.Max.Y)
 			c.updateControl(id, r, opt)
 			c.drawControlText(title, r, ColorTitleText, opt)
 			if id == c.focus && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
