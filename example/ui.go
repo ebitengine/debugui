@@ -26,7 +26,7 @@ func (g *Game) writeLog(text string) {
 func (g *Game) testWindow(ctx *debugui.Context) {
 	ctx.Window("Demo Window", image.Rect(40, 40, 340, 500), func(layout debugui.ContainerLayout) {
 		ctx.Header("Window Info", false, func() {
-			ctx.SetGridLayout([]int{60, -1}, nil)
+			ctx.SetGridLayout([]int{-1, -1}, nil)
 			ctx.Text("Position:")
 			ctx.Text(fmt.Sprintf("%d, %d", layout.Bounds.Min.X, layout.Bounds.Min.Y))
 			ctx.Text("Size:")
@@ -43,7 +43,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 			}
 		})
 		ctx.Header("Test Buttons", true, func() {
-			ctx.SetGridLayout([]int{100, -1, -1}, nil)
+			ctx.SetGridLayout([]int{-2, -1, -1}, nil)
 			ctx.Text("Test buttons 1:")
 			if ctx.Button("Button 1") {
 				g.writeLog("Pressed button 1")
@@ -67,7 +67,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 			})
 		})
 		ctx.Header("Tree and Text", true, func() {
-			ctx.SetGridLayout([]int{140, -1}, nil)
+			ctx.SetGridLayout([]int{-1, -1}, nil)
 			ctx.GridCell(func() {
 				ctx.TreeNode("Test 1", func() {
 					ctx.TreeNode("Test 1a", func() {
@@ -84,7 +84,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 					})
 				})
 				ctx.TreeNode("Test 2", func() {
-					ctx.SetGridLayout([]int{54, 54}, nil)
+					ctx.SetGridLayout([]int{-1, -1}, nil)
 					if ctx.Button("Button 3") {
 						g.writeLog("Pressed button 3")
 					}
@@ -110,9 +110,9 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 				"ipsum, eu varius magna felis a nulla.")
 		})
 		ctx.Header("Color", true, func() {
-			ctx.SetGridLayout([]int{-1, 78}, []int{74})
+			ctx.SetGridLayout([]int{-3, -1}, []int{74})
 			ctx.GridCell(func() {
-				ctx.SetGridLayout([]int{46, -1}, nil)
+				ctx.SetGridLayout([]int{-1, -3}, nil)
 				ctx.Text("Red:")
 				ctx.Slider(&g.bg[0], 0, 255, 1, 0)
 				ctx.Text("Green:")
@@ -163,7 +163,7 @@ func (g *Game) logWindow(ctx *debugui.Context) {
 		})
 		ctx.GridCell(func() {
 			var submit bool
-			ctx.SetGridLayout([]int{-1, 70}, nil)
+			ctx.SetGridLayout([]int{-3, -1}, nil)
 			if ctx.TextField(&g.logSubmitBuf) {
 				if g.logSubmitBuf != "" && ebiten.IsKeyPressed(ebiten.KeyEnter) {
 					submit = true
