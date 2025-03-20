@@ -132,7 +132,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 		})
 		ctx.Header("Number", true, func() {
 			ctx.SetGridLayout([]int{-1}, nil)
-			ctx.Number(&g.num1, 0.1, 2)
+			ctx.NumberField(&g.num1, 0.1, 2)
 			ctx.Slider(&g.num2, 0, 10, 0.1, 2)
 		})
 	})

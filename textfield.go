@@ -108,11 +108,11 @@ func (c *Context) textField(buf *string, opt option) bool {
 	return c.textFieldRaw(buf, id, opt)
 }
 
-func (c *Context) Number(value *float64, step float64, digits int) bool {
-	return c.number(value, step, digits, optionAlignCenter)
+func (c *Context) NumberField(value *float64, step float64, digits int) bool {
+	return c.numberField(value, step, digits, optionAlignCenter)
 }
 
-func (c *Context) number(value *float64, step float64, digits int, opt option) bool {
+func (c *Context) numberField(value *float64, step float64, digits int, opt option) bool {
 	id := c.idFromGlobalUniqueString(fmt.Sprintf("%p", value))
 	last := *value
 
