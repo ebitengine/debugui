@@ -147,6 +147,11 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 			ctx.NumberField(&g.num1, 0.1, 2)
 			ctx.Slider(&g.num2, 0, 10, 0.1, 2)
 		})
+		ctx.Header("Licenses", false, func() {
+			ctx.Text(`The photograph by Chris Nokleberg is licensed under the Creative Commons Attribution 4.0 License
+
+The Go Gopher by Renee French is licensed under the Creative Commons Attribution 4.0 License.`)
+		})
 	})
 }
 
