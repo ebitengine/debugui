@@ -78,9 +78,9 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, f fun
 			body.Min.Y += tr.Dy()
 		}
 
-		// do `close` button
+		// do `collapse` button
 		if (^opt & optionNoClose) != 0 {
-			id := c.idFromString("!close")
+			id := c.idFromString("!collapse")
 			r := image.Rect(tr.Min.X, tr.Min.Y, tr.Min.X+tr.Dy(), tr.Max.Y)
 			icon := iconExpanded
 			if collapsed {
