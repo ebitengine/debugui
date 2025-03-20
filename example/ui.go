@@ -25,7 +25,6 @@ func (g *Game) writeLog(text string) {
 
 func (g *Game) testWindow(ctx *debugui.Context) {
 	ctx.Window("Demo Window", image.Rect(40, 40, 340, 500), func(layout debugui.ContainerLayout) {
-		// window info
 		ctx.Header("Window Info", false, func() {
 			ctx.SetGridLayout([]int{54, -1}, nil)
 			ctx.Label("Position:")
@@ -33,8 +32,6 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 			ctx.Label("Size:")
 			ctx.Label(fmt.Sprintf("%d, %d", layout.Bounds.Dx(), layout.Bounds.Dy()))
 		})
-
-		// labels + buttons
 		ctx.Header("Test Buttons", true, func() {
 			ctx.SetGridLayout([]int{100, -1, -1}, nil)
 			ctx.Label("Test buttons 1:")
@@ -59,8 +56,6 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 				}
 			})
 		})
-
-		// tree
 		ctx.Header("Tree and Text", true, func() {
 			ctx.SetGridLayout([]int{140, -1}, nil)
 			ctx.GridCell(func() {
@@ -104,11 +99,8 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 				"elit. Maecenas lacinia, sem eu lacinia molestie, mi risus faucibus " +
 				"ipsum, eu varius magna felis a nulla.")
 		})
-
-		// background color sliders
 		ctx.Header("Background Color", true, func() {
 			ctx.SetGridLayout([]int{-1, 78}, []int{74})
-			// sliders
 			ctx.GridCell(func() {
 				ctx.SetGridLayout([]int{46, -1}, nil)
 				ctx.Label("Red:")
@@ -118,7 +110,6 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 				ctx.Label("Blue:")
 				ctx.Slider(&g.bg[2], 0, 255, 1, 0)
 			})
-			// color preview
 			ctx.Control("", func(bounds image.Rectangle) bool {
 				ctx.DrawControl(func(screen *ebiten.Image) {
 					vector.DrawFilledRect(
@@ -139,8 +130,6 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 				return false
 			})
 		})
-
-		// Number
 		ctx.Header("Number", true, func() {
 			ctx.SetGridLayout([]int{-1}, nil)
 			ctx.Number(&g.num1, 0.1, 2)
