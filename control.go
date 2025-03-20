@@ -224,7 +224,7 @@ func (c *Context) header(label string, istreenode bool, opt option, f func()) {
 	label, idStr, _ := strings.Cut(label, idSeparator)
 	id := c.idFromString(idStr)
 	_, toggled := c.toggledIDs[id]
-	c.SetGridLayout([]int{-1}, nil)
+	c.SetGridLayout(nil, nil)
 
 	var expanded bool
 	if (opt & optionExpanded) != 0 {

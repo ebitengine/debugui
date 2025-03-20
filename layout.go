@@ -95,7 +95,8 @@ func (c *Context) layout() *layout {
 // For example, if widths is []int{100, -1}, the first column is 100 pixels and the second column takes the remaining space.
 // If widths is []int{100, -1, -2}, the first column is 100 pixels, the second column takes 1/3 of the remaining space, and the third column takes 2/3 of the remaining space.
 //
-// If widths or heights is nil, the default size is used. This is the same as []int{0}.
+// If widths is nil, one column width with -1 is used. This is the same as []int{-1}.
+// If heights is nil, the default size is used. This is the same as []int{0}.
 //
 // When the number of items exceeds the number of grid cells, a new row is started with the same grid layout.
 func (c *Context) SetGridLayout(widths []int, heights []int) {
@@ -107,7 +108,7 @@ func (c *Context) SetGridLayout(widths []int, heights []int) {
 	copy(layout.widths, widths)
 	layout.widths = layout.widths[:len(widths)]
 	if len(layout.widths) == 0 {
-		layout.widths = append(layout.widths, 0)
+		layout.widths = append(layout.widths, -1)
 	}
 
 	if len(layout.heights) < len(heights) {
