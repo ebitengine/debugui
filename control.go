@@ -299,6 +299,7 @@ func (c *Context) slider(value *float64, low, high, step float64, digits int, op
 
 	// handle text input mode
 	if c.numberTextField(&v, id) {
+		*value = v
 		return false
 	}
 
