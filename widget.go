@@ -8,16 +8,8 @@ func (c *Context) Button(label string) bool {
 	return result
 }
 
-func (c *Context) TextField(buf *string) bool {
-	return c.textField(buf, 0)
-}
-
 func (c *Context) Slider(value *float64, lo, hi float64, step float64, digits int) bool {
 	return c.slider(value, lo, hi, step, digits, optionAlignCenter)
-}
-
-func (c *Context) Number(value *float64, step float64, digits int) bool {
-	return c.number(value, step, digits, optionAlignCenter)
 }
 
 func (c *Context) Header(label string, expanded bool, f func()) {
