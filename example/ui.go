@@ -26,22 +26,22 @@ func (g *Game) writeLog(text string) {
 func (g *Game) testWindow(ctx *debugui.Context) {
 	ctx.Window("Demo Window", image.Rect(40, 40, 340, 500), func(layout debugui.ContainerLayout) {
 		ctx.Header("Window Info", false, func() {
-			ctx.SetGridLayout([]int{54, -1}, nil)
-			ctx.Label("Position:")
-			ctx.Label(fmt.Sprintf("%d, %d", layout.Bounds.Min.X, layout.Bounds.Min.Y))
-			ctx.Label("Size:")
-			ctx.Label(fmt.Sprintf("%d, %d", layout.Bounds.Dx(), layout.Bounds.Dy()))
+			ctx.SetGridLayout([]int{60, -1}, nil)
+			ctx.Text("Position:")
+			ctx.Text(fmt.Sprintf("%d, %d", layout.Bounds.Min.X, layout.Bounds.Min.Y))
+			ctx.Text("Size:")
+			ctx.Text(fmt.Sprintf("%d, %d", layout.Bounds.Dx(), layout.Bounds.Dy()))
 		})
 		ctx.Header("Test Buttons", true, func() {
 			ctx.SetGridLayout([]int{100, -1, -1}, nil)
-			ctx.Label("Test buttons 1:")
+			ctx.Text("Test buttons 1:")
 			if ctx.Button("Button 1") {
 				g.writeLog("Pressed button 1")
 			}
 			if ctx.Button("Button 2") {
 				g.writeLog("Pressed button 2")
 			}
-			ctx.Label("Test buttons 2:")
+			ctx.Text("Test buttons 2:")
 			if ctx.Button("Button 3") {
 				g.writeLog("Pressed button 3")
 			}
@@ -61,8 +61,8 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 			ctx.GridCell(func() {
 				ctx.TreeNode("Test 1", func() {
 					ctx.TreeNode("Test 1a", func() {
-						ctx.Label("Hello")
-						ctx.Label("World")
+						ctx.Text("Hello")
+						ctx.Text("World")
 					})
 					ctx.TreeNode("Test 1b", func() {
 						if ctx.Button("Button 1") {
@@ -103,11 +103,11 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 			ctx.SetGridLayout([]int{-1, 78}, []int{74})
 			ctx.GridCell(func() {
 				ctx.SetGridLayout([]int{46, -1}, nil)
-				ctx.Label("Red:")
+				ctx.Text("Red:")
 				ctx.Slider(&g.bg[0], 0, 255, 1, 0)
-				ctx.Label("Green:")
+				ctx.Text("Green:")
 				ctx.Slider(&g.bg[1], 0, 255, 1, 0)
-				ctx.Label("Blue:")
+				ctx.Text("Blue:")
 				ctx.Slider(&g.bg[2], 0, 255, 1, 0)
 			})
 			ctx.Control("", func(bounds image.Rectangle) bool {

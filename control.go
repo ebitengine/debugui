@@ -114,7 +114,6 @@ func (c *Context) control(id controlID, opt option, f func(bounds image.Rectangl
 }
 
 func (c *Context) Text(text string) {
-	color := c.style.colors[ColorText]
 	c.GridCell(func() {
 		var endIdx, p int
 		c.SetGridLayout([]int{-1}, []int{lineHeight()})
@@ -129,7 +128,7 @@ func (c *Context) Text(text string) {
 						p++
 					}
 					w += textWidth(text[word:p])
-					if w > bounds.Dx() && endIdx != startIdx {
+					if w > bounds.Dx()-c.style.padding && endIdx != startIdx {
 						break
 					}
 					if p < len(text) {
@@ -138,18 +137,11 @@ func (c *Context) Text(text string) {
 					endIdx = p
 					p++
 				}
-				c.drawText(text[startIdx:endIdx], bounds.Min, color)
+				c.drawControlText(text[startIdx:endIdx], bounds, ColorText, 0)
 				p = endIdx + 1
 				return false
 			})
 		}
-	})
-}
-
-func (c *Context) Label(text string) {
-	c.control(0, 0, func(bounds image.Rectangle, wasFocused bool) bool {
-		c.drawControlText(text, bounds, ColorText, 0)
-		return false
 	})
 }
 
