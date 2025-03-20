@@ -42,9 +42,9 @@ func (c *Context) textFieldRaw(buf *string, id controlID, opt option) bool {
 	return c.control(id, opt|optionHoldFocus, func(bounds image.Rectangle, wasFocused bool) bool {
 		var res bool
 
+		f := c.textInputTextField(id)
 		if c.focus == id {
 			// handle text input
-			f := c.textInputTextField(id)
 			f.Focus()
 			x := bounds.Min.X + c.style().padding + textWidth(*buf)
 			y := bounds.Min.Y + lineHeight()
@@ -53,8 +53,8 @@ func (c *Context) textFieldRaw(buf *string, id controlID, opt option) bool {
 				fmt.Fprintln(os.Stderr, err)
 				return false
 			}
-			if *buf != f.TextForRendering() {
-				*buf = f.TextForRendering()
+			if *buf != f.Text() {
+				*buf = f.Text()
 			}
 
 			if !handled {
@@ -68,8 +68,7 @@ func (c *Context) textFieldRaw(buf *string, id controlID, opt option) bool {
 				}
 			}
 		} else {
-			f := c.textInputTextField(id)
-			if *buf != f.TextForRendering() {
+			if *buf != f.Text() {
 				f.SetTextAndSelection(*buf, len(*buf), len(*buf))
 			}
 			if wasFocused {
@@ -87,7 +86,7 @@ func (c *Context) textFieldRaw(buf *string, id controlID, opt option) bool {
 			textx := bounds.Min.X + min(ofx, c.style().padding)
 			texty := bounds.Min.Y + (bounds.Dy()-texth)/2
 			c.pushClipRect(bounds)
-			c.drawText(*buf, image.Pt(textx, texty), color)
+			c.drawText(f.TextForRendering(), image.Pt(textx, texty), color)
 			c.drawRect(image.Rect(textx+textw, texty, textx+textw+1, texty+texth), color)
 			c.popClipRect()
 		} else {
