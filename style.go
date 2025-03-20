@@ -4,12 +4,11 @@
 package debugui
 
 import (
-	"image"
 	"image/color"
 )
 
 type style struct {
-	size          image.Point
+	defaultWidth  int
 	padding       int
 	spacing       int
 	indent        int
@@ -38,7 +37,7 @@ const (
 )
 
 var defaultStyle style = style{
-	size:          image.Pt(68, 10),
+	defaultWidth:  60,
 	padding:       5,
 	spacing:       4,
 	indent:        24,

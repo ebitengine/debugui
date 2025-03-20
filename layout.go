@@ -17,11 +17,11 @@ type layout struct {
 }
 
 func (l *layout) widthInPixels(style *style) int {
-	return l.sizeInPixels(l.widths, l.itemIndex%len(l.widths), style.size.X+style.padding*2, l.body.Dx()-l.indent, style)
+	return l.sizeInPixels(l.widths, l.itemIndex%len(l.widths), style.defaultWidth+style.padding*2, l.body.Dx()-l.indent, style)
 }
 
 func (l *layout) heightInPixels(style *style) int {
-	return l.sizeInPixels(l.heights, l.itemIndex/len(l.widths), style.size.Y+style.padding*2, l.body.Dy(), style)
+	return l.sizeInPixels(l.heights, l.itemIndex/len(l.widths), 18, l.body.Dy(), style)
 }
 
 func (l *layout) sizeInPixels(sizes []int, index int, defaultSize int, entireSize int, style *style) int {

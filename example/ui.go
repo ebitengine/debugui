@@ -33,7 +33,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 			ctx.Text(fmt.Sprintf("%d, %d", layout.Bounds.Dx(), layout.Bounds.Dy()))
 		})
 		ctx.Header("Game Config", true, func() {
-			if ctx.Checkbox("Hi-Res", &g.hiRes) {
+			if ctx.Checkbox(&g.hiRes, "Hi-Res") {
 				if g.hiRes {
 					ctx.SetScale(2)
 				} else {
@@ -99,9 +99,9 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 					}
 				})
 				ctx.TreeNode("Test 3", func() {
-					ctx.Checkbox("Checkbox 1", &g.checks[0])
-					ctx.Checkbox("Checkbox 2", &g.checks[1])
-					ctx.Checkbox("Checkbox 3", &g.checks[2])
+					ctx.Checkbox(&g.checks[0], "Checkbox 1")
+					ctx.Checkbox(&g.checks[1], "Checkbox 2")
+					ctx.Checkbox(&g.checks[2], "Checkbox 3")
 				})
 			})
 
@@ -110,7 +110,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 				"ipsum, eu varius magna felis a nulla.")
 		})
 		ctx.Header("Color", true, func() {
-			ctx.SetGridLayout([]int{-3, -1}, []int{74})
+			ctx.SetGridLayout([]int{-3, -1}, []int{54})
 			ctx.GridCell(func() {
 				ctx.SetGridLayout([]int{-1, -3}, nil)
 				ctx.Text("Red:")
