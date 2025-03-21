@@ -13,6 +13,10 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
+type controlID string
+
+const emptyControlID controlID = ""
+
 const idSeparator = "\x00"
 
 type option int
@@ -265,7 +269,7 @@ func (c *Context) slider(value *float64, low, high, step float64, digits int, op
 	return res, nil
 }
 
-func (c *Context) header(label string, istreenode bool, opt option, callerPC uintptr, f func() error) error {
+func (c *Context) header(label string, isTreeNode bool, opt option, callerPC uintptr, f func() error) error {
 	label, idStr, _ := strings.Cut(label, idSeparator)
 	id := c.idFromCaller(callerPC, idStr)
 	_, toggled := c.toggledIDs[id]
@@ -289,9 +293,7 @@ func (c *Context) header(label string, istreenode bool, opt option, callerPC uin
 				c.toggledIDs[id] = struct{}{}
 			}
 		}
-
-		// draw
-		if istreenode {
+		if isTreeNode {
 			if c.hover == id {
 				c.drawFrame(bounds, ColorButtonHover)
 			}

@@ -10,6 +10,31 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
+type container struct {
+	layout    ContainerLayout
+	headIdx   int
+	tailIdx   int
+	zIndex    int
+	open      bool
+	collapsed bool
+}
+
+// ContainerLayout represents the layout of a container control.
+type ContainerLayout struct {
+	// Bounds is the bounds of the control.
+	Bounds image.Rectangle
+
+	// BodyBounds is the bounds of the body area of the container.
+	BodyBounds image.Rectangle
+
+	// ContentSize is the size of the content.
+	// ContentSize can be larger than Bounds or BodyBounds. In this case, the control should be scrollable.
+	ContentSize image.Point
+
+	// ScrollOffset is the offset of the scroll.
+	ScrollOffset image.Point
+}
+
 func (c *Context) Window(title string, rect image.Rectangle, f func(layout ContainerLayout)) {
 	pc := caller()
 	c.wrapError(func() error {
