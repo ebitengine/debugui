@@ -35,6 +35,12 @@ jobs:
       run: |
         Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
 
+    - name: Vet
+      run: |
+        go vet -v ./...
+        go install ./internal/vettool
+        go vet -vettool=$(which vettool)${{ runner.os == 'Windows' && '.exe' || '' }} -v ./...
+
     - name: Test
       run: |
         go test -v ./...
