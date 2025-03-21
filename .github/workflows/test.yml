@@ -38,8 +38,8 @@ jobs:
     - name: Vet
       run: |
         go vet -v ./...
-        go install ./internal/vettool
-        go vet -vettool=$(which vettool)${{ runner.os == 'Windows' && '.exe' || '' }} -v ./...
+        go build ./internal/vettool
+        go vet -vettool=./vettool${{ runner.os == 'Windows' && '.exe' || '' }} -v ./...
 
     - name: Test
       run: |
