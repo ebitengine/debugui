@@ -448,12 +448,15 @@ func (c *Context) scrollbars(cnt *container, body image.Rectangle, callerPC uint
 	return body
 }
 
-func (c *Context) pushContainerBodyLayout(cnt *container, body image.Rectangle, opt option, callerPC uintptr) {
+func (c *Context) pushContainerBodyLayout(cnt *container, body image.Rectangle, opt option, callerPC uintptr) error {
 	if (^opt & optionNoScroll) != 0 {
 		body = c.scrollbars(cnt, body, callerPC)
 	}
-	c.pushLayout(body.Inset(c.style().padding), cnt.layout.ScrollOffset)
+	if err := c.pushLayout(body.Inset(c.style().padding), cnt.layout.ScrollOffset, opt&optionAutoSize != 0); err != nil {
+		return err
+	}
 	cnt.layout.BodyBounds = body
+	return nil
 }
 
 // SetScale sets the scale of the UI.

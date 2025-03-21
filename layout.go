@@ -52,14 +52,23 @@ func (l *layout) sizeInPixels(sizes []int, index int, defaultSize int, entireSiz
 	return max(8, int(float64(remain)*-float64(s)/float64(denom)))
 }
 
-func (c *Context) pushLayout(body image.Rectangle, scroll image.Point) {
+func (c *Context) pushLayout(body image.Rectangle, scroll image.Point, autoResize bool) error {
 	c.layoutStack = append(c.layoutStack, layout{
 		body:    body.Sub(scroll),
 		max:     image.Pt(-0x1000000, -0x1000000),
 		widths:  []int{0},
 		heights: []int{0},
 	})
-	c.SetGridLayout(nil, nil)
+	if autoResize {
+		if err := c.setGridLayout([]int{0}, nil); err != nil {
+			return err
+		}
+	} else {
+		if err := c.setGridLayout(nil, nil); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (c *Context) popLayout() error {
@@ -88,7 +97,9 @@ func (c *Context) GridCell(f func()) {
 
 func (c *Context) gridCell(f func() error) error {
 	_, err := c.control(emptyControlID, 0, func(bounds image.Rectangle, wasFocused bool) (res bool, err error) {
-		c.pushLayout(bounds, image.Pt(0, 0))
+		if err := c.pushLayout(bounds, image.Pt(0, 0), false); err != nil {
+			return false, err
+		}
 		defer func() {
 			if err2 := c.popLayout(); err2 != nil && err == nil {
 				err = err2
@@ -127,39 +138,43 @@ func (c *Context) layout() (*layout, error) {
 // For example, if widths is []int{100, -1}, the first column is 100 pixels and the second column takes the remaining space.
 // If widths is []int{100, -1, -2}, the first column is 100 pixels, the second column takes 1/3 of the remaining space, and the third column takes 2/3 of the remaining space.
 //
-// If widths is nil, one column width with -1 is used. This is the same as []int{-1}.
-// If heights is nil, the default size is used. This is the same as []int{0}.
+// If widths is nil, one column width with -1 is used for windows, and 0 (the default size) for popups.
+// If heights is nil, 0 (the default size) is used.
 //
 // When the number of items exceeds the number of grid cells, a new row is started with the same grid layout.
 func (c *Context) SetGridLayout(widths []int, heights []int) {
 	c.wrapError(func() error {
-		layout, err := c.layout()
-		if err != nil {
-			return err
-		}
-
-		if len(layout.widths) < len(widths) {
-			layout.widths = append(layout.widths, make([]int, len(widths)-len(layout.widths))...)
-		}
-		copy(layout.widths, widths)
-		layout.widths = layout.widths[:len(widths)]
-		if len(layout.widths) == 0 {
-			layout.widths = append(layout.widths, -1)
-		}
-
-		if len(layout.heights) < len(heights) {
-			layout.heights = append(layout.heights, make([]int, len(heights)-len(layout.heights))...)
-		}
-		copy(layout.heights, heights)
-		layout.heights = layout.heights[:len(heights)]
-		if len(layout.heights) == 0 {
-			layout.heights = append(layout.heights, 0) // TODO: This should be -1?
-		}
-
-		layout.position = image.Pt(layout.indent, layout.nextRowY)
-		layout.itemIndex = 0
-		return nil
+		return c.setGridLayout(widths, heights)
 	})
+}
+
+func (c *Context) setGridLayout(widths []int, heights []int) error {
+	layout, err := c.layout()
+	if err != nil {
+		return err
+	}
+
+	if len(layout.widths) < len(widths) {
+		layout.widths = append(layout.widths, make([]int, len(widths)-len(layout.widths))...)
+	}
+	copy(layout.widths, widths)
+	layout.widths = layout.widths[:len(widths)]
+	if len(layout.widths) == 0 {
+		layout.widths = append(layout.widths, -1)
+	}
+
+	if len(layout.heights) < len(heights) {
+		layout.heights = append(layout.heights, make([]int, len(heights)-len(layout.heights))...)
+	}
+	copy(layout.heights, heights)
+	layout.heights = layout.heights[:len(heights)]
+	if len(layout.heights) == 0 {
+		layout.heights = append(layout.heights, 0) // TODO: This should be -1?
+	}
+
+	layout.position = image.Pt(layout.indent, layout.nextRowY)
+	layout.itemIndex = 0
+	return nil
 }
 
 func (c *Context) layoutNext() (image.Rectangle, error) {

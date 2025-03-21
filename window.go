@@ -104,7 +104,9 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, calle
 		return nil
 	}
 
-	c.pushContainerBodyLayout(cnt, body, opt, callerPC)
+	if err := c.pushContainerBodyLayout(cnt, body, opt, callerPC); err != nil {
+		return err
+	}
 	defer func() {
 		if err2 := c.popLayout(); err2 != nil && err == nil {
 			err = err2

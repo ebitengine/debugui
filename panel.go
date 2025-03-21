@@ -29,7 +29,9 @@ func (c *Context) panel(name string, opt option, callerPC uintptr, f func(layout
 	c.containerStack = append(c.containerStack, cnt)
 	defer c.popContainer()
 
-	c.pushContainerBodyLayout(cnt, cnt.layout.Bounds, opt, callerPC)
+	if err := c.pushContainerBodyLayout(cnt, cnt.layout.Bounds, opt, callerPC); err != nil {
+		return err
+	}
 	defer func() {
 		if err2 := c.popLayout(); err2 != nil && err == nil {
 			err = err2
