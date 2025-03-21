@@ -15,8 +15,8 @@ type DebugUI struct {
 // Update updates the debug UI.
 //
 // Update should be called once in the game's Update function.
-func (d *DebugUI) Update(f func(ctx *Context)) {
-	d.ctx.update(f)
+func (d *DebugUI) Update(f func(ctx *Context) error) error {
+	return d.ctx.update(f)
 }
 
 // Draw draws the debug UI.

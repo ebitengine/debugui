@@ -80,11 +80,14 @@ func (g *Game) Update() error {
 	if ebiten.IsKeyPressed(ebiten.KeyEscape) {
 		return ebiten.Termination
 	}
-	g.debugUI.Update(func(ctx *debugui.Context) {
+	if err := g.debugUI.Update(func(ctx *debugui.Context) error {
 		g.testWindow(ctx)
 		g.logWindow(ctx)
 		g.buttonWindows(ctx)
-	})
+		return nil
+	}); err != nil {
+		return err
+	}
 	return nil
 }
 

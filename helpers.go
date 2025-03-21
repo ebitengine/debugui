@@ -103,10 +103,10 @@ func (c *Context) setFocus(id controlID) {
 	c.keepFocus = true
 }
 
-func (c *Context) update(f func(ctx *Context)) {
+func (c *Context) update(f func(ctx *Context) error) error {
 	c.begin()
 	defer c.end()
-	f(c)
+	return f(c)
 }
 
 func (c *Context) begin() {

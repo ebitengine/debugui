@@ -4,6 +4,7 @@
 package debugui_test
 
 import (
+	"errors"
 	"image"
 	"testing"
 
@@ -12,7 +13,7 @@ import (
 
 func TestMultipleButtonsInForLoop(t *testing.T) {
 	var d debugui.DebugUI
-	d.Update(func(ctx *debugui.Context) {
+	if err := d.Update(func(ctx *debugui.Context) error {
 		ctx.Window("Window", image.Rect(0, 0, 100, 100), func(layout debugui.ContainerLayout) {
 			var id debugui.ControlID
 			for range 10 {
@@ -33,12 +34,15 @@ func TestMultipleButtonsInForLoop(t *testing.T) {
 				t.Errorf("Caller() returned 0")
 			}
 		})
-	})
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestMultipleButtonsOnOneLine(t *testing.T) {
 	var d debugui.DebugUI
-	d.Update(func(ctx *debugui.Context) {
+	if err := d.Update(func(ctx *debugui.Context) error {
 		ctx.Window("Window", image.Rect(0, 0, 100, 100), func(layout debugui.ContainerLayout) {
 			idA1 := ctx.ButtonID("a")
 			idA2 := ctx.ButtonID("a")
@@ -50,5 +54,18 @@ func TestMultipleButtonsOnOneLine(t *testing.T) {
 				t.Errorf("Button() returned the same value twice: %d", idB1)
 			}
 		})
-	})
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestError(t *testing.T) {
+	e := errors.New("test")
+	var d debugui.DebugUI
+	if got, want := d.Update(func(ctx *debugui.Context) error {
+		return e
+	}), e; got != want {
+		t.Errorf("got: %v, want: %v", got, want)
+	}
 }
