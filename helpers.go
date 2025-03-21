@@ -4,6 +4,7 @@
 package debugui
 
 import (
+	"errors"
 	"fmt"
 	"hash/fnv"
 	"image"
@@ -11,7 +12,6 @@ import (
 	"sort"
 	"unsafe"
 
-	"github.com/ebitengine/debugui/internal/caller"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
@@ -28,13 +28,12 @@ func (c *Context) idFromGlobalUniqueString(str string) controlID {
 	return c.idFromBytes([]byte(fmt.Sprintf("!string:%s", str)))
 }
 
-// idFromString returns a hash value based on the caller's file and line number.
-func (c *Context) idFromString(str string) controlID {
-	pc := caller.Caller()
+// idFromCaller returns a hash value based on the caller's file and line number.
+func (c *Context) idFromCaller(callerPC uintptr, str string) controlID {
 	if len(str) > 0 {
-		return c.idFromBytes([]byte(fmt.Sprintf("!caller:%d:%s", pc, str)))
+		return c.idFromBytes([]byte(fmt.Sprintf("!caller:%d:%s", callerPC, str)))
 	}
-	return c.idFromBytes([]byte(fmt.Sprintf("!caller:%d", pc)))
+	return c.idFromBytes([]byte(fmt.Sprintf("!caller:%d", callerPC)))
 }
 
 func (c *Context) idFromBytes(data []byte) controlID {
@@ -103,10 +102,25 @@ func (c *Context) setFocus(id controlID) {
 	c.keepFocus = true
 }
 
-func (c *Context) update(f func(ctx *Context) error) error {
+func (c *Context) update(f func(ctx *Context) error) (err error) {
+	if c.err != nil {
+		return c.err
+	}
+
 	c.begin()
-	defer c.end()
-	return f(c)
+	defer func() {
+		if err2 := c.end(); err2 != nil && err == nil {
+			err = err2
+		}
+	}()
+
+	if err := f(c); err != nil {
+		return err
+	}
+	if c.err != nil {
+		return c.err
+	}
+	return nil
 }
 
 func (c *Context) begin() {
@@ -130,16 +144,16 @@ func (c *Context) cursorPosition() image.Point {
 	return p
 }
 
-func (c *Context) end() {
+func (c *Context) end() error {
 	// check stacks
 	if len(c.containerStack) > 0 {
-		panic("debugui: container stack not empty")
+		return errors.New("debugui: container stack not empty")
 	}
 	if len(c.clipStack) > 0 {
-		panic("debugui: clip stack not empty")
+		return errors.New("debugui: clip stack not empty")
 	}
 	if len(c.layoutStack) > 0 {
-		panic("debugui: layout stack not empty")
+		return errors.New("debugui: layout stack not empty")
 	}
 
 	// handle scroll input
@@ -193,4 +207,13 @@ func (c *Context) end() {
 			c.commandList[cnt.tailIdx].jump.dstIdx = len(c.commandList)
 		}
 	}
+
+	return nil
+}
+
+func (c *Context) wrapError(f func() error) {
+	if c.err != nil {
+		return
+	}
+	c.err = f()
 }

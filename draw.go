@@ -87,6 +87,10 @@ func iconImage(icon icon) *ebiten.Image {
 }
 
 func (c *Context) draw(screen *ebiten.Image) {
+	if c.err != nil {
+		return
+	}
+
 	target := screen
 	scale := c.Scale()
 	var cmd *command
@@ -190,6 +194,10 @@ func (c *Context) drawIcon(icon icon, rect image.Rectangle, color color.Color) {
 }
 
 func (c *Context) DrawControl(f func(screen *ebiten.Image)) {
+	if c.err != nil {
+		return
+	}
+
 	c.setClip(c.clipRect())
 	defer c.setClip(unclippedRect)
 	cmd := c.appendCommand(commandDraw)

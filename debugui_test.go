@@ -69,3 +69,13 @@ func TestError(t *testing.T) {
 		t.Errorf("got: %v, want: %v", got, want)
 	}
 }
+
+func TestUpdateWithoutWindow(t *testing.T) {
+	var d debugui.DebugUI
+	if err := d.Update(func(ctx *debugui.Context) error {
+		ctx.SetGridLayout(nil, nil)
+		return nil
+	}); err == nil {
+		t.Errorf("Update() returned nil, want error")
+	}
+}

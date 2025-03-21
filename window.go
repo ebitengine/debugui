@@ -8,18 +8,26 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+
+	"github.com/ebitengine/debugui/internal/caller"
 )
 
 func (c *Context) Window(title string, rect image.Rectangle, f func(layout ContainerLayout)) {
-	c.window(title, rect, 0, f)
+	pc := caller.Caller()
+	c.wrapError(func() error {
+		if err := c.window(title, rect, 0, pc, f); err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
-func (c *Context) window(title string, bounds image.Rectangle, opt option, f func(layout ContainerLayout)) {
+func (c *Context) window(title string, bounds image.Rectangle, opt option, callerPC uintptr, f func(layout ContainerLayout)) (err error) {
 	id := c.idFromGlobalUniqueString(title)
 
 	cnt := c.container(id, opt)
 	if cnt == nil || !cnt.open {
-		return
+		return nil
 	}
 	if cnt.layout.Bounds.Dx() == 0 {
 		cnt.layout.Bounds = bounds
@@ -68,7 +76,7 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, f fun
 
 		// do title text
 		if (^opt & optionNoTitle) != 0 {
-			id := c.idFromString("!title")
+			id := c.idFromCaller(callerPC, "!title")
 			r := image.Rect(tr.Min.X+tr.Dy()-c.style().padding, tr.Min.Y, tr.Max.X, tr.Max.Y)
 			c.updateControl(id, r, opt)
 			c.drawControlText(title, r, ColorTitleText, opt)
@@ -80,7 +88,7 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, f fun
 
 		// do `collapse` button
 		if (^opt & optionNoClose) != 0 {
-			id := c.idFromString("!collapse")
+			id := c.idFromCaller(callerPC, "!collapse")
 			r := image.Rect(tr.Min.X, tr.Min.Y, tr.Min.X+tr.Dy(), tr.Max.Y)
 			icon := iconExpanded
 			if collapsed {
@@ -95,16 +103,20 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, f fun
 	}
 
 	if collapsed {
-		return
+		return nil
 	}
 
-	c.pushContainerBodyLayout(cnt, body, opt)
-	defer c.popLayout()
+	c.pushContainerBodyLayout(cnt, body, opt, callerPC)
+	defer func() {
+		if err2 := c.popLayout(); err2 != nil && err == nil {
+			err = err2
+		}
+	}()
 
 	// do `resize` handle
 	if (^opt & optionNoResize) != 0 {
 		sz := c.style().titleHeight
-		id := c.idFromString("!resize")
+		id := c.idFromCaller(callerPC, "!resize")
 		r := image.Rect(bounds.Max.X-sz, bounds.Max.Y-sz, bounds.Max.X, bounds.Max.Y)
 		c.updateControl(id, r, opt)
 		if id == c.focus && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
@@ -115,7 +127,11 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, f fun
 
 	// resize to content size
 	if (opt & optionAutoSize) != 0 {
-		r := c.layout().body
+		l, err := c.layout()
+		if err != nil {
+			return err
+		}
+		r := l.body
 		cnt.layout.Bounds.Max.X = cnt.layout.Bounds.Min.X + cnt.layout.ContentSize.X + (cnt.layout.Bounds.Dx() - r.Dx())
 		cnt.layout.Bounds.Max.Y = cnt.layout.Bounds.Min.Y + cnt.layout.ContentSize.Y + (cnt.layout.Bounds.Dy() - r.Dy())
 	}
@@ -129,31 +145,45 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, f fun
 	defer c.popClipRect()
 
 	f(c.currentContainer().layout)
+
+	return nil
 }
 
 func (c *Context) OpenPopup(name string) {
-	id := c.idFromGlobalUniqueString(name)
-	cnt := c.container(id, 0)
-	// set as hover root so popup isn't closed in begin_window_ex()
-	c.nextHoverRoot = cnt
-	c.hoverRoot = c.nextHoverRoot
-	// position at mouse cursor, open and bring-to-front
-	pt := c.cursorPosition()
-	cnt.layout.Bounds = image.Rectangle{
-		Min: pt,
-		Max: pt.Add(image.Pt(1, 1)),
-	}
-	cnt.open = true
-	c.bringToFront(cnt)
+	c.wrapError(func() error {
+		id := c.idFromGlobalUniqueString(name)
+		cnt := c.container(id, 0)
+		// set as hover root so popup isn't closed in begin_window_ex()
+		c.nextHoverRoot = cnt
+		c.hoverRoot = c.nextHoverRoot
+		// position at mouse cursor, open and bring-to-front
+		pt := c.cursorPosition()
+		cnt.layout.Bounds = image.Rectangle{
+			Min: pt,
+			Max: pt.Add(image.Pt(1, 1)),
+		}
+		cnt.open = true
+		c.bringToFront(cnt)
+		return nil
+	})
 }
 
 func (c *Context) ClosePopup(name string) {
-	id := c.idFromGlobalUniqueString(name)
-	cnt := c.container(id, 0)
-	cnt.open = false
+	c.wrapError(func() error {
+		id := c.idFromGlobalUniqueString(name)
+		cnt := c.container(id, 0)
+		cnt.open = false
+		return nil
+	})
 }
 
 func (c *Context) Popup(name string, f func(layout ContainerLayout)) {
-	opt := optionPopup | optionAutoSize | optionNoResize | optionNoScroll | optionNoTitle | optionClosed
-	c.window(name, image.Rectangle{}, opt, f)
+	pc := caller.Caller()
+	c.wrapError(func() error {
+		opt := optionPopup | optionAutoSize | optionNoResize | optionNoScroll | optionNoTitle | optionClosed
+		if err := c.window(name, image.Rectangle{}, opt, pc, f); err != nil {
+			return err
+		}
+		return nil
+	})
 }

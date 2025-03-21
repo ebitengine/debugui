@@ -28,5 +28,5 @@ func (d *DebugUI) Draw(screen *ebiten.Image) {
 
 // IsCapturingInput reports whether the debug UI is capturing input, e.g. when a control has focus.
 func (d *DebugUI) IsCapturingInput() bool {
-	return d.ctx.hoverRoot != nil || d.ctx.focus != 0
+	return d.ctx.isCapturingInput()
 }

@@ -3,23 +3,58 @@
 
 package debugui
 
+import "github.com/ebitengine/debugui/internal/caller"
+
 func (c *Context) Button(label string) bool {
-	_, result := c.button(label, optionAlignCenter)
-	return result
+	pc := caller.Caller()
+	var res bool
+	c.wrapError(func() error {
+		var err error
+		_, res, err = c.button(label, optionAlignCenter, pc)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	return res
 }
 
 func (c *Context) Slider(value *float64, lo, hi float64, step float64, digits int) bool {
-	return c.slider(value, lo, hi, step, digits, optionAlignCenter)
+	var res bool
+	c.wrapError(func() error {
+		var err error
+		res, err = c.slider(value, lo, hi, step, digits, optionAlignCenter)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	return res
 }
 
 func (c *Context) Header(label string, expanded bool, f func()) {
-	var opt option
-	if expanded {
-		opt |= optionExpanded
-	}
-	c.header(label, false, opt, f)
+	pc := caller.Caller()
+	c.wrapError(func() error {
+		var opt option
+		if expanded {
+			opt |= optionExpanded
+		}
+		if err := c.header(label, false, opt, pc, func() error {
+			f()
+			return nil
+		}); err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
 func (c *Context) TreeNode(label string, f func()) {
-	c.treeNode(label, 0, f)
+	pc := caller.Caller()
+	c.wrapError(func() error {
+		if err := c.treeNode(label, 0, pc, f); err != nil {
+			return err
+		}
+		return nil
+	})
 }

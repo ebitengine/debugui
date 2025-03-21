@@ -3,7 +3,10 @@
 
 package debugui
 
-import "image"
+import (
+	"errors"
+	"image"
+)
 
 type layout struct {
 	body      image.Rectangle
@@ -59,19 +62,41 @@ func (c *Context) pushLayout(body image.Rectangle, scroll image.Point) {
 	c.SetGridLayout(nil, nil)
 }
 
-func (c *Context) popLayout() {
+func (c *Context) popLayout() error {
 	cnt := c.currentContainer()
-	layout := c.layout()
+	layout, err := c.layout()
+	if err != nil {
+		return err
+	}
 	cnt.layout.ContentSize.X = layout.max.X - layout.body.Min.X
 	cnt.layout.ContentSize.Y = layout.max.Y - layout.body.Min.Y
 	c.layoutStack = c.layoutStack[:len(c.layoutStack)-1]
+	return err
 }
 
 func (c *Context) GridCell(f func()) {
-	c.control(0, 0, func(bounds image.Rectangle, wasFocused bool) bool {
+	c.wrapError(func() error {
+		if err := c.gridCell(func() error {
+			f()
+			return nil
+		}); err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+func (c *Context) gridCell(f func() error) error {
+	_, err := c.control(0, 0, func(bounds image.Rectangle, wasFocused bool) (res bool, err error) {
 		c.pushLayout(bounds, image.Pt(0, 0))
-		defer c.popLayout()
-		f()
+		defer func() {
+			if err2 := c.popLayout(); err2 != nil && err == nil {
+				err = err2
+			}
+		}()
+		if err := f(); err != nil {
+			return false, err
+		}
 		b := &c.layoutStack[len(c.layoutStack)-1]
 		// inherit position/next_row/max from child layout if they are greater
 		a := &c.layoutStack[len(c.layoutStack)-2]
@@ -79,12 +104,19 @@ func (c *Context) GridCell(f func()) {
 		a.nextRowY = max(a.nextRowY, b.nextRowY+b.body.Min.Y-a.body.Min.Y)
 		a.max.X = max(a.max.X, b.max.X)
 		a.max.Y = max(a.max.Y, b.max.Y)
-		return false
+		return false, nil
 	})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (c *Context) layout() *layout {
-	return &c.layoutStack[len(c.layoutStack)-1]
+func (c *Context) layout() (*layout, error) {
+	if len(c.layoutStack) == 0 {
+		return nil, errors.New("debugui: layout stack is empty; perhaps a window is absent")
+	}
+	return &c.layoutStack[len(c.layoutStack)-1], nil
 }
 
 // SetGridLayout sets the grid layout.
@@ -100,32 +132,42 @@ func (c *Context) layout() *layout {
 //
 // When the number of items exceeds the number of grid cells, a new row is started with the same grid layout.
 func (c *Context) SetGridLayout(widths []int, heights []int) {
-	layout := c.layout()
+	c.wrapError(func() error {
+		layout, err := c.layout()
+		if err != nil {
+			return err
+		}
 
-	if len(layout.widths) < len(widths) {
-		layout.widths = append(layout.widths, make([]int, len(widths)-len(layout.widths))...)
-	}
-	copy(layout.widths, widths)
-	layout.widths = layout.widths[:len(widths)]
-	if len(layout.widths) == 0 {
-		layout.widths = append(layout.widths, -1)
-	}
+		if len(layout.widths) < len(widths) {
+			layout.widths = append(layout.widths, make([]int, len(widths)-len(layout.widths))...)
+		}
+		copy(layout.widths, widths)
+		layout.widths = layout.widths[:len(widths)]
+		if len(layout.widths) == 0 {
+			layout.widths = append(layout.widths, -1)
+		}
 
-	if len(layout.heights) < len(heights) {
-		layout.heights = append(layout.heights, make([]int, len(heights)-len(layout.heights))...)
-	}
-	copy(layout.heights, heights)
-	layout.heights = layout.heights[:len(heights)]
-	if len(layout.heights) == 0 {
-		layout.heights = append(layout.heights, 0) // TODO: This should be -1?
-	}
+		if len(layout.heights) < len(heights) {
+			layout.heights = append(layout.heights, make([]int, len(heights)-len(layout.heights))...)
+		}
+		copy(layout.heights, heights)
+		layout.heights = layout.heights[:len(heights)]
+		if len(layout.heights) == 0 {
+			layout.heights = append(layout.heights, 0) // TODO: This should be -1?
+		}
 
-	layout.position = image.Pt(layout.indent, layout.nextRowY)
-	layout.itemIndex = 0
+		layout.position = image.Pt(layout.indent, layout.nextRowY)
+		layout.itemIndex = 0
+		return nil
+	})
 }
 
-func (c *Context) layoutNext() image.Rectangle {
-	layout := c.layout()
+func (c *Context) layoutNext() (image.Rectangle, error) {
+	layout, err := c.layout()
+	if err != nil {
+		return image.Rectangle{}, err
+	}
+
 	if len(layout.widths) == 0 {
 		panic("not reached")
 	}
@@ -159,5 +201,5 @@ func (c *Context) layoutNext() image.Rectangle {
 	layout.max.X = max(layout.max.X, r.Max.X)
 	layout.max.Y = max(layout.max.Y, r.Max.Y)
 
-	return r
+	return r, nil
 }

@@ -22,7 +22,16 @@ const (
 )
 
 func (c *Context) TextField(buf *string) bool {
-	return c.textField(buf, 0)
+	var res bool
+	c.wrapError(func() error {
+		var err error
+		res, err = c.textField(buf, 0)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	return res
 }
 
 func (c *Context) textInputTextField(id controlID) *textinput.Field {
@@ -39,8 +48,8 @@ func (c *Context) textInputTextField(id controlID) *textinput.Field {
 	return c.textInputTextFields[id]
 }
 
-func (c *Context) textFieldRaw(buf *string, id controlID, opt option) bool {
-	return c.control(id, opt|optionHoldFocus, func(bounds image.Rectangle, wasFocused bool) bool {
+func (c *Context) textFieldRaw(buf *string, id controlID, opt option) (bool, error) {
+	res, err := c.control(id, opt|optionHoldFocus, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
 
 		f := c.textInputTextField(id)
@@ -52,7 +61,7 @@ func (c *Context) textFieldRaw(buf *string, id controlID, opt option) bool {
 			handled, err := f.HandleInput(x, y)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
-				return false
+				return false, nil
 			}
 			if *buf != f.Text() {
 				*buf = f.Text()
@@ -93,36 +102,61 @@ func (c *Context) textFieldRaw(buf *string, id controlID, opt option) bool {
 		} else {
 			c.drawControlText(*buf, bounds, ColorText, opt)
 		}
-		return res
+		return res, nil
 	})
+	if err != nil {
+		return false, err
+	}
+	return res, nil
+
 }
 
 func (c *Context) SetTextFieldValue(value *string) {
-	id := c.idFromGlobalUniquePointer(unsafe.Pointer(value))
-	f := c.textInputTextField(id)
-	f.SetTextAndSelection(*value, 0, 0)
+	c.wrapError(func() error {
+		id := c.idFromGlobalUniquePointer(unsafe.Pointer(value))
+		f := c.textInputTextField(id)
+		f.SetTextAndSelection(*value, 0, 0)
+		return nil
+	})
 }
 
-func (c *Context) textField(buf *string, opt option) bool {
+func (c *Context) textField(buf *string, opt option) (bool, error) {
 	id := c.idFromGlobalUniquePointer(unsafe.Pointer(buf))
-	return c.textFieldRaw(buf, id, opt)
+	res, err := c.textFieldRaw(buf, id, opt)
+	if err != nil {
+		return false, err
+	}
+	return res, nil
 }
 
 func (c *Context) NumberField(value *float64, step float64, digits int) bool {
-	return c.numberField(value, step, digits, optionAlignCenter)
+	var res bool
+	c.wrapError(func() error {
+		var err error
+		res, err = c.numberField(value, step, digits, optionAlignCenter)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	return res
 }
 
-func (c *Context) numberField(value *float64, step float64, digits int, opt option) bool {
+func (c *Context) numberField(value *float64, step float64, digits int, opt option) (bool, error) {
 	id := c.idFromGlobalUniquePointer(unsafe.Pointer(value))
 	last := *value
 
 	// handle text input mode
-	if c.numberTextField(value, id) {
-		return false
+	res, err := c.numberTextField(value, id)
+	if err != nil {
+		return false, err
+	}
+	if res {
+		return false, nil
 	}
 
 	// handle normal mode
-	return c.control(id, opt, func(bounds image.Rectangle, wasFocused bool) bool {
+	res, err = c.control(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
 		// handle input
 		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
@@ -139,18 +173,25 @@ func (c *Context) numberField(value *float64, step float64, digits int, opt opti
 		text := formatNumber(*value, digits)
 		c.drawControlText(text, bounds, ColorText, opt)
 
-		return res
+		return res, nil
 	})
+	if err != nil {
+		return false, err
+	}
+	return res, nil
 }
 
-func (c *Context) numberTextField(value *float64, id controlID) bool {
+func (c *Context) numberTextField(value *float64, id controlID) (bool, error) {
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && ebiten.IsKeyPressed(ebiten.KeyShift) &&
 		c.hover == id {
 		c.numberEdit = id
 		c.numberEditBuf = fmt.Sprintf(realFmt, *value)
 	}
 	if c.numberEdit == id {
-		res := c.textFieldRaw(&c.numberEditBuf, id, 0)
+		res, err := c.textFieldRaw(&c.numberEditBuf, id, 0)
+		if err != nil {
+			return false, err
+		}
 		if res || c.focus != id {
 			nval, err := strconv.ParseFloat(c.numberEditBuf, 32)
 			if err != nil {
@@ -159,9 +200,9 @@ func (c *Context) numberTextField(value *float64, id controlID) bool {
 			*value = float64(nval)
 			c.numberEdit = 0
 		}
-		return true
+		return true, nil
 	}
-	return false
+	return false, nil
 }
 
 func formatNumber(v float64, digits int) string {

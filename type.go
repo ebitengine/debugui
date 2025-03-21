@@ -62,4 +62,6 @@ type Context struct {
 	lastMousePos image.Point
 
 	textInputTextFields map[controlID]*textinput.Field
+
+	err error
 }

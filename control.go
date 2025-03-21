@@ -11,6 +11,8 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+
+	"github.com/ebitengine/debugui/internal/caller"
 )
 
 const idSeparator = "\x00"
@@ -92,54 +94,79 @@ func (c *Context) updateControl(id controlID, bounds image.Rectangle, opt option
 }
 
 func (c *Context) Control(idStr string, f func(bounds image.Rectangle) bool) bool {
-	id := c.idFromString(idStr)
-	return c.control(id, 0, func(bounds image.Rectangle, wasFocused bool) bool {
-		return f(bounds)
+	pc := caller.Caller()
+	var res bool
+	c.wrapError(func() error {
+		id := c.idFromCaller(pc, idStr)
+		var err error
+		res, err = c.control(id, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
+			return f(bounds), nil
+		})
+		if err != nil {
+			return err
+		}
+		return nil
 	})
+	return res
 }
 
-func (c *Context) control(id controlID, opt option, f func(bounds image.Rectangle, wasFocused bool) bool) bool {
-	r := c.layoutNext()
+func (c *Context) control(id controlID, opt option, f func(bounds image.Rectangle, wasFocused bool) (bool, error)) (bool, error) {
+	r, err := c.layoutNext()
+	if err != nil {
+		return false, err
+	}
 	wasFocused := c.updateControl(id, r, opt)
-	return f(r, wasFocused)
+	res, err := f(r, wasFocused)
+	if err != nil {
+		return false, err
+	}
+	return res, nil
 }
 
 func (c *Context) Text(text string) {
-	c.GridCell(func() {
-		var endIdx, p int
-		c.SetGridLayout([]int{-1}, []int{lineHeight()})
-		for endIdx < len(text) {
-			c.control(0, 0, func(bounds image.Rectangle, wasFocused bool) bool {
-				w := 0
-				endIdx = p
-				startIdx := endIdx
-				for endIdx < len(text) && text[endIdx] != '\n' {
-					word := p
-					for p < len(text) && text[p] != ' ' && text[p] != '\n' {
+	c.wrapError(func() error {
+		if err := c.gridCell(func() error {
+			var endIdx, p int
+			c.SetGridLayout([]int{-1}, []int{lineHeight()})
+			for endIdx < len(text) {
+				if _, err := c.control(0, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
+					w := 0
+					endIdx = p
+					startIdx := endIdx
+					for endIdx < len(text) && text[endIdx] != '\n' {
+						word := p
+						for p < len(text) && text[p] != ' ' && text[p] != '\n' {
+							p++
+						}
+						w += textWidth(text[word:p])
+						if w > bounds.Dx()-c.style().padding && endIdx != startIdx {
+							break
+						}
+						if p < len(text) {
+							w += textWidth(string(text[p]))
+						}
+						endIdx = p
 						p++
 					}
-					w += textWidth(text[word:p])
-					if w > bounds.Dx()-c.style().padding && endIdx != startIdx {
-						break
-					}
-					if p < len(text) {
-						w += textWidth(string(text[p]))
-					}
-					endIdx = p
-					p++
+					c.drawControlText(text[startIdx:endIdx], bounds, ColorText, 0)
+					p = endIdx + 1
+					return false, nil
+				}); err != nil {
+					return err
 				}
-				c.drawControlText(text[startIdx:endIdx], bounds, ColorText, 0)
-				p = endIdx + 1
-				return false
-			})
+			}
+			return nil
+		}); err != nil {
+			return err
 		}
+		return nil
 	})
 }
 
-func (c *Context) button(label string, opt option) (controlID, bool) {
+func (c *Context) button(label string, opt option, callerPC uintptr) (controlID, bool, error) {
 	label, idStr, _ := strings.Cut(label, idSeparator)
-	id := c.idFromString(idStr)
-	return id, c.control(id, opt, func(bounds image.Rectangle, wasFocused bool) bool {
+	id := c.idFromCaller(callerPC, idStr)
+	res, err := c.control(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
 		// handle click
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.focus == id {
@@ -150,46 +177,62 @@ func (c *Context) button(label string, opt option) (controlID, bool) {
 		if len(label) > 0 {
 			c.drawControlText(label, bounds, ColorText, opt)
 		}
-		return res
+		return res, nil
 	})
+	if err != nil {
+		return 0, false, err
+	}
+	return id, res, nil
 }
 
 func (c *Context) Checkbox(state *bool, label string) bool {
-	id := c.idFromGlobalUniquePointer(unsafe.Pointer(state))
-
-	return c.control(id, 0, func(bounds image.Rectangle, wasFocused bool) bool {
-		var res bool
-		box := image.Rect(bounds.Min.X, bounds.Min.Y+(bounds.Dy()-lineHeight())/2, bounds.Min.X+lineHeight(), bounds.Max.Y-(bounds.Dy()-lineHeight())/2)
-		c.updateControl(id, bounds, 0)
-		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.focus == id {
-			res = true
-			*state = !*state
+	var res bool
+	c.wrapError(func() error {
+		id := c.idFromGlobalUniquePointer(unsafe.Pointer(state))
+		var err error
+		res, err = c.control(id, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
+			var res bool
+			box := image.Rect(bounds.Min.X, bounds.Min.Y+(bounds.Dy()-lineHeight())/2, bounds.Min.X+lineHeight(), bounds.Max.Y-(bounds.Dy()-lineHeight())/2)
+			c.updateControl(id, bounds, 0)
+			if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.focus == id {
+				res = true
+				*state = !*state
+			}
+			c.drawControlFrame(id, box, ColorBase, 0)
+			if *state {
+				c.drawIcon(iconCheck, box, c.style().colors[ColorText])
+			}
+			if label != "" {
+				bounds = image.Rect(bounds.Min.X+lineHeight(), bounds.Min.Y, bounds.Max.X, bounds.Max.Y)
+				c.drawControlText(label, bounds, ColorText, 0)
+			}
+			return res, nil
+		})
+		if err != nil {
+			return err
 		}
-		c.drawControlFrame(id, box, ColorBase, 0)
-		if *state {
-			c.drawIcon(iconCheck, box, c.style().colors[ColorText])
-		}
-		if label != "" {
-			bounds = image.Rect(bounds.Min.X+lineHeight(), bounds.Min.Y, bounds.Max.X, bounds.Max.Y)
-			c.drawControlText(label, bounds, ColorText, 0)
-		}
-		return res
+		return nil
 	})
+	return res
 }
 
-func (c *Context) slider(value *float64, low, high, step float64, digits int, opt option) bool {
+func (c *Context) slider(value *float64, low, high, step float64, digits int, opt option) (bool, error) {
 	last := *value
 	v := last
 	id := c.idFromGlobalUniquePointer(unsafe.Pointer(value))
 
 	// handle text input mode
-	if c.numberTextField(&v, id) {
+	res, err := c.numberTextField(&v, id)
+	if err != nil {
+		return false, err
+	}
+	if res {
 		*value = v
-		return false
+		return false, nil
 	}
 
 	// handle normal mode
-	return c.control(id, opt, func(bounds image.Rectangle, wasFocused bool) bool {
+	res, err = c.control(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
 		// handle input
 		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
@@ -216,13 +259,17 @@ func (c *Context) slider(value *float64, low, high, step float64, digits int, op
 		text := formatNumber(v, digits)
 		c.drawControlText(text, bounds, ColorText, opt)
 
-		return res
+		return res, nil
 	})
+	if err != nil {
+		return false, err
+	}
+	return res, nil
 }
 
-func (c *Context) header(label string, istreenode bool, opt option, f func()) {
+func (c *Context) header(label string, istreenode bool, opt option, callerPC uintptr, f func() error) error {
 	label, idStr, _ := strings.Cut(label, idSeparator)
-	id := c.idFromString(idStr)
+	id := c.idFromCaller(callerPC, idStr)
 	_, toggled := c.toggledIDs[id]
 	c.SetGridLayout(nil, nil)
 
@@ -233,7 +280,7 @@ func (c *Context) header(label string, istreenode bool, opt option, f func()) {
 		expanded = toggled
 	}
 
-	if c.control(id, 0, func(bounds image.Rectangle, wasFocused bool) bool {
+	res, err := c.control(id, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.focus == id {
 			if toggled {
 				delete(c.toggledIDs, id)
@@ -267,24 +314,44 @@ func (c *Context) header(label string, istreenode bool, opt option, f func()) {
 		bounds.Min.X += bounds.Dy() - c.style().padding
 		c.drawControlText(label, bounds, ColorText, 0)
 
-		return expanded
-	}) {
-		f()
+		return expanded, nil
+	})
+	if err != nil {
+		return err
 	}
+	if res {
+		if err := f(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func (c *Context) treeNode(label string, opt option, f func()) {
-	c.header(label, true, opt, func() {
-		c.layout().indent += c.style().indent
+func (c *Context) treeNode(label string, opt option, callerPC uintptr, f func()) error {
+	if err := c.header(label, true, opt, callerPC, func() (err error) {
+		l, err := c.layout()
+		if err != nil {
+			return err
+		}
+		l.indent += c.style().indent
 		defer func() {
-			c.layout().indent -= c.style().indent
+			l, err2 := c.layout()
+			if err2 != nil && err == nil {
+				err = err2
+				return
+			}
+			l.indent -= c.style().indent
 		}()
 		f()
-	})
+		return nil
+	}); err != nil {
+		return err
+	}
+	return nil
 }
 
 // x = x, y = y, w = w, h = h
-func (c *Context) scrollbarVertical(cnt *container, b image.Rectangle, cs image.Point) {
+func (c *Context) scrollbarVertical(cnt *container, b image.Rectangle, cs image.Point, callerPC uintptr) {
 	maxscroll := cs.Y - b.Dy()
 	if maxscroll > 0 && b.Dy() > 0 {
 		// get sizing / positioning
@@ -293,7 +360,7 @@ func (c *Context) scrollbarVertical(cnt *container, b image.Rectangle, cs image.
 		base.Max.X = base.Min.X + c.style().scrollbarSize
 
 		// handle input
-		id := c.idFromString("!scrollbar" + "y")
+		id := c.idFromCaller(callerPC, "!scrollbar"+"y")
 		c.updateControl(id, base, 0)
 		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 			cnt.layout.ScrollOffset.Y += c.mouseDelta().Y * cs.Y / base.Dy()
@@ -319,7 +386,7 @@ func (c *Context) scrollbarVertical(cnt *container, b image.Rectangle, cs image.
 }
 
 // x = y, y = x, w = h, h = w
-func (c *Context) scrollbarHorizontal(cnt *container, b image.Rectangle, cs image.Point) {
+func (c *Context) scrollbarHorizontal(cnt *container, b image.Rectangle, cs image.Point, callerPC uintptr) {
 	maxscroll := cs.X - b.Dx()
 	if maxscroll > 0 && b.Dx() > 0 {
 		// get sizing / positioning
@@ -328,7 +395,7 @@ func (c *Context) scrollbarHorizontal(cnt *container, b image.Rectangle, cs imag
 		base.Max.Y = base.Min.Y + c.style().scrollbarSize
 
 		// handle input
-		id := c.idFromString("!scrollbar" + "x")
+		id := c.idFromCaller(callerPC, "!scrollbar"+"x")
 		c.updateControl(id, base, 0)
 		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 			cnt.layout.ScrollOffset.X += c.mouseDelta().X * cs.X / base.Dx()
@@ -354,15 +421,15 @@ func (c *Context) scrollbarHorizontal(cnt *container, b image.Rectangle, cs imag
 }
 
 // if `swap` is true, X = Y, Y = X, W = H, H = W
-func (c *Context) scrollbar(cnt *container, b image.Rectangle, cs image.Point, swap bool) {
+func (c *Context) scrollbar(cnt *container, b image.Rectangle, cs image.Point, swap bool, callerPC uintptr) {
 	if swap {
-		c.scrollbarHorizontal(cnt, b, cs)
+		c.scrollbarHorizontal(cnt, b, cs, callerPC)
 	} else {
-		c.scrollbarVertical(cnt, b, cs)
+		c.scrollbarVertical(cnt, b, cs, callerPC)
 	}
 }
 
-func (c *Context) scrollbars(cnt *container, body image.Rectangle) image.Rectangle {
+func (c *Context) scrollbars(cnt *container, body image.Rectangle, callerPC uintptr) image.Rectangle {
 	sz := c.style().scrollbarSize
 	cs := cnt.layout.ContentSize
 	cs.X += c.style().padding * 2
@@ -377,15 +444,15 @@ func (c *Context) scrollbars(cnt *container, body image.Rectangle) image.Rectang
 	}
 	// to create a horizontal or vertical scrollbar almost-identical code is
 	// used; only the references to `x|y` `w|h` need to be switched
-	c.scrollbar(cnt, body, cs, false)
-	c.scrollbar(cnt, body, cs, true)
+	c.scrollbar(cnt, body, cs, false, callerPC)
+	c.scrollbar(cnt, body, cs, true, callerPC)
 	c.popClipRect()
 	return body
 }
 
-func (c *Context) pushContainerBodyLayout(cnt *container, body image.Rectangle, opt option) {
+func (c *Context) pushContainerBodyLayout(cnt *container, body image.Rectangle, opt option, callerPC uintptr) {
 	if (^opt & optionNoScroll) != 0 {
-		body = c.scrollbars(cnt, body)
+		body = c.scrollbars(cnt, body, callerPC)
 	}
 	c.pushLayout(body.Inset(c.style().padding), cnt.layout.ScrollOffset)
 	cnt.layout.BodyBounds = body
@@ -410,4 +477,12 @@ func (c *Context) Scale() int {
 
 func (c *Context) style() *style {
 	return &defaultStyle
+}
+
+func (c *Context) isCapturingInput() bool {
+	if c.err != nil {
+		return false
+	}
+
+	return c.hoverRoot != nil || c.focus != 0
 }
