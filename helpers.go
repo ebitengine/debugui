@@ -6,7 +6,6 @@ package debugui
 import (
 	"errors"
 	"fmt"
-	"hash/fnv"
 	"image"
 	"slices"
 	"sort"
@@ -21,33 +20,19 @@ func clamp[T int | float64](x, a, b T) T {
 }
 
 func (c *Context) idFromGlobalUniquePointer(pointer unsafe.Pointer) controlID {
-	return c.idFromBytes([]byte(fmt.Sprintf("!pointer:%p", pointer)))
+	return controlID(fmt.Sprintf("!pointer:%p", pointer))
 }
 
 func (c *Context) idFromGlobalUniqueString(str string) controlID {
-	return c.idFromBytes([]byte(fmt.Sprintf("!string:%s", str)))
+	return controlID(fmt.Sprintf("!string:%s", str))
 }
 
 // idFromCaller returns a hash value based on the caller's file and line number.
 func (c *Context) idFromCaller(callerPC uintptr, str string) controlID {
 	if len(str) > 0 {
-		return c.idFromBytes([]byte(fmt.Sprintf("!caller:%d:%s", callerPC, str)))
+		return controlID(fmt.Sprintf("!caller:%d:%s", callerPC, str))
 	}
-	return c.idFromBytes([]byte(fmt.Sprintf("!caller:%d", callerPC)))
-}
-
-func (c *Context) idFromBytes(data []byte) controlID {
-	if len(data) == 0 {
-		return 0
-	}
-
-	h := fnv.New64a()
-	if _, err := h.Write(data); err != nil {
-		panic(err)
-	}
-	id := controlID(h.Sum64())
-	c.lastID = id
-	return id
+	return controlID(fmt.Sprintf("!caller:%d", callerPC))
 }
 
 func (c *Context) popContainer() {
@@ -165,7 +150,7 @@ func (c *Context) end() error {
 
 	// unset focus if focus id was not touched this frame
 	if !c.keepFocus {
-		c.focus = 0
+		c.focus = emptyControlID
 	}
 	c.keepFocus = false
 

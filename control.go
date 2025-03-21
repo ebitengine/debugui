@@ -55,7 +55,7 @@ func (c *Context) mouseOver(bounds image.Rectangle) bool {
 }
 
 func (c *Context) updateControl(id controlID, bounds image.Rectangle, opt option) (wasFocused bool) {
-	if id == 0 {
+	if id == emptyControlID {
 		return false
 	}
 
@@ -73,11 +73,11 @@ func (c *Context) updateControl(id controlID, bounds image.Rectangle, opt option
 
 	if c.focus == id {
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && !mouseover {
-			c.setFocus(0)
+			c.setFocus(emptyControlID)
 			wasFocused = true
 		}
 		if !ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) && (^opt&optionHoldFocus) != 0 {
-			c.setFocus(0)
+			c.setFocus(emptyControlID)
 			wasFocused = true
 		}
 	}
@@ -86,7 +86,7 @@ func (c *Context) updateControl(id controlID, bounds image.Rectangle, opt option
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 			c.setFocus(id)
 		} else if !mouseover {
-			c.hover = 0
+			c.hover = emptyControlID
 		}
 	}
 
@@ -129,7 +129,7 @@ func (c *Context) Text(text string) {
 			var endIdx, p int
 			c.SetGridLayout([]int{-1}, []int{lineHeight()})
 			for endIdx < len(text) {
-				if _, err := c.control(0, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
+				if _, err := c.control(emptyControlID, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 					w := 0
 					endIdx = p
 					startIdx := endIdx
@@ -180,7 +180,7 @@ func (c *Context) button(label string, opt option, callerPC uintptr) (controlID,
 		return res, nil
 	})
 	if err != nil {
-		return 0, false, err
+		return emptyControlID, false, err
 	}
 	return id, res, nil
 }
@@ -484,5 +484,5 @@ func (c *Context) isCapturingInput() bool {
 		return false
 	}
 
-	return c.hoverRoot != nil || c.focus != 0
+	return c.hoverRoot != nil || c.focus != emptyControlID
 }

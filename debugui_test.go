@@ -18,19 +18,19 @@ func TestMultipleButtonsInForLoop(t *testing.T) {
 			var id debugui.ControlID
 			for range 10 {
 				id2 := ctx.ButtonID("a")
-				if id2 == 0 {
+				if id2 == debugui.EmptyControlID {
 					t.Errorf("Caller() returned 0")
 					continue
 				}
-				if id == 0 {
+				if id == debugui.EmptyControlID {
 					id = id2
 					continue
 				}
 				if id != id2 {
-					t.Errorf("Caller() returned different values: %d and %d", id, id2)
+					t.Errorf("Caller() returned different values: %q and %q", id, id2)
 				}
 			}
-			if id == 0 {
+			if id == debugui.EmptyControlID {
 				t.Errorf("Caller() returned 0")
 			}
 		})
@@ -47,11 +47,11 @@ func TestMultipleButtonsOnOneLine(t *testing.T) {
 			idA1 := ctx.ButtonID("a")
 			idA2 := ctx.ButtonID("a")
 			if idA1 == idA2 {
-				t.Errorf("Button() returned the same value twice: %d", idA1)
+				t.Errorf("Button() returned the same value twice: %q", idA1)
 			}
 			idB1, idB2 := ctx.ButtonID("b"), ctx.ButtonID("b")
 			if idB1 == idB2 {
-				t.Errorf("Button() returned the same value twice: %d", idB1)
+				t.Errorf("Button() returned the same value twice: %q", idB1)
 			}
 		})
 		return nil

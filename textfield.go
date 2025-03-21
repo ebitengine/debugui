@@ -35,7 +35,7 @@ func (c *Context) TextField(buf *string) bool {
 }
 
 func (c *Context) textInputTextField(id controlID) *textinput.Field {
-	if id == 0 {
+	if id == emptyControlID {
 		return nil
 	}
 	if _, ok := c.textInputTextFields[id]; !ok {
@@ -198,7 +198,7 @@ func (c *Context) numberTextField(value *float64, id controlID) (bool, error) {
 				nval = 0
 			}
 			*value = float64(nval)
-			c.numberEdit = 0
+			c.numberEdit = emptyControlID
 		}
 		return true, nil
 	}

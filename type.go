@@ -9,7 +9,9 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/exp/textinput"
 )
 
-type controlID uint64
+type controlID string
+
+const emptyControlID controlID = ""
 
 type container struct {
 	layout    ContainerLayout
