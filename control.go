@@ -11,8 +11,6 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-
-	"github.com/ebitengine/debugui/internal/caller"
 )
 
 const idSeparator = "\x00"
@@ -94,7 +92,7 @@ func (c *Context) updateControl(id controlID, bounds image.Rectangle, opt option
 }
 
 func (c *Context) Control(idStr string, f func(bounds image.Rectangle) bool) bool {
-	pc := caller.Caller()
+	pc := caller()
 	var res bool
 	c.wrapError(func() error {
 		id := c.idFromCaller(pc, idStr)

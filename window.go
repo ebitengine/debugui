@@ -8,12 +8,10 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-
-	"github.com/ebitengine/debugui/internal/caller"
 )
 
 func (c *Context) Window(title string, rect image.Rectangle, f func(layout ContainerLayout)) {
-	pc := caller.Caller()
+	pc := caller()
 	c.wrapError(func() error {
 		if err := c.window(title, rect, 0, pc, f); err != nil {
 			return err
@@ -178,7 +176,7 @@ func (c *Context) ClosePopup(name string) {
 }
 
 func (c *Context) Popup(name string, f func(layout ContainerLayout)) {
-	pc := caller.Caller()
+	pc := caller()
 	c.wrapError(func() error {
 		opt := optionPopup | optionAutoSize | optionNoResize | optionNoScroll | optionNoTitle | optionClosed
 		if err := c.window(name, image.Rectangle{}, opt, pc, f); err != nil {

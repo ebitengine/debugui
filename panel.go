@@ -3,10 +3,8 @@
 
 package debugui
 
-import "github.com/ebitengine/debugui/internal/caller"
-
 func (c *Context) Panel(name string, f func(layout ContainerLayout)) {
-	pc := caller.Caller()
+	pc := caller()
 	c.wrapError(func() error {
 		if err := c.panel(name, 0, pc, f); err != nil {
 			return err

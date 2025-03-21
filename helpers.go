@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"image"
+	"runtime"
 	"slices"
 	"sort"
 	"unsafe"
@@ -17,6 +18,15 @@ import (
 
 func clamp[T int | float64](x, a, b T) T {
 	return min(b, max(a, x))
+}
+
+// caller returns a program counter of the caller.
+func caller() uintptr {
+	pc, _, _, ok := runtime.Caller(2)
+	if !ok {
+		return 0
+	}
+	return pc
 }
 
 func (c *Context) idFromGlobalUniquePointer(pointer unsafe.Pointer) controlID {

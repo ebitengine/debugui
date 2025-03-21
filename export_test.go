@@ -3,14 +3,12 @@
 
 package debugui
 
-import "github.com/ebitengine/debugui/internal/caller"
-
 type ControlID = controlID
 
 const EmptyControlID = emptyControlID
 
 func (c *Context) ButtonID(label string) ControlID {
-	pc := caller.Caller()
+	pc := caller()
 	var id controlID
 	c.wrapError(func() error {
 		var err error

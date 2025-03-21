@@ -3,10 +3,8 @@
 
 package debugui
 
-import "github.com/ebitengine/debugui/internal/caller"
-
 func (c *Context) Button(label string) bool {
-	pc := caller.Caller()
+	pc := caller()
 	var res bool
 	c.wrapError(func() error {
 		var err error
@@ -33,7 +31,7 @@ func (c *Context) Slider(value *float64, lo, hi float64, step float64, digits in
 }
 
 func (c *Context) Header(label string, expanded bool, f func()) {
-	pc := caller.Caller()
+	pc := caller()
 	c.wrapError(func() error {
 		var opt option
 		if expanded {
@@ -50,7 +48,7 @@ func (c *Context) Header(label string, expanded bool, f func()) {
 }
 
 func (c *Context) TreeNode(label string, f func()) {
-	pc := caller.Caller()
+	pc := caller()
 	c.wrapError(func() error {
 		if err := c.treeNode(label, 0, pc, f); err != nil {
 			return err
