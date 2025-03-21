@@ -14,7 +14,7 @@ func (c *Context) Panel(name string, f func(layout ContainerLayout)) {
 }
 
 func (c *Context) panel(name string, opt option, callerPC uintptr, f func(layout ContainerLayout)) (err error) {
-	id := c.idFromGlobalUniqueString(name)
+	id := c.idFromString(name)
 
 	cnt := c.container(id, opt)
 	l, err := c.layoutNext()

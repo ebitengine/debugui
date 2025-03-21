@@ -186,7 +186,7 @@ func (c *Context) button(label string, opt option, callerPC uintptr) (controlID,
 func (c *Context) Checkbox(state *bool, label string) bool {
 	var res bool
 	c.wrapError(func() error {
-		id := c.idFromGlobalUniquePointer(unsafe.Pointer(state))
+		id := c.idFromPointer(unsafe.Pointer(state))
 		var err error
 		res, err = c.control(id, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 			var res bool
@@ -217,7 +217,7 @@ func (c *Context) Checkbox(state *bool, label string) bool {
 func (c *Context) slider(value *float64, low, high, step float64, digits int, opt option) (bool, error) {
 	last := *value
 	v := last
-	id := c.idFromGlobalUniquePointer(unsafe.Pointer(value))
+	id := c.idFromPointer(unsafe.Pointer(value))
 
 	// handle text input mode
 	res, err := c.numberTextField(&v, id)
@@ -358,7 +358,7 @@ func (c *Context) scrollbarVertical(cnt *container, b image.Rectangle, cs image.
 		base.Max.X = base.Min.X + c.style().scrollbarSize
 
 		// handle input
-		id := c.idFromCaller(callerPC, "!scrollbar"+"y")
+		id := c.idFromCaller(callerPC, "scrollbar-y")
 		c.updateControl(id, base, 0)
 		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 			cnt.layout.ScrollOffset.Y += c.mouseDelta().Y * cs.Y / base.Dy()
@@ -393,7 +393,7 @@ func (c *Context) scrollbarHorizontal(cnt *container, b image.Rectangle, cs imag
 		base.Max.Y = base.Min.Y + c.style().scrollbarSize
 
 		// handle input
-		id := c.idFromCaller(callerPC, "!scrollbar"+"x")
+		id := c.idFromCaller(callerPC, "scrollbar-x")
 		c.updateControl(id, base, 0)
 		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 			cnt.layout.ScrollOffset.X += c.mouseDelta().X * cs.X / base.Dx()

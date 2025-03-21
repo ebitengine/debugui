@@ -113,7 +113,7 @@ func (c *Context) textFieldRaw(buf *string, id controlID, opt option) (bool, err
 
 func (c *Context) SetTextFieldValue(value *string) {
 	c.wrapError(func() error {
-		id := c.idFromGlobalUniquePointer(unsafe.Pointer(value))
+		id := c.idFromPointer(unsafe.Pointer(value))
 		f := c.textInputTextField(id)
 		f.SetTextAndSelection(*value, 0, 0)
 		return nil
@@ -121,7 +121,7 @@ func (c *Context) SetTextFieldValue(value *string) {
 }
 
 func (c *Context) textField(buf *string, opt option) (bool, error) {
-	id := c.idFromGlobalUniquePointer(unsafe.Pointer(buf))
+	id := c.idFromPointer(unsafe.Pointer(buf))
 	res, err := c.textFieldRaw(buf, id, opt)
 	if err != nil {
 		return false, err
@@ -143,7 +143,7 @@ func (c *Context) NumberField(value *float64, step float64, digits int) bool {
 }
 
 func (c *Context) numberField(value *float64, step float64, digits int, opt option) (bool, error) {
-	id := c.idFromGlobalUniquePointer(unsafe.Pointer(value))
+	id := c.idFromPointer(unsafe.Pointer(value))
 	last := *value
 
 	// handle text input mode

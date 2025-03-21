@@ -29,20 +29,20 @@ func caller() uintptr {
 	return pc
 }
 
-func (c *Context) idFromGlobalUniquePointer(pointer unsafe.Pointer) controlID {
-	return controlID(fmt.Sprintf("!pointer:%p", pointer))
+func (c *Context) idFromPointer(pointer unsafe.Pointer) controlID {
+	return controlID(fmt.Sprintf("pointer:%p", pointer))
 }
 
-func (c *Context) idFromGlobalUniqueString(str string) controlID {
-	return controlID(fmt.Sprintf("!string:%s", str))
+func (c *Context) idFromString(str string) controlID {
+	return controlID(fmt.Sprintf("string:%s", str))
 }
 
 // idFromCaller returns a hash value based on the caller's file and line number.
 func (c *Context) idFromCaller(callerPC uintptr, str string) controlID {
 	if len(str) > 0 {
-		return controlID(fmt.Sprintf("!caller:%d:%s", callerPC, str))
+		return controlID(fmt.Sprintf("caller:%d:%s", callerPC, str))
 	}
-	return controlID(fmt.Sprintf("!caller:%d", callerPC))
+	return controlID(fmt.Sprintf("caller:%d", callerPC))
 }
 
 func (c *Context) popContainer() {
