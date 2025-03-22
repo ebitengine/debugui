@@ -4,6 +4,7 @@
 package debugui
 
 import (
+	"fmt"
 	"image"
 	"math"
 	"strings"
@@ -236,12 +237,11 @@ func (c *Context) Checkbox(state *bool, label string) bool {
 	return res
 }
 
-func (c *Context) slider(value *float64, low, high, step float64, digits int, opt option) (bool, error) {
+func (c *Context) slider(value *int, low, high, step int, opt option) (bool, error) {
 	last := *value
 	v := last
 	id := c.idFromPointer(unsafe.Pointer(value))
 
-	// handle text input mode
 	res, err := c.numberTextField(&v, id)
 	if err != nil {
 		return false, err
@@ -251,31 +251,73 @@ func (c *Context) slider(value *float64, low, high, step float64, digits int, op
 		return false, nil
 	}
 
-	// handle normal mode
 	res, err = c.control(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
-		// handle input
 		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-			v = low + float64(c.cursorPosition().X-bounds.Min.X)*(high-low)/float64(bounds.Dx())
+			if w := bounds.Dx() - defaultStyle.thumbSize; w > 0 {
+				v = low + (c.cursorPosition().X-bounds.Min.X)*(high-low)/w
+			}
 			if step != 0 {
-				v = math.Round(v/step) * step
+				v = v / step * step
 			}
 		}
-		// clamp and store value, update res
 		*value = clamp(v, low, high)
 		v = *value
 		if last != v {
 			res = true
 		}
 
-		// draw base
 		c.drawControlFrame(id, bounds, colorBase, opt)
-		// draw thumb
+		w := c.style().thumbSize
+		x := int((v - low) * (bounds.Dx() - w) / (high - low))
+		thumb := image.Rect(bounds.Min.X+x, bounds.Min.Y, bounds.Min.X+x+w, bounds.Max.Y)
+		c.drawControlFrame(id, thumb, colorButton, opt)
+		text := fmt.Sprintf("%d", v)
+		c.drawControlText(text, bounds, colorText, opt)
+
+		return res, nil
+	})
+	if err != nil {
+		return false, err
+	}
+	return res, nil
+}
+
+func (c *Context) sliderF(value *float64, low, high, step float64, digits int, opt option) (bool, error) {
+	last := *value
+	v := last
+	id := c.idFromPointer(unsafe.Pointer(value))
+
+	res, err := c.numberTextFieldF(&v, id)
+	if err != nil {
+		return false, err
+	}
+	if res {
+		*value = v
+		return false, nil
+	}
+
+	res, err = c.control(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
+		var res bool
+		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+			if w := float64(bounds.Dx() - defaultStyle.thumbSize); w > 0 {
+				v = low + float64(c.cursorPosition().X-bounds.Min.X)*(high-low)/w
+			}
+			if step != 0 {
+				v = math.Round(v/step) * step
+			}
+		}
+		*value = clamp(v, low, high)
+		v = *value
+		if last != v {
+			res = true
+		}
+
+		c.drawControlFrame(id, bounds, colorBase, opt)
 		w := c.style().thumbSize
 		x := int((v - low) * float64(bounds.Dx()-w) / (high - low))
 		thumb := image.Rect(bounds.Min.X+x, bounds.Min.Y, bounds.Min.X+x+w, bounds.Max.Y)
 		c.drawControlFrame(id, thumb, colorButton, opt)
-		// draw text
 		text := formatNumber(v, digits)
 		c.drawControlText(text, bounds, colorText, opt)
 

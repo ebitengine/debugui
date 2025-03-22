@@ -122,10 +122,9 @@ func (c *Context) textField(buf *string, opt option) (bool, error) {
 	return res, nil
 }
 
-// NumberField creates a number field to modify the value of a float64 value.
+// NumberField creates a number field to modify the value of a int value.
 //
 // step is the amount to increment or decrement the value when the user drags the thumb.
-// digits is the number of decimal places to display.
 //
 // NumberField returns true when the value has been changed, otherwise false.
 //
@@ -133,11 +132,11 @@ func (c *Context) textField(buf *string, opt option) (bool, error) {
 // NumberField objects with different pointers are considered distinct.
 // Therefore, for example, you should not provide a pointer to a local variable;
 // instead, you should provide a pointer to a member variable of a struct or a pointer to a global variable.
-func (c *Context) NumberField(value *float64, step float64, digits int) bool {
+func (c *Context) NumberField(value *int, step int) bool {
 	var res bool
 	c.wrapError(func() error {
 		var err error
-		res, err = c.numberField(value, step, digits, optionAlignCenter)
+		res, err = c.numberField(value, step, optionAlignCenter)
 		if err != nil {
 			return err
 		}
@@ -146,11 +145,34 @@ func (c *Context) NumberField(value *float64, step float64, digits int) bool {
 	return res
 }
 
-func (c *Context) numberField(value *float64, step float64, digits int, opt option) (bool, error) {
+// NumberFieldF creates a number field to modify the value of a float64 value.
+//
+// step is the amount to increment or decrement the value when the user drags the thumb.
+// digits is the number of decimal places to display.
+//
+// NumberFieldF returns true when the value has been changed, otherwise false.
+//
+// The identifier for a NumberFieldF is the pointer value of its value.
+// NumberFieldF objects with different pointers are considered distinct.
+// Therefore, for example, you should not provide a pointer to a local variable;
+// instead, you should provide a pointer to a member variable of a struct or a pointer to a global variable.
+func (c *Context) NumberFieldF(value *float64, step float64, digits int) bool {
+	var res bool
+	c.wrapError(func() error {
+		var err error
+		res, err = c.numberFieldF(value, step, digits, optionAlignCenter)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	return res
+}
+
+func (c *Context) numberField(value *int, step int, opt option) (bool, error) {
 	id := c.idFromPointer(unsafe.Pointer(value))
 	last := *value
 
-	// handle text input mode
 	res, err := c.numberTextField(value, id)
 	if err != nil {
 		return false, err
@@ -162,18 +184,48 @@ func (c *Context) numberField(value *float64, step float64, digits int, opt opti
 	// handle normal mode
 	res, err = c.control(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
-		// handle input
 		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-			*value += float64(c.mouseDelta().X) * step
+			*value += (c.mouseDelta().X) * step
 		}
-		// set flag if value changed
 		if *value != last {
 			res = true
 		}
 
-		// draw base
 		c.drawControlFrame(id, bounds, colorBase, opt)
-		// draw text
+		text := fmt.Sprintf("%d", *value)
+		c.drawControlText(text, bounds, colorText, opt)
+
+		return res, nil
+	})
+	if err != nil {
+		return false, err
+	}
+	return res, nil
+}
+
+func (c *Context) numberFieldF(value *float64, step float64, digits int, opt option) (bool, error) {
+	id := c.idFromPointer(unsafe.Pointer(value))
+	last := *value
+
+	res, err := c.numberTextFieldF(value, id)
+	if err != nil {
+		return false, err
+	}
+	if res {
+		return false, nil
+	}
+
+	// handle normal mode
+	res, err = c.control(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
+		var res bool
+		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+			*value += float64(c.mouseDelta().X) * step
+		}
+		if *value != last {
+			res = true
+		}
+
+		c.drawControlFrame(id, bounds, colorBase, opt)
 		text := formatNumber(*value, digits)
 		c.drawControlText(text, bounds, colorText, opt)
 
@@ -185,7 +237,31 @@ func (c *Context) numberField(value *float64, step float64, digits int, opt opti
 	return res, nil
 }
 
-func (c *Context) numberTextField(value *float64, id controlID) (bool, error) {
+func (c *Context) numberTextField(value *int, id controlID) (bool, error) {
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && ebiten.IsKeyPressed(ebiten.KeyShift) &&
+		c.hover == id {
+		c.numberEdit = id
+		c.numberEditBuf = fmt.Sprintf("%d", *value)
+	}
+	if c.numberEdit == id {
+		res, err := c.textFieldRaw(&c.numberEditBuf, id, 0)
+		if err != nil {
+			return false, err
+		}
+		if res || c.focus != id {
+			nval, err := strconv.ParseInt(c.numberEditBuf, 10, 64)
+			if err != nil {
+				nval = 0
+			}
+			*value = int(nval)
+			c.numberEdit = emptyControlID
+		}
+		return true, nil
+	}
+	return false, nil
+}
+
+func (c *Context) numberTextFieldF(value *float64, id controlID) (bool, error) {
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && ebiten.IsKeyPressed(ebiten.KeyShift) &&
 		c.hover == id {
 		c.numberEdit = id
@@ -197,7 +273,7 @@ func (c *Context) numberTextField(value *float64, id controlID) (bool, error) {
 			return false, err
 		}
 		if res || c.focus != id {
-			nval, err := strconv.ParseFloat(c.numberEditBuf, 32)
+			nval, err := strconv.ParseFloat(c.numberEditBuf, 64)
 			if err != nil {
 				nval = 0
 			}

@@ -34,10 +34,12 @@ type Game struct {
 	logBuf       string
 	logSubmitBuf string
 	logUpdated   bool
-	bg           [3]float64
+	bg           [3]int
 	checks       [3]bool
-	num1         float64
-	num2         float64
+	num1         int
+	num2         int
+	num3         float64
+	num4         float64
 }
 
 func NewGame() (*Game, error) {
@@ -50,7 +52,7 @@ func NewGame() (*Game, error) {
 		gopherImage: ebiten.NewImageFromImage(img),
 		vx:          2,
 		vy:          2,
-		bg:          [3]float64{90, 95, 100},
+		bg:          [3]int{90, 95, 100},
 		checks:      [3]bool{true, false, true},
 	}
 	g.resetPosition()

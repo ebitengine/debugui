@@ -114,11 +114,11 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 			ctx.GridCell(func() {
 				ctx.SetGridLayout([]int{-1, -3}, nil)
 				ctx.Text("Red:")
-				ctx.Slider(&g.bg[0], 0, 255, 1, 0)
+				ctx.Slider(&g.bg[0], 0, 255, 1)
 				ctx.Text("Green:")
-				ctx.Slider(&g.bg[1], 0, 255, 1, 0)
+				ctx.Slider(&g.bg[1], 0, 255, 1)
 				ctx.Text("Blue:")
-				ctx.Slider(&g.bg[2], 0, 255, 1, 0)
+				ctx.Slider(&g.bg[2], 0, 255, 1)
 			})
 			ctx.Control("", func(bounds image.Rectangle) bool {
 				ctx.DrawControl(func(screen *ebiten.Image) {
@@ -143,8 +143,10 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 			})
 		})
 		ctx.Header("Number", true, func() {
-			ctx.NumberField(&g.num1, 0.1, 2)
-			ctx.Slider(&g.num2, 0, 10, 0.1, 2)
+			ctx.NumberField(&g.num1, 1)
+			ctx.Slider(&g.num2, 0, 1000, 10)
+			ctx.NumberFieldF(&g.num3, 0.1, 2)
+			ctx.SliderF(&g.num4, 0, 10, 0.1, 2)
 		})
 		ctx.Header("Licenses", false, func() {
 			ctx.Text(`The photograph by Chris Nokleberg is licensed under the Creative Commons Attribution 4.0 License
