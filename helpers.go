@@ -33,12 +33,11 @@ func (c *Context) idFromPointer(pointer unsafe.Pointer) controlID {
 	return controlID(fmt.Sprintf("pointer:%p", pointer))
 }
 
-func (c *Context) idFromString(str string) controlID {
+func (c *Context) idFromString(str string, parentID controlID) controlID {
+	if parentID != emptyControlID {
+		return controlID(fmt.Sprintf("string:%q:%s", str, parentID))
+	}
 	return controlID(fmt.Sprintf("string:%q", str))
-}
-
-func (c *Context) childID(id controlID, str string) controlID {
-	return controlID(fmt.Sprintf("string:%q:%q", str, id))
 }
 
 // idFromCaller returns a hash value based on the caller's file and line number.

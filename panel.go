@@ -13,7 +13,7 @@ func (c *Context) Panel(name string, f func(layout ContainerLayout)) {
 }
 
 func (c *Context) panel(name string, opt option, f func(layout ContainerLayout)) (err error) {
-	id := c.idFromString(name)
+	id := c.idFromString(name, emptyControlID)
 
 	cnt := c.container(id, opt)
 	l, err := c.layoutNext()

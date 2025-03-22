@@ -353,7 +353,7 @@ func (c *Context) scrollbarVertical(cnt *container, b image.Rectangle, cs image.
 		base.Max.X = base.Min.X + c.style().scrollbarSize
 
 		// handle input
-		id := c.childID(containerID, "scrollbar-y")
+		id := c.idFromString("scrollbar-y", containerID)
 		c.updateControl(id, base, 0)
 		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 			cnt.layout.ScrollOffset.Y += c.mouseDelta().Y * cs.Y / base.Dy()
@@ -388,7 +388,7 @@ func (c *Context) scrollbarHorizontal(cnt *container, b image.Rectangle, cs imag
 		base.Max.Y = base.Min.Y + c.style().scrollbarSize
 
 		// handle input
-		id := c.childID(containerID, "scrollbar-x")
+		id := c.idFromString("scrollbar-x", containerID)
 		c.updateControl(id, base, 0)
 		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 			cnt.layout.ScrollOffset.X += c.mouseDelta().X * cs.X / base.Dx()
