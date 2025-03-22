@@ -136,6 +136,7 @@ func (c *Context) control(id controlID, opt option, f func(bounds image.Rectangl
 	return res, nil
 }
 
+// Text creates a text label.
 func (c *Context) Text(text string) {
 	c.wrapError(func() error {
 		if err := c.gridCell(func() error {
@@ -198,6 +199,12 @@ func (c *Context) button(label string, opt option, callerPC uintptr) (controlID,
 	return id, res, nil
 }
 
+// Checkbox creates a checkbox with the given boolean state and text label.
+//
+// The identifier for a Checkbox is the pointer value of its state.
+// Checkbox objects with different pointers are considered distinct.
+// Therefore, for example, you should not provide a pointer to a local variable;
+// instead, you should provide a pointer to a member variable of a struct or a pointer to a global variable.
 func (c *Context) Checkbox(state *bool, label string) bool {
 	var res bool
 	c.wrapError(func() error {

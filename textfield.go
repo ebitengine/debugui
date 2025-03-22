@@ -20,6 +20,14 @@ const (
 	sliderFmt = "%.2f"
 )
 
+// TextField creates a text field to modify the value of a string buf.
+//
+// TextField returns true when this TextField is unfocused or the user pressed Enter, otherwise false.
+//
+// The identifier for a TextField is the pointer value of its buf.
+// TextField objects with different pointers are considered distinct.
+// Therefore, for example, you should not provide a pointer to a local variable;
+// instead, you should provide a pointer to a member variable of a struct or a pointer to a global variable.
 func (c *Context) TextField(buf *string) bool {
 	var res bool
 	c.wrapError(func() error {
@@ -114,6 +122,17 @@ func (c *Context) textField(buf *string, opt option) (bool, error) {
 	return res, nil
 }
 
+// NumberField creates a number field to modify the value of a float64 value.
+//
+// step is the amount to increment or decrement the value when the user drags the thumb.
+// digits is the number of decimal places to display.
+//
+// NumberField returns true when the value has been changed, otherwise false.
+//
+// The identifier for a NumberField is the pointer value of its value.
+// NumberField objects with different pointers are considered distinct.
+// Therefore, for example, you should not provide a pointer to a local variable;
+// instead, you should provide a pointer to a member variable of a struct or a pointer to a global variable.
 func (c *Context) NumberField(value *float64, step float64, digits int) bool {
 	var res bool
 	c.wrapError(func() error {

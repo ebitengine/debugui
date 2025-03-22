@@ -17,6 +17,17 @@ func (c *Context) Button(label string) bool {
 	return res
 }
 
+// Slider cretes a slider widget with the given value, range, step, and number of digits.
+//
+// lo and hi specify the range of the slider.
+// digits specifies the number of digits to display after the decimal point.
+//
+// Slider returns true if the value of the slider has been changed, otherwise false.
+//
+// The identifier for a Slider is the pointer value of its value.
+// Slider objects with different pointers are considered distinct.
+// Therefore, for example, you should not provide a pointer to a local variable;
+// instead, you should provide a pointer to a member variable of a struct or a pointer to a global variable.
 func (c *Context) Slider(value *float64, lo, hi float64, step float64, digits int) bool {
 	var res bool
 	c.wrapError(func() error {
