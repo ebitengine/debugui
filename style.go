@@ -45,19 +45,19 @@ var defaultStyle style = style{
 	scrollbarSize: 12,
 	thumbSize:     8,
 	colors: [...]color.RGBA{
-		{230, 230, 230, 255}, // MU_COLOR_TEXT
-		{25, 25, 25, 255},    // MU_COLOR_BORDER
-		{50, 50, 50, 255},    // MU_COLOR_WINDOWBG
-		{25, 25, 25, 255},    // MU_COLOR_TITLEBG
-		{240, 240, 240, 255}, // MU_COLOR_TITLETEXT
-		{0, 0, 0, 0},         // MU_COLOR_PANELBG
-		{75, 75, 75, 255},    // MU_COLOR_BUTTON
-		{95, 95, 95, 255},    // MU_COLOR_BUTTONHOVER
-		{115, 115, 115, 255}, // MU_COLOR_BUTTONFOCUS
-		{30, 30, 30, 255},    // MU_COLOR_BASE
-		{35, 35, 35, 255},    // MU_COLOR_BASEHOVER
-		{40, 40, 40, 255},    // MU_COLOR_BASEFOCUS
-		{43, 43, 43, 255},    // MU_COLOR_SCROLLBASE
-		{30, 30, 30, 255},    // MU_COLOR_SCROLLTHUMB
+		ColorText:        {230, 230, 230, 255},
+		ColorBorder:      {25, 25, 25, 255},
+		ColorWindowBG:    {50, 50, 50, 255},
+		ColorTitleBG:     {25, 25, 25, 255},
+		ColorTitleText:   {240, 240, 240, 255},
+		ColorPanelBG:     {0, 0, 0, 0},
+		ColorButton:      {75, 75, 75, 255},
+		ColorButtonHover: {95, 95, 95, 255},
+		ColorButtonFocus: {115, 115, 115, 255},
+		ColorBase:        {30, 30, 30, 255},
+		ColorBaseHover:   {35, 35, 35, 255},
+		ColorBaseFocus:   {40, 40, 40, 255},
+		ColorScrollBase:  {43, 43, 43, 255},
+		ColorScrollThumb: {30, 30, 30, 255},
 	},
 }
