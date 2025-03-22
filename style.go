@@ -15,25 +15,25 @@ type style struct {
 	titleHeight   int
 	scrollbarSize int
 	thumbSize     int
-	colors        [ColorMax + 1]color.RGBA
+	colors        [colorCount]color.RGBA
 }
 
 const (
-	ColorText = iota
-	ColorBorder
-	ColorWindowBG
-	ColorTitleBG
-	ColorTitleText
-	ColorPanelBG
-	ColorButton
-	ColorButtonHover
-	ColorButtonFocus
-	ColorBase
-	ColorBaseHover
-	ColorBaseFocus
-	ColorScrollBase
-	ColorScrollThumb
-	ColorMax = ColorScrollThumb
+	colorText = iota
+	colorBorder
+	colorWindowBG
+	colorTitleBG
+	colorTitleText
+	colorPanelBG
+	colorButton
+	colorButtonHover
+	colorButtonFocus
+	colorBase
+	colorBaseHover
+	colorBaseFocus
+	colorScrollBase
+	colorScrollThumb
+	colorCount
 )
 
 var defaultStyle style = style{
@@ -45,19 +45,19 @@ var defaultStyle style = style{
 	scrollbarSize: 12,
 	thumbSize:     8,
 	colors: [...]color.RGBA{
-		ColorText:        {230, 230, 230, 255},
-		ColorBorder:      {25, 25, 25, 255},
-		ColorWindowBG:    {45, 45, 45, 230},
-		ColorTitleBG:     {23, 23, 23, 230},
-		ColorTitleText:   {240, 240, 240, 255},
-		ColorPanelBG:     {0, 0, 0, 0},
-		ColorButton:      {75, 75, 75, 255},
-		ColorButtonHover: {95, 95, 95, 255},
-		ColorButtonFocus: {115, 115, 115, 255},
-		ColorBase:        {30, 30, 30, 255},
-		ColorBaseHover:   {35, 35, 35, 255},
-		ColorBaseFocus:   {40, 40, 40, 255},
-		ColorScrollBase:  {43, 43, 43, 255},
-		ColorScrollThumb: {30, 30, 30, 255},
+		colorText:        {230, 230, 230, 255},
+		colorBorder:      {25, 25, 25, 255},
+		colorWindowBG:    {45, 45, 45, 230},
+		colorTitleBG:     {23, 23, 23, 230},
+		colorTitleText:   {240, 240, 240, 255},
+		colorPanelBG:     {0, 0, 0, 0},
+		colorButton:      {75, 75, 75, 255},
+		colorButtonHover: {95, 95, 95, 255},
+		colorButtonFocus: {115, 115, 115, 255},
+		colorBase:        {30, 30, 30, 255},
+		colorBaseHover:   {35, 35, 35, 255},
+		colorBaseFocus:   {40, 40, 40, 255},
+		colorScrollBase:  {43, 43, 43, 255},
+		colorScrollThumb: {30, 30, 30, 255},
 	},
 }

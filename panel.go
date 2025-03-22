@@ -22,7 +22,7 @@ func (c *Context) panel(name string, opt option, f func(layout ContainerLayout))
 	}
 	cnt.layout.Bounds = l
 	if (^opt & optionNoFrame) != 0 {
-		c.drawFrame(cnt.layout.Bounds, ColorPanelBG)
+		c.drawFrame(cnt.layout.Bounds, colorPanelBG)
 	}
 
 	c.pushContainer(cnt)

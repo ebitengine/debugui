@@ -72,9 +72,9 @@ func (c *Context) textFieldRaw(buf *string, id controlID, opt option) (bool, err
 		}
 
 		// draw
-		c.drawControlFrame(id, bounds, ColorBase, opt)
+		c.drawControlFrame(id, bounds, colorBase, opt)
 		if c.focus == id {
-			color := c.style().colors[ColorText]
+			color := c.style().colors[colorText]
 			textw := textWidth(*buf)
 			texth := lineHeight()
 			ofx := bounds.Dx() - c.style().padding - textw - 1
@@ -85,7 +85,7 @@ func (c *Context) textFieldRaw(buf *string, id controlID, opt option) (bool, err
 			c.drawRect(image.Rect(textx+textw, texty, textx+textw+1, texty+texth), color)
 			c.popClipRect()
 		} else {
-			c.drawControlText(*buf, bounds, ColorText, opt)
+			c.drawControlText(*buf, bounds, colorText, opt)
 		}
 		return res, nil
 	})
@@ -153,10 +153,10 @@ func (c *Context) numberField(value *float64, step float64, digits int, opt opti
 		}
 
 		// draw base
-		c.drawControlFrame(id, bounds, ColorBase, opt)
+		c.drawControlFrame(id, bounds, colorBase, opt)
 		// draw text
 		text := formatNumber(*value, digits)
-		c.drawControlText(text, bounds, ColorText, opt)
+		c.drawControlText(text, bounds, colorText, opt)
 
 		return res, nil
 	})

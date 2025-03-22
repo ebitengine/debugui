@@ -119,21 +119,21 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, f fun
 	// draw frame
 	collapsed := cnt.collapsed
 	if (^opt&optionNoFrame) != 0 && !collapsed {
-		c.drawFrame(bounds, ColorWindowBG)
+		c.drawFrame(bounds, colorWindowBG)
 	}
 
 	// do title bar
 	if (^opt & optionNoTitle) != 0 {
 		tr := bounds
 		tr.Max.Y = tr.Min.Y + c.style().titleHeight
-		c.drawFrame(tr, ColorTitleBG)
+		c.drawFrame(tr, colorTitleBG)
 
 		// do title text
 		if (^opt & optionNoTitle) != 0 {
 			id := c.idFromString("title", id)
 			r := image.Rect(tr.Min.X+tr.Dy()-c.style().padding, tr.Min.Y, tr.Max.X, tr.Max.Y)
 			c.updateControl(id, r, opt)
-			c.drawControlText(title, r, ColorTitleText, opt)
+			c.drawControlText(title, r, colorTitleText, opt)
 			if id == c.focus && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 				cnt.layout.Bounds = cnt.layout.Bounds.Add(c.mouseDelta())
 			}
@@ -148,7 +148,7 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, f fun
 			if collapsed {
 				icon = iconCollapsed
 			}
-			c.drawIcon(icon, r, c.style().colors[ColorTitleText])
+			c.drawIcon(icon, r, c.style().colors[colorTitleText])
 			c.updateControl(id, r, opt)
 			if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && id == c.focus {
 				cnt.collapsed = !cnt.collapsed

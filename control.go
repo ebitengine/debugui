@@ -161,7 +161,7 @@ func (c *Context) Text(text string) {
 						endIdx = p
 						p++
 					}
-					c.drawControlText(text[startIdx:endIdx], bounds, ColorText, 0)
+					c.drawControlText(text[startIdx:endIdx], bounds, colorText, 0)
 					p = endIdx + 1
 					return false, nil
 				}); err != nil {
@@ -186,9 +186,9 @@ func (c *Context) button(label string, opt option, callerPC uintptr) (controlID,
 			res = true
 		}
 		// draw
-		c.drawControlFrame(id, bounds, ColorButton, opt)
+		c.drawControlFrame(id, bounds, colorButton, opt)
 		if len(label) > 0 {
-			c.drawControlText(label, bounds, ColorText, opt)
+			c.drawControlText(label, bounds, colorText, opt)
 		}
 		return res, nil
 	})
@@ -211,13 +211,13 @@ func (c *Context) Checkbox(state *bool, label string) bool {
 				res = true
 				*state = !*state
 			}
-			c.drawControlFrame(id, box, ColorBase, 0)
+			c.drawControlFrame(id, box, colorBase, 0)
 			if *state {
-				c.drawIcon(iconCheck, box, c.style().colors[ColorText])
+				c.drawIcon(iconCheck, box, c.style().colors[colorText])
 			}
 			if label != "" {
 				bounds = image.Rect(bounds.Min.X+lineHeight(), bounds.Min.Y, bounds.Max.X, bounds.Max.Y)
-				c.drawControlText(label, bounds, ColorText, 0)
+				c.drawControlText(label, bounds, colorText, 0)
 			}
 			return res, nil
 		})
@@ -262,15 +262,15 @@ func (c *Context) slider(value *float64, low, high, step float64, digits int, op
 		}
 
 		// draw base
-		c.drawControlFrame(id, bounds, ColorBase, opt)
+		c.drawControlFrame(id, bounds, colorBase, opt)
 		// draw thumb
 		w := c.style().thumbSize
 		x := int((v - low) * float64(bounds.Dx()-w) / (high - low))
 		thumb := image.Rect(bounds.Min.X+x, bounds.Min.Y, bounds.Min.X+x+w, bounds.Max.Y)
-		c.drawControlFrame(id, thumb, ColorButton, opt)
+		c.drawControlFrame(id, thumb, colorButton, opt)
 		// draw text
 		text := formatNumber(v, digits)
-		c.drawControlText(text, bounds, ColorText, opt)
+		c.drawControlText(text, bounds, colorText, opt)
 
 		return res, nil
 	})
@@ -299,10 +299,10 @@ func (c *Context) header(label string, isTreeNode bool, opt option, callerPC uin
 		}
 		if isTreeNode {
 			if c.hover == id {
-				c.drawFrame(bounds, ColorButtonHover)
+				c.drawFrame(bounds, colorButtonHover)
 			}
 		} else {
-			c.drawControlFrame(id, bounds, ColorButton, 0)
+			c.drawControlFrame(id, bounds, colorButton, 0)
 		}
 		var icon icon
 		if expanded {
@@ -313,10 +313,10 @@ func (c *Context) header(label string, isTreeNode bool, opt option, callerPC uin
 		c.drawIcon(
 			icon,
 			image.Rect(bounds.Min.X, bounds.Min.Y, bounds.Min.X+bounds.Dy(), bounds.Max.Y),
-			c.style().colors[ColorText],
+			c.style().colors[colorText],
 		)
 		bounds.Min.X += bounds.Dy() - c.style().padding
-		c.drawControlText(label, bounds, ColorText, 0)
+		c.drawControlText(label, bounds, colorText, 0)
 
 		return expanded, nil
 	})
@@ -373,11 +373,11 @@ func (c *Context) scrollbarVertical(cnt *container, b image.Rectangle, cs image.
 		cnt.layout.ScrollOffset.Y = clamp(cnt.layout.ScrollOffset.Y, 0, maxscroll)
 
 		// draw base and thumb
-		c.drawFrame(base, ColorScrollBase)
+		c.drawFrame(base, colorScrollBase)
 		thumb := base
 		thumb.Max.Y = thumb.Min.Y + max(c.style().thumbSize, base.Dy()*b.Dy()/cs.Y)
 		thumb = thumb.Add(image.Pt(0, cnt.layout.ScrollOffset.Y*(base.Dy()-thumb.Dy())/maxscroll))
-		c.drawFrame(thumb, ColorScrollThumb)
+		c.drawFrame(thumb, colorScrollThumb)
 
 		// set this as the scroll_target (will get scrolled on mousewheel)
 		// if the mouse is over it
@@ -408,11 +408,11 @@ func (c *Context) scrollbarHorizontal(cnt *container, b image.Rectangle, cs imag
 		cnt.layout.ScrollOffset.X = clamp(cnt.layout.ScrollOffset.X, 0, maxscroll)
 
 		// draw base and thumb
-		c.drawFrame(base, ColorScrollBase)
+		c.drawFrame(base, colorScrollBase)
 		thumb := base
 		thumb.Max.X = thumb.Min.X + max(c.style().thumbSize, base.Dx()*b.Dx()/cs.X)
 		thumb = thumb.Add(image.Pt(cnt.layout.ScrollOffset.X*(base.Dx()-thumb.Dx())/maxscroll, 0))
-		c.drawFrame(thumb, ColorScrollThumb)
+		c.drawFrame(thumb, colorScrollThumb)
 
 		// set this as the scroll_target (will get scrolled on mousewheel)
 		// if the mouse is over it
