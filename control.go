@@ -56,6 +56,17 @@ func (c *Context) mouseOver(bounds image.Rectangle) bool {
 	return p.In(bounds) && p.In(c.clipRect()) && c.inHoverRoot()
 }
 
+func (c *Context) mouseDelta() image.Point {
+	return c.cursorPosition().Sub(c.lastMousePos)
+}
+
+func (c *Context) cursorPosition() image.Point {
+	p := image.Pt(ebiten.CursorPosition())
+	p.X /= c.Scale()
+	p.Y /= c.Scale()
+	return p
+}
+
 func (c *Context) updateControl(id controlID, bounds image.Rectangle, opt option) (wasFocused bool) {
 	if id == emptyControlID {
 		return false

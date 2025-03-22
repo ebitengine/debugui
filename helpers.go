@@ -6,7 +6,6 @@ package debugui
 import (
 	"errors"
 	"fmt"
-	"image"
 	"runtime"
 	"slices"
 	"sort"
@@ -46,14 +45,6 @@ func (c *Context) idFromCaller(callerPC uintptr, str string) controlID {
 		return controlID(fmt.Sprintf("caller:%d:%q", callerPC, str))
 	}
 	return controlID(fmt.Sprintf("caller:%d", callerPC))
-}
-
-func (c *Context) popContainer() {
-	c.containerStack = c.containerStack[:len(c.containerStack)-1]
-}
-
-func (c *Context) SetScroll(scroll image.Point) {
-	c.currentContainer().layout.ScrollOffset = scroll
 }
 
 func (c *Context) bringToFront(cnt *container) {
@@ -97,19 +88,6 @@ func (c *Context) begin() {
 	c.scrollTarget = nil
 	c.hoverRoot = c.nextHoverRoot
 	c.nextHoverRoot = nil
-
-	c.tick++
-}
-
-func (c *Context) mouseDelta() image.Point {
-	return c.cursorPosition().Sub(c.lastMousePos)
-}
-
-func (c *Context) cursorPosition() image.Point {
-	p := image.Pt(ebiten.CursorPosition())
-	p.X /= c.Scale()
-	p.Y /= c.Scale()
-	return p
 }
 
 func (c *Context) end() error {

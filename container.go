@@ -88,7 +88,7 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, f fun
 		cnt.layout.Bounds = bounds
 	}
 
-	c.containerStack = append(c.containerStack, cnt)
+	c.pushContainer(cnt)
 	defer c.popContainer()
 
 	// push container to roots list and push head command
@@ -242,6 +242,18 @@ func (c *Context) Popup(name string, f func(layout ContainerLayout)) {
 		}
 		return nil
 	})
+}
+
+func (c *Context) pushContainer(cnt *container) {
+	c.containerStack = append(c.containerStack, cnt)
+}
+
+func (c *Context) popContainer() {
+	c.containerStack = c.containerStack[:len(c.containerStack)-1]
+}
+
+func (c *Context) SetScroll(scroll image.Point) {
+	c.currentContainer().layout.ScrollOffset = scroll
 }
 
 func (c *container) textInputTextField(id controlID) *textinput.Field {

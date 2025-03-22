@@ -25,7 +25,7 @@ func (c *Context) panel(name string, opt option, f func(layout ContainerLayout))
 		c.drawFrame(cnt.layout.Bounds, ColorPanelBG)
 	}
 
-	c.containerStack = append(c.containerStack, cnt)
+	c.pushContainer(cnt)
 	defer c.popContainer()
 
 	if err := c.pushContainerBodyLayout(cnt, cnt.layout.Bounds, opt, id); err != nil {

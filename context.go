@@ -14,7 +14,6 @@ type Context struct {
 	lastID        controlID
 	lastZIndex    int
 	keepFocus     bool
-	tick          int
 	hoverRoot     *container
 	nextHoverRoot *container
 	scrollTarget  *container
