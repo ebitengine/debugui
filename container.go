@@ -7,6 +7,7 @@ import (
 	"image"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/exp/textinput"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
@@ -17,6 +18,9 @@ type container struct {
 	zIndex    int
 	open      bool
 	collapsed bool
+
+	toggledIDs          map[controlID]struct{}
+	textInputTextFields map[controlID]*textinput.Field
 }
 
 // ContainerLayout represents the layout of a container control.
@@ -33,6 +37,35 @@ type ContainerLayout struct {
 
 	// ScrollOffset is the offset of the scroll.
 	ScrollOffset image.Point
+}
+
+func (c *Context) container(id controlID, opt option) *container {
+	if container, ok := c.idToContainer[id]; ok {
+		if !container.open && (^opt&optionClosed) == 0 {
+			delete(c.idToContainer, id)
+		}
+		return container
+	}
+
+	if (opt & optionClosed) != 0 {
+		return nil
+	}
+
+	if c.idToContainer == nil {
+		c.idToContainer = map[controlID]*container{}
+	}
+	cnt := &container{
+		headIdx: -1,
+		tailIdx: -1,
+		open:    true,
+	}
+	c.idToContainer[id] = cnt
+	c.bringToFront(cnt)
+	return cnt
+}
+
+func (c *Context) currentContainer() *container {
+	return c.containerStack[len(c.containerStack)-1]
 }
 
 func (c *Context) Window(title string, rect image.Rectangle, f func(layout ContainerLayout)) {
@@ -211,4 +244,33 @@ func (c *Context) Popup(name string, f func(layout ContainerLayout)) {
 		}
 		return nil
 	})
+}
+
+func (c *container) textInputTextField(id controlID) *textinput.Field {
+	if id == emptyControlID {
+		return nil
+	}
+	if _, ok := c.textInputTextFields[id]; !ok {
+		if c.textInputTextFields == nil {
+			c.textInputTextFields = make(map[controlID]*textinput.Field)
+		}
+		c.textInputTextFields[id] = &textinput.Field{}
+	}
+	return c.textInputTextFields[id]
+}
+
+func (c *container) toggled(id controlID) bool {
+	_, ok := c.toggledIDs[id]
+	return ok
+}
+
+func (c *container) toggle(id controlID) {
+	if _, toggled := c.toggledIDs[id]; toggled {
+		delete(c.toggledIDs, id)
+		return
+	}
+	if c.toggledIDs == nil {
+		c.toggledIDs = map[controlID]struct{}{}
+	}
+	c.toggledIDs[id] = struct{}{}
 }

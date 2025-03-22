@@ -5,8 +5,6 @@ package debugui
 
 import (
 	"image"
-
-	"github.com/hajimehoshi/ebiten/v2/exp/textinput"
 )
 
 type Context struct {
@@ -30,11 +28,8 @@ type Context struct {
 	layoutStack    []layout
 
 	idToContainer map[controlID]*container
-	toggledIDs    map[controlID]struct{}
 
 	lastMousePos image.Point
-
-	textInputTextFields map[controlID]*textinput.Field
 
 	err error
 }

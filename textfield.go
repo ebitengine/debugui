@@ -12,7 +12,6 @@ import (
 	"unsafe"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/exp/textinput"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
@@ -34,25 +33,11 @@ func (c *Context) TextField(buf *string) bool {
 	return res
 }
 
-func (c *Context) textInputTextField(id controlID) *textinput.Field {
-	if id == emptyControlID {
-		return nil
-	}
-	if _, ok := c.textInputTextFields[id]; !ok {
-		if c.textInputTextFields == nil {
-			c.textInputTextFields = make(map[controlID]*textinput.Field)
-		}
-		// TODO: Remove unused fields.
-		c.textInputTextFields[id] = &textinput.Field{}
-	}
-	return c.textInputTextFields[id]
-}
-
 func (c *Context) textFieldRaw(buf *string, id controlID, opt option) (bool, error) {
 	res, err := c.control(id, opt|optionHoldFocus, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
 
-		f := c.textInputTextField(id)
+		f := c.currentContainer().textInputTextField(id)
 		if c.focus == id {
 			// handle text input
 			f.Focus()
@@ -114,7 +99,7 @@ func (c *Context) textFieldRaw(buf *string, id controlID, opt option) (bool, err
 func (c *Context) SetTextFieldValue(value *string) {
 	c.wrapError(func() error {
 		id := c.idFromPointer(unsafe.Pointer(value))
-		f := c.textInputTextField(id)
+		f := c.currentContainer().textInputTextField(id)
 		f.SetTextAndSelection(*value, 0, 0)
 		return nil
 	})

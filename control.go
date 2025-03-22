@@ -272,10 +272,10 @@ func (c *Context) slider(value *float64, low, high, step float64, digits int, op
 func (c *Context) header(label string, isTreeNode bool, opt option, callerPC uintptr, f func() error) error {
 	label, idStr, _ := strings.Cut(label, idSeparator)
 	id := c.idFromCaller(callerPC, idStr)
-	_, toggled := c.toggledIDs[id]
 	c.SetGridLayout(nil, nil)
 
 	var expanded bool
+	toggled := c.currentContainer().toggled(id)
 	if (opt & optionExpanded) != 0 {
 		expanded = !toggled
 	} else {
@@ -284,14 +284,7 @@ func (c *Context) header(label string, isTreeNode bool, opt option, callerPC uin
 
 	res, err := c.control(id, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.focus == id {
-			if toggled {
-				delete(c.toggledIDs, id)
-			} else {
-				if c.toggledIDs == nil {
-					c.toggledIDs = map[controlID]struct{}{}
-				}
-				c.toggledIDs[id] = struct{}{}
-			}
+			c.currentContainer().toggle(id)
 		}
 		if isTreeNode {
 			if c.hover == id {

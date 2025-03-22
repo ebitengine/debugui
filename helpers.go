@@ -49,37 +49,8 @@ func (c *Context) popContainer() {
 	c.containerStack = c.containerStack[:len(c.containerStack)-1]
 }
 
-func (c *Context) currentContainer() *container {
-	return c.containerStack[len(c.containerStack)-1]
-}
-
 func (c *Context) SetScroll(scroll image.Point) {
 	c.currentContainer().layout.ScrollOffset = scroll
-}
-
-func (c *Context) container(id controlID, opt option) *container {
-	if container, ok := c.idToContainer[id]; ok {
-		if !container.open && (^opt&optionClosed) == 0 {
-			delete(c.idToContainer, id)
-		}
-		return container
-	}
-
-	if (opt & optionClosed) != 0 {
-		return nil
-	}
-
-	if c.idToContainer == nil {
-		c.idToContainer = map[controlID]*container{}
-	}
-	cnt := &container{
-		headIdx: -1,
-		tailIdx: -1,
-		open:    true,
-	}
-	c.idToContainer[id] = cnt
-	c.bringToFront(cnt)
-	return cnt
 }
 
 func (c *Context) bringToFront(cnt *container) {
