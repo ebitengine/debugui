@@ -138,10 +138,10 @@ func (c *Context) layout() (*layout, error) {
 // For example, if widths is []int{100, -1}, the first column is 100 pixels and the second column takes the remaining space.
 // If widths is []int{100, -1, -2}, the first column is 100 pixels, the second column takes 1/3 of the remaining space, and the third column takes 2/3 of the remaining space.
 //
-// If widths is nil, one column width with -1 is used for windows, and 0 (the default size) for popups.
+// If widths is nil, one column width with -1 is used for windows, and 0 (the default size) is used for popups.
 // If heights is nil, 0 (the default size) is used.
 //
-// When the number of items exceeds the number of grid cells, a new row is started with the same grid layout.
+// When the number of items exceeds the number of grid cells, a new row starts with the same grid layout.
 func (c *Context) SetGridLayout(widths []int, heights []int) {
 	c.wrapError(func() error {
 		return c.setGridLayout(widths, heights)
