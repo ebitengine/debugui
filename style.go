@@ -47,8 +47,8 @@ var defaultStyle style = style{
 	colors: [...]color.RGBA{
 		ColorText:        {230, 230, 230, 255},
 		ColorBorder:      {25, 25, 25, 255},
-		ColorWindowBG:    {50, 50, 50, 255},
-		ColorTitleBG:     {25, 25, 25, 255},
+		ColorWindowBG:    {45, 45, 45, 230},
+		ColorTitleBG:     {23, 23, 23, 230},
 		ColorTitleText:   {240, 240, 240, 255},
 		ColorPanelBG:     {0, 0, 0, 0},
 		ColorButton:      {75, 75, 75, 255},
