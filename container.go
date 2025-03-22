@@ -69,16 +69,15 @@ func (c *Context) currentContainer() *container {
 }
 
 func (c *Context) Window(title string, rect image.Rectangle, f func(layout ContainerLayout)) {
-	pc := caller()
 	c.wrapError(func() error {
-		if err := c.window(title, rect, 0, pc, f); err != nil {
+		if err := c.window(title, rect, 0, f); err != nil {
 			return err
 		}
 		return nil
 	})
 }
 
-func (c *Context) window(title string, bounds image.Rectangle, opt option, callerPC uintptr, f func(layout ContainerLayout)) (err error) {
+func (c *Context) window(title string, bounds image.Rectangle, opt option, f func(layout ContainerLayout)) (err error) {
 	id := c.idFromString(title)
 
 	cnt := c.container(id, opt)
@@ -132,7 +131,7 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, calle
 
 		// do title text
 		if (^opt & optionNoTitle) != 0 {
-			id := c.idFromCaller(callerPC, "title")
+			id := c.childID(id, "title")
 			r := image.Rect(tr.Min.X+tr.Dy()-c.style().padding, tr.Min.Y, tr.Max.X, tr.Max.Y)
 			c.updateControl(id, r, opt)
 			c.drawControlText(title, r, ColorTitleText, opt)
@@ -144,7 +143,7 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, calle
 
 		// do `collapse` button
 		if (^opt & optionNoClose) != 0 {
-			id := c.idFromCaller(callerPC, "collapse")
+			id := c.childID(id, "collapse")
 			r := image.Rect(tr.Min.X, tr.Min.Y, tr.Min.X+tr.Dy(), tr.Max.Y)
 			icon := iconExpanded
 			if collapsed {
@@ -162,7 +161,7 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, calle
 		return nil
 	}
 
-	if err := c.pushContainerBodyLayout(cnt, body, opt, callerPC); err != nil {
+	if err := c.pushContainerBodyLayout(cnt, body, opt, id); err != nil {
 		return err
 	}
 	defer func() {
@@ -174,7 +173,7 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, calle
 	// do `resize` handle
 	if (^opt & optionNoResize) != 0 {
 		sz := c.style().titleHeight
-		id := c.idFromCaller(callerPC, "resize")
+		id := c.childID(id, "resize")
 		r := image.Rect(bounds.Max.X-sz, bounds.Max.Y-sz, bounds.Max.X, bounds.Max.Y)
 		c.updateControl(id, r, opt)
 		if id == c.focus && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
@@ -236,10 +235,9 @@ func (c *Context) ClosePopup(name string) {
 }
 
 func (c *Context) Popup(name string, f func(layout ContainerLayout)) {
-	pc := caller()
 	c.wrapError(func() error {
 		opt := optionPopup | optionAutoSize | optionNoResize | optionNoScroll | optionNoTitle | optionClosed
-		if err := c.window(name, image.Rectangle{}, opt, pc, f); err != nil {
+		if err := c.window(name, image.Rectangle{}, opt, f); err != nil {
 			return err
 		}
 		return nil

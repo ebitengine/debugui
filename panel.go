@@ -4,16 +4,15 @@
 package debugui
 
 func (c *Context) Panel(name string, f func(layout ContainerLayout)) {
-	pc := caller()
 	c.wrapError(func() error {
-		if err := c.panel(name, 0, pc, f); err != nil {
+		if err := c.panel(name, 0, f); err != nil {
 			return err
 		}
 		return nil
 	})
 }
 
-func (c *Context) panel(name string, opt option, callerPC uintptr, f func(layout ContainerLayout)) (err error) {
+func (c *Context) panel(name string, opt option, f func(layout ContainerLayout)) (err error) {
 	id := c.idFromString(name)
 
 	cnt := c.container(id, opt)
@@ -29,7 +28,7 @@ func (c *Context) panel(name string, opt option, callerPC uintptr, f func(layout
 	c.containerStack = append(c.containerStack, cnt)
 	defer c.popContainer()
 
-	if err := c.pushContainerBodyLayout(cnt, cnt.layout.Bounds, opt, callerPC); err != nil {
+	if err := c.pushContainerBodyLayout(cnt, cnt.layout.Bounds, opt, id); err != nil {
 		return err
 	}
 	defer func() {
