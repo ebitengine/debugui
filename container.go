@@ -41,9 +41,7 @@ type ContainerLayout struct {
 
 func (c *Context) container(id controlID, opt option) *container {
 	if container, ok := c.idToContainer[id]; ok {
-		if !container.open && (^opt&optionClosed) == 0 {
-			delete(c.idToContainer, id)
-		}
+		c.addUsedContainer(id)
 		return container
 	}
 
@@ -60,6 +58,7 @@ func (c *Context) container(id controlID, opt option) *container {
 		open:    true,
 	}
 	c.idToContainer[id] = cnt
+	c.addUsedContainer(id)
 	c.bringToFront(cnt)
 	return cnt
 }

@@ -23,6 +23,7 @@ type Context struct {
 	commandList    []*command
 	rootList       []*container
 	containerStack []*container
+	usedContainers map[controlID]struct{}
 	clipStack      []image.Rectangle
 	layoutStack    []layout
 

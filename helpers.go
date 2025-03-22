@@ -154,7 +154,21 @@ func (c *Context) end() error {
 		}
 	}
 
+	for id := range c.idToContainer {
+		if _, ok := c.usedContainers[id]; !ok {
+			delete(c.idToContainer, id)
+		}
+	}
+	clear(c.usedContainers)
+
 	return nil
+}
+
+func (c *Context) addUsedContainer(id controlID) {
+	if c.usedContainers == nil {
+		c.usedContainers = map[controlID]struct{}{}
+	}
+	c.usedContainers[id] = struct{}{}
 }
 
 func (c *Context) wrapError(f func() error) {

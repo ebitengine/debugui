@@ -20,3 +20,7 @@ func (c *Context) ButtonID(label string) ControlID {
 	})
 	return id
 }
+
+func (d *DebugUI) ContainerCounter() int {
+	return len(d.ctx.idToContainer)
+}

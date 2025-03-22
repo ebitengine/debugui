@@ -79,3 +79,61 @@ func TestUpdateWithoutWindow(t *testing.T) {
 		t.Errorf("Update() returned nil, want error")
 	}
 }
+
+func TestUnusedContainer(t *testing.T) {
+	var d debugui.DebugUI
+	if err := d.Update(func(ctx *debugui.Context) error {
+		ctx.Window("Window1", image.Rect(0, 0, 100, 100), func(layout debugui.ContainerLayout) {
+		})
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := d.ContainerCounter(), 1; got != want {
+		t.Errorf("got: %v, want: %v", got, want)
+	}
+
+	if err := d.Update(func(ctx *debugui.Context) error {
+		ctx.Window("Window1", image.Rect(0, 0, 100, 100), func(layout debugui.ContainerLayout) {
+		})
+		ctx.Window("Window2", image.Rect(0, 0, 100, 100), func(layout debugui.ContainerLayout) {
+		})
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := d.ContainerCounter(), 2; got != want {
+		t.Errorf("got: %v, want: %v", got, want)
+	}
+
+	if err := d.Update(func(ctx *debugui.Context) error {
+		ctx.Window("Window1", image.Rect(0, 0, 100, 100), func(layout debugui.ContainerLayout) {
+		})
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := d.ContainerCounter(), 1; got != want {
+		t.Errorf("got: %v, want: %v", got, want)
+	}
+
+	if err := d.Update(func(ctx *debugui.Context) error {
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := d.ContainerCounter(), 0; got != want {
+		t.Errorf("got: %v, want: %v", got, want)
+	}
+
+	if err := d.Update(func(ctx *debugui.Context) error {
+		ctx.Window("Window2", image.Rect(0, 0, 100, 100), func(layout debugui.ContainerLayout) {
+		})
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := d.ContainerCounter(), 1; got != want {
+		t.Errorf("got: %v, want: %v", got, want)
+	}
+}
