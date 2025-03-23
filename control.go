@@ -136,7 +136,7 @@ func (c *Context) control(id controlID, opt option, f func(bounds image.Rectangl
 // Text creates a text label.
 func (c *Context) Text(text string) {
 	c.wrapError(func() error {
-		if err := c.gridCell(func() error {
+		if err := c.gridCell(func(bounds image.Rectangle) error {
 			var endIdx, p int
 			c.SetGridLayout([]int{-1}, []int{lineHeight()})
 			for endIdx < len(text) {

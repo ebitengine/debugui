@@ -83,10 +83,10 @@ func (c *Context) popLayout() error {
 	return err
 }
 
-func (c *Context) GridCell(f func()) {
+func (c *Context) GridCell(f func(bounds image.Rectangle)) {
 	c.wrapError(func() error {
-		if err := c.gridCell(func() error {
-			f()
+		if err := c.gridCell(func(bounds image.Rectangle) error {
+			f(bounds)
 			return nil
 		}); err != nil {
 			return err
@@ -95,7 +95,7 @@ func (c *Context) GridCell(f func()) {
 	})
 }
 
-func (c *Context) gridCell(f func() error) error {
+func (c *Context) gridCell(f func(bounds image.Rectangle) error) error {
 	_, err := c.control(emptyControlID, 0, func(bounds image.Rectangle, wasFocused bool) (res bool, err error) {
 		if err := c.pushLayout(bounds, image.Pt(0, 0), false); err != nil {
 			return false, err
@@ -105,7 +105,7 @@ func (c *Context) gridCell(f func() error) error {
 				err = err2
 			}
 		}()
-		if err := f(); err != nil {
+		if err := f(bounds); err != nil {
 			return false, err
 		}
 		b := &c.layoutStack[len(c.layoutStack)-1]

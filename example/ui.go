@@ -68,7 +68,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 		})
 		ctx.Header("Tree and Text", true, func() {
 			ctx.SetGridLayout([]int{-1, -1}, nil)
-			ctx.GridCell(func() {
+			ctx.GridCell(func(bounds image.Rectangle) {
 				ctx.TreeNode("Test 1", func() {
 					ctx.TreeNode("Test 1a", func() {
 						ctx.Text("Hello")
@@ -111,7 +111,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 		})
 		ctx.Header("Color", true, func() {
 			ctx.SetGridLayout([]int{-3, -1}, []int{54})
-			ctx.GridCell(func() {
+			ctx.GridCell(func(bounds image.Rectangle) {
 				ctx.SetGridLayout([]int{-1, -3}, nil)
 				ctx.Text("Red:")
 				ctx.Slider(&g.bg[0], 0, 255, 1)
@@ -167,7 +167,7 @@ func (g *Game) logWindow(ctx *debugui.Context) {
 				g.logUpdated = false
 			}
 		})
-		ctx.GridCell(func() {
+		ctx.GridCell(func(bounds image.Rectangle) {
 			var submit bool
 			ctx.SetGridLayout([]int{-3, -1}, nil)
 			if ctx.TextField(&g.logSubmitBuf) {
