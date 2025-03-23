@@ -77,7 +77,7 @@ func (c *Context) Window(title string, rect image.Rectangle, f func(layout Conta
 }
 
 func (c *Context) window(title string, bounds image.Rectangle, opt option, f func(layout ContainerLayout)) (err error) {
-	id := c.idFromString(title)
+	id := c.idFromGlobalString(title)
 	c.idScopeFromControlID(id, func() {
 		err = c.doWindow(title, bounds, opt, id, f)
 	})
@@ -212,8 +212,8 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 }
 
 func (c *Context) OpenPopup(name string) {
+	id := c.idFromGlobalString(name)
 	c.wrapError(func() error {
-		id := c.idFromString(name)
 		cnt := c.container(id, 0)
 		// set as hover root so popup isn't closed in begin_window_ex()
 		c.nextHoverRoot = cnt
@@ -231,8 +231,8 @@ func (c *Context) OpenPopup(name string) {
 }
 
 func (c *Context) ClosePopup(name string) {
+	id := c.idFromGlobalString(name)
 	c.wrapError(func() error {
-		id := c.idFromString(name)
 		cnt := c.container(id, 0)
 		cnt.open = false
 		return nil

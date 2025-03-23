@@ -56,6 +56,10 @@ func (c *Context) idScopeToControlID() controlID {
 	return newID
 }
 
+func (c *Context) idFromGlobalString(str string) controlID {
+	return controlID(fmt.Sprintf("string:%q", str))
+}
+
 func (c *Context) idFromString(str string) controlID {
 	newID := c.idScopeToControlID()
 	if len(newID) > 0 {
