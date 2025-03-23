@@ -78,7 +78,7 @@ func (c *Context) Window(title string, rect image.Rectangle, f func(layout Conta
 
 func (c *Context) window(title string, bounds image.Rectangle, opt option, f func(layout ContainerLayout)) (err error) {
 	id := c.idFromGlobalString(title)
-	c.idScopeFromControlID(id, func() {
+	c.idScopeFromGlobalString(title, func() {
 		err = c.doWindow(title, bounds, opt, id, f)
 	})
 	return

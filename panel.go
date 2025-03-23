@@ -14,7 +14,7 @@ func (c *Context) Panel(name string, f func(layout ContainerLayout)) {
 
 func (c *Context) panel(name string, opt option, f func(layout ContainerLayout)) (err error) {
 	id := c.idFromGlobalString(name)
-	c.idScopeFromControlID(id, func() {
+	c.idScopeFromGlobalString(name, func() {
 		err = c.doPanel(opt, id, f)
 	})
 	return
