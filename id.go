@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"runtime"
 	"slices"
-	"unsafe"
 )
 
 // caller returns a program counter of the caller.
@@ -47,10 +46,6 @@ func (c *Context) idScopeFromGlobalString(name string, f func()) {
 		c.idStack = slices.Delete(c.idStack, len(c.idStack)-1, len(c.idStack))
 	}()
 	f()
-}
-
-func (c *Context) idFromPointer(pointer unsafe.Pointer) controlID {
-	return controlID(fmt.Sprintf("pointer:%p", pointer))
 }
 
 func (c *Context) idScopeToControlID() controlID {

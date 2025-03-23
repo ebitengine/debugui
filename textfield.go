@@ -9,7 +9,6 @@ import (
 	"os"
 	"strconv"
 	"unicode/utf8"
-	"unsafe"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -24,15 +23,16 @@ const (
 //
 // TextField returns true when this TextField is unfocused or the user pressed Enter, otherwise false.
 //
-// The identifier for a TextField is the pointer value of its buf.
-// TextField objects with different pointers are considered distinct.
-// Therefore, for example, you should not provide a pointer to a local variable;
-// instead, you should provide a pointer to a member variable of a struct or a pointer to a global variable.
+// A TextField control is uniquely determined by its call location.
+// Function calls made in different locations will create different controls.
+// If you want to generate different controls with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) TextField(buf *string) bool {
+	pc := caller()
+	id := c.idFromCaller(pc)
 	var res bool
 	c.wrapError(func() error {
 		var err error
-		res, err = c.textField(buf, 0)
+		res, err = c.textField(buf, id, 0)
 		if err != nil {
 			return err
 		}
@@ -119,8 +119,7 @@ func (c *Context) SetTextFieldValue(value string) {
 	})
 }
 
-func (c *Context) textField(buf *string, opt option) (bool, error) {
-	id := c.idFromPointer(unsafe.Pointer(buf))
+func (c *Context) textField(buf *string, id controlID, opt option) (bool, error) {
 	c.lastTextFieldID = id
 	res, err := c.textFieldRaw(buf, id, opt)
 	if err != nil {
@@ -135,15 +134,16 @@ func (c *Context) textField(buf *string, opt option) (bool, error) {
 //
 // NumberField returns true when the value has been changed, otherwise false.
 //
-// The identifier for a NumberField is the pointer value of its value.
-// NumberField objects with different pointers are considered distinct.
-// Therefore, for example, you should not provide a pointer to a local variable;
-// instead, you should provide a pointer to a member variable of a struct or a pointer to a global variable.
+// A NumberField control is uniquely determined by its call location.
+// Function calls made in different locations will create different controls.
+// If you want to generate different controls with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) NumberField(value *int, step int) bool {
+	pc := caller()
+	id := c.idFromCaller(pc)
 	var res bool
 	c.wrapError(func() error {
 		var err error
-		res, err = c.numberField(value, step, optionAlignCenter)
+		res, err = c.numberField(value, step, id, optionAlignCenter)
 		if err != nil {
 			return err
 		}
@@ -159,15 +159,16 @@ func (c *Context) NumberField(value *int, step int) bool {
 //
 // NumberFieldF returns true when the value has been changed, otherwise false.
 //
-// The identifier for a NumberFieldF is the pointer value of its value.
-// NumberFieldF objects with different pointers are considered distinct.
-// Therefore, for example, you should not provide a pointer to a local variable;
-// instead, you should provide a pointer to a member variable of a struct or a pointer to a global variable.
+// A NumberFieldF control is uniquely determined by its call location.
+// Function calls made in different locations will create different controls.
+// If you want to generate different controls with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) NumberFieldF(value *float64, step float64, digits int) bool {
+	pc := caller()
+	id := c.idFromCaller(pc)
 	var res bool
 	c.wrapError(func() error {
 		var err error
-		res, err = c.numberFieldF(value, step, digits, optionAlignCenter)
+		res, err = c.numberFieldF(value, step, digits, id, optionAlignCenter)
 		if err != nil {
 			return err
 		}
@@ -176,8 +177,7 @@ func (c *Context) NumberFieldF(value *float64, step float64, digits int) bool {
 	return res
 }
 
-func (c *Context) numberField(value *int, step int, opt option) (bool, error) {
-	id := c.idFromPointer(unsafe.Pointer(value))
+func (c *Context) numberField(value *int, step int, id controlID, opt option) (bool, error) {
 	last := *value
 
 	res, err := c.numberTextField(value, id)
@@ -210,8 +210,7 @@ func (c *Context) numberField(value *int, step int, opt option) (bool, error) {
 	return res, nil
 }
 
-func (c *Context) numberFieldF(value *float64, step float64, digits int, opt option) (bool, error) {
-	id := c.idFromPointer(unsafe.Pointer(value))
+func (c *Context) numberFieldF(value *float64, step float64, digits int, id controlID, opt option) (bool, error) {
 	last := *value
 
 	res, err := c.numberTextFieldF(value, id)

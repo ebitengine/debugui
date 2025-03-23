@@ -23,15 +23,16 @@ func (c *Context) Button(label string) bool {
 //
 // Slider returns true if the value of the slider has been changed, otherwise false.
 //
-// The identifier for a Slider is the pointer value of its value.
-// Slider objects with different pointers are considered distinct.
-// Therefore, for example, you should not provide a pointer to a local variable;
-// instead, you should provide a pointer to a member variable of a struct or a pointer to a global variable.
+// A Slider control is uniquely determined by its call location.
+// Function calls made in different locations will create different controls.
+// If you want to generate different controls with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) Slider(value *int, lo, hi int, step int) bool {
+	pc := caller()
+	id := c.idFromCaller(pc)
 	var res bool
 	c.wrapError(func() error {
 		var err error
-		res, err = c.slider(value, lo, hi, step, optionAlignCenter)
+		res, err = c.slider(value, lo, hi, step, id, optionAlignCenter)
 		if err != nil {
 			return err
 		}
@@ -47,15 +48,16 @@ func (c *Context) Slider(value *int, lo, hi int, step int) bool {
 //
 // SliderF returns true if the value of the slider has been changed, otherwise false.
 //
-// The identifier for a SliderF is the pointer value of its value.
-// SliderF objects with different pointers are considered distinct.
-// Therefore, for example, you should not provide a pointer to a local variable;
-// instead, you should provide a pointer to a member variable of a struct or a pointer to a global variable.
+// A SliderF control is uniquely determined by its call location.
+// Function calls made in different locations will create different controls.
+// If you want to generate different controls with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) SliderF(value *float64, lo, hi float64, step float64, digits int) bool {
+	pc := caller()
+	id := c.idFromCaller(pc)
 	var res bool
 	c.wrapError(func() error {
 		var err error
-		res, err = c.sliderF(value, lo, hi, step, digits, optionAlignCenter)
+		res, err = c.sliderF(value, lo, hi, step, digits, id, optionAlignCenter)
 		if err != nil {
 			return err
 		}

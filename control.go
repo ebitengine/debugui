@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"image"
 	"math"
-	"unsafe"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -198,14 +197,14 @@ func (c *Context) button(label string, opt option, callerPC uintptr) (controlID,
 
 // Checkbox creates a checkbox with the given boolean state and text label.
 //
-// The identifier for a Checkbox is the pointer value of its state.
-// Checkbox objects with different pointers are considered distinct.
-// Therefore, for example, you should not provide a pointer to a local variable;
-// instead, you should provide a pointer to a member variable of a struct or a pointer to a global variable.
+// A Checkbox control is uniquely determined by its call location.
+// Function calls made in different locations will create different controls.
+// If you want to generate different controls with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) Checkbox(state *bool, label string) bool {
+	pc := caller()
+	id := c.idFromCaller(pc)
 	var res bool
 	c.wrapError(func() error {
-		id := c.idFromPointer(unsafe.Pointer(state))
 		var err error
 		res, err = c.control(id, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 			var res bool
@@ -233,10 +232,9 @@ func (c *Context) Checkbox(state *bool, label string) bool {
 	return res
 }
 
-func (c *Context) slider(value *int, low, high, step int, opt option) (bool, error) {
+func (c *Context) slider(value *int, low, high, step int, id controlID, opt option) (bool, error) {
 	last := *value
 	v := last
-	id := c.idFromPointer(unsafe.Pointer(value))
 
 	res, err := c.numberTextField(&v, id)
 	if err != nil {
@@ -279,10 +277,9 @@ func (c *Context) slider(value *int, low, high, step int, opt option) (bool, err
 	return res, nil
 }
 
-func (c *Context) sliderF(value *float64, low, high, step float64, digits int, opt option) (bool, error) {
+func (c *Context) sliderF(value *float64, low, high, step float64, digits int, id controlID, opt option) (bool, error) {
 	last := *value
 	v := last
-	id := c.idFromPointer(unsafe.Pointer(value))
 
 	res, err := c.numberTextFieldF(&v, id)
 	if err != nil {
