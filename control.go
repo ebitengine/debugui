@@ -105,9 +105,9 @@ func (c *Context) updateControl(id controlID, bounds image.Rectangle, opt option
 
 func (c *Context) Control(f func(bounds image.Rectangle) bool) bool {
 	pc := caller()
+	id := c.idFromCaller(pc)
 	var res bool
 	c.wrapError(func() error {
-		id := c.idFromCaller(pc)
 		var err error
 		res, err = c.control(id, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 			return f(bounds), nil
