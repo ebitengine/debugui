@@ -25,8 +25,8 @@ func caller() uintptr {
 // IDScope is useful when you want to create multiple controls at the same position e.g. in a for loop.
 func (c *Context) IDScope(name string, f func()) {
 	pc := caller()
-	c.idStack = append(c.idStack, c.idFromCaller(pc))
-	c.idStack = append(c.idStack, c.idFromString(name))
+	c.idStack = append(c.idStack, controlID(fmt.Sprintf("caller:%d", pc)))
+	c.idStack = append(c.idStack, controlID(fmt.Sprintf("string:%q", name)))
 	defer func() {
 		c.idStack = slices.Delete(c.idStack, len(c.idStack)-2, len(c.idStack))
 	}()
