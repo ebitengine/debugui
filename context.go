@@ -8,17 +8,18 @@ import (
 )
 
 type Context struct {
-	scaleMinus1   int
-	hover         controlID
-	focus         controlID
-	lastID        controlID
-	lastZIndex    int
-	keepFocus     bool
-	hoverRoot     *container
-	nextHoverRoot *container
-	scrollTarget  *container
-	numberEditBuf string
-	numberEdit    controlID
+	scaleMinus1     int
+	hover           controlID
+	focus           controlID
+	lastID          controlID
+	lastTextFieldID controlID
+	lastZIndex      int
+	keepFocus       bool
+	hoverRoot       *container
+	nextHoverRoot   *container
+	scrollTarget    *container
+	numberEditBuf   string
+	numberEdit      controlID
 
 	idStack        []controlID
 	commandList    []*command

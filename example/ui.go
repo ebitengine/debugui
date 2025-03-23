@@ -183,7 +183,7 @@ func (g *Game) logWindow(ctx *debugui.Context) {
 			if submit {
 				g.writeLog(g.logSubmitBuf)
 				g.logSubmitBuf = ""
-				ctx.SetTextFieldValue(&g.logSubmitBuf)
+				ctx.SetTextFieldValue(g.logSubmitBuf)
 			}
 		})
 	})

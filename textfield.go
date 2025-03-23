@@ -104,17 +104,24 @@ func (c *Context) textFieldRaw(buf *string, id controlID, opt option) (bool, err
 
 }
 
-func (c *Context) SetTextFieldValue(value *string) {
+// SetTextFieldValue sets the value of the last text field with the given value.
+//
+// If there is no text field, SetTextFieldValue does nothing.
+func (c *Context) SetTextFieldValue(value string) {
+	id := c.lastTextFieldID
+	if id == emptyControlID {
+		return
+	}
 	c.wrapError(func() error {
-		id := c.idFromPointer(unsafe.Pointer(value))
 		f := c.currentContainer().textInputTextField(id)
-		f.SetTextAndSelection(*value, 0, 0)
+		f.SetTextAndSelection(value, 0, 0)
 		return nil
 	})
 }
 
 func (c *Context) textField(buf *string, opt option) (bool, error) {
 	id := c.idFromPointer(unsafe.Pointer(buf))
+	c.lastTextFieldID = id
 	res, err := c.textFieldRaw(buf, id, opt)
 	if err != nil {
 		return false, err

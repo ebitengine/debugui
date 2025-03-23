@@ -57,6 +57,8 @@ func (c *Context) begin() {
 	c.scrollTarget = nil
 	c.hoverRoot = c.nextHoverRoot
 	c.nextHoverRoot = nil
+	c.lastID = emptyControlID
+	c.lastTextFieldID = emptyControlID
 }
 
 func (c *Context) end() error {
