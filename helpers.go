@@ -5,11 +5,8 @@ package debugui
 
 import (
 	"errors"
-	"fmt"
-	"runtime"
 	"slices"
 	"sort"
-	"unsafe"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -17,34 +14,6 @@ import (
 
 func clamp[T int | float64](x, a, b T) T {
 	return min(b, max(a, x))
-}
-
-// caller returns a program counter of the caller.
-func caller() uintptr {
-	pc, _, _, ok := runtime.Caller(2)
-	if !ok {
-		return 0
-	}
-	return pc
-}
-
-func (c *Context) idFromPointer(pointer unsafe.Pointer) controlID {
-	return controlID(fmt.Sprintf("pointer:%p", pointer))
-}
-
-func (c *Context) idFromString(str string, parentID controlID) controlID {
-	if parentID != emptyControlID {
-		return controlID(fmt.Sprintf("string:%q:%s", str, parentID))
-	}
-	return controlID(fmt.Sprintf("string:%q", str))
-}
-
-// idFromCaller returns a hash value based on the caller's file and line number.
-func (c *Context) idFromCaller(callerPC uintptr, str string) controlID {
-	if len(str) > 0 {
-		return controlID(fmt.Sprintf("caller:%d:%q", callerPC, str))
-	}
-	return controlID(fmt.Sprintf("caller:%d", callerPC))
 }
 
 func (c *Context) bringToFront(cnt *container) {
@@ -92,14 +61,17 @@ func (c *Context) begin() {
 
 func (c *Context) end() error {
 	// check stacks
+	if len(c.idStack) > 0 {
+		return errors.New("debugui: id stack must be empty")
+	}
 	if len(c.containerStack) > 0 {
-		return errors.New("debugui: container stack not empty")
+		return errors.New("debugui: container stack must be empty")
 	}
 	if len(c.clipStack) > 0 {
-		return errors.New("debugui: clip stack not empty")
+		return errors.New("debugui: clip stack must be empty")
 	}
 	if len(c.layoutStack) > 0 {
-		return errors.New("debugui: layout stack not empty")
+		return errors.New("debugui: layout stack must be empty")
 	}
 
 	// handle scroll input

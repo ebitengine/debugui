@@ -20,6 +20,7 @@ type Context struct {
 	numberEditBuf string
 	numberEdit    controlID
 
+	idStack        []controlID
 	commandList    []*command
 	rootList       []*container
 	containerStack []*container

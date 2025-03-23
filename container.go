@@ -77,8 +77,14 @@ func (c *Context) Window(title string, rect image.Rectangle, f func(layout Conta
 }
 
 func (c *Context) window(title string, bounds image.Rectangle, opt option, f func(layout ContainerLayout)) (err error) {
-	id := c.idFromString(title, emptyControlID)
+	id := c.idFromString(title)
+	c.idScopeFromControlID(id, func() {
+		err = c.doWindow(title, bounds, opt, id, f)
+	})
+	return
+}
 
+func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id controlID, f func(layout ContainerLayout)) (err error) {
 	cnt := c.container(id, opt)
 	if cnt == nil || !cnt.open {
 		return nil
@@ -130,7 +136,7 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, f fun
 
 		// do title text
 		if (^opt & optionNoTitle) != 0 {
-			id := c.idFromString("title", id)
+			id := c.idFromString("title")
 			r := image.Rect(tr.Min.X+tr.Dy()-c.style().padding, tr.Min.Y, tr.Max.X, tr.Max.Y)
 			c.updateControl(id, r, opt)
 			c.drawControlText(title, r, colorTitleText, opt)
@@ -142,7 +148,7 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, f fun
 
 		// do `collapse` button
 		if (^opt & optionNoClose) != 0 {
-			id := c.idFromString("collapse", id)
+			id := c.idFromString("collapse")
 			r := image.Rect(tr.Min.X, tr.Min.Y, tr.Min.X+tr.Dy(), tr.Max.Y)
 			icon := iconExpanded
 			if collapsed {
@@ -160,7 +166,7 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, f fun
 		return nil
 	}
 
-	if err := c.pushContainerBodyLayout(cnt, body, opt, id); err != nil {
+	if err := c.pushContainerBodyLayout(cnt, body, opt); err != nil {
 		return err
 	}
 	defer func() {
@@ -172,7 +178,7 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, f fun
 	// do `resize` handle
 	if (^opt & optionNoResize) != 0 {
 		sz := c.style().titleHeight
-		id := c.idFromString("resize", id)
+		id := c.idFromString("resize")
 		r := image.Rect(bounds.Max.X-sz, bounds.Max.Y-sz, bounds.Max.X, bounds.Max.Y)
 		c.updateControl(id, r, opt)
 		if id == c.focus && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
@@ -207,7 +213,7 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, f fun
 
 func (c *Context) OpenPopup(name string) {
 	c.wrapError(func() error {
-		id := c.idFromString(name, emptyControlID)
+		id := c.idFromString(name)
 		cnt := c.container(id, 0)
 		// set as hover root so popup isn't closed in begin_window_ex()
 		c.nextHoverRoot = cnt
@@ -226,7 +232,7 @@ func (c *Context) OpenPopup(name string) {
 
 func (c *Context) ClosePopup(name string) {
 	c.wrapError(func() error {
-		id := c.idFromString(name, emptyControlID)
+		id := c.idFromString(name)
 		cnt := c.container(id, 0)
 		cnt.open = false
 		return nil

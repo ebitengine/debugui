@@ -120,7 +120,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 				ctx.Text("Blue:")
 				ctx.Slider(&g.bg[2], 0, 255, 1)
 			})
-			ctx.Control("", func(bounds image.Rectangle) bool {
+			ctx.Control(func(bounds image.Rectangle) bool {
 				ctx.DrawControl(func(screen *ebiten.Image) {
 					scale := ctx.Scale()
 					vector.DrawFilledRect(
@@ -193,9 +193,11 @@ func (g *Game) buttonWindows(ctx *debugui.Context) {
 	ctx.Window("Button Windows", image.Rect(350, 300, 650, 500), func(layout debugui.ContainerLayout) {
 		ctx.SetGridLayout([]int{-1, -1, -1, -1}, nil)
 		for i := 0; i < 100; i++ {
-			if ctx.Button("Button\x00" + fmt.Sprintf("%d", i)) {
-				g.writeLog(fmt.Sprintf("Pressed button %d in Button Window", i))
-			}
+			ctx.IDScope(fmt.Sprintf("%d", i), func() {
+				if ctx.Button("Button") {
+					g.writeLog(fmt.Sprintf("Pressed button %d in Button Window", i))
+				}
+			})
 		}
 	})
 }

@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"image"
 	"math"
-	"strings"
 	"unsafe"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -17,8 +16,6 @@ import (
 type controlID string
 
 const emptyControlID controlID = ""
-
-const idSeparator = "\x00"
 
 type option int
 
@@ -107,11 +104,11 @@ func (c *Context) updateControl(id controlID, bounds image.Rectangle, opt option
 	return
 }
 
-func (c *Context) Control(idStr string, f func(bounds image.Rectangle) bool) bool {
+func (c *Context) Control(f func(bounds image.Rectangle) bool) bool {
 	pc := caller()
 	var res bool
 	c.wrapError(func() error {
-		id := c.idFromCaller(pc, idStr)
+		id := c.idFromCaller(pc)
 		var err error
 		res, err = c.control(id, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 			return f(bounds), nil
@@ -179,8 +176,7 @@ func (c *Context) Text(text string) {
 }
 
 func (c *Context) button(label string, opt option, callerPC uintptr) (controlID, bool, error) {
-	label, idStr, _ := strings.Cut(label, idSeparator)
-	id := c.idFromCaller(callerPC, idStr)
+	id := c.idFromCaller(callerPC)
 	res, err := c.control(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
 		// handle click
@@ -330,8 +326,7 @@ func (c *Context) sliderF(value *float64, low, high, step float64, digits int, o
 }
 
 func (c *Context) header(label string, isTreeNode bool, opt option, callerPC uintptr, f func() error) error {
-	label, idStr, _ := strings.Cut(label, idSeparator)
-	id := c.idFromCaller(callerPC, idStr)
+	id := c.idFromCaller(callerPC)
 	c.SetGridLayout(nil, nil)
 
 	var expanded bool
@@ -404,7 +399,7 @@ func (c *Context) treeNode(label string, opt option, callerPC uintptr, f func())
 }
 
 // x = x, y = y, w = w, h = h
-func (c *Context) scrollbarVertical(cnt *container, b image.Rectangle, cs image.Point, containerID controlID) {
+func (c *Context) scrollbarVertical(cnt *container, b image.Rectangle, cs image.Point) {
 	maxscroll := cs.Y - b.Dy()
 	if maxscroll > 0 && b.Dy() > 0 {
 		// get sizing / positioning
@@ -413,7 +408,7 @@ func (c *Context) scrollbarVertical(cnt *container, b image.Rectangle, cs image.
 		base.Max.X = base.Min.X + c.style().scrollbarSize
 
 		// handle input
-		id := c.idFromString("scrollbar-y", containerID)
+		id := c.idFromString("scrollbar-y")
 		c.updateControl(id, base, 0)
 		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 			cnt.layout.ScrollOffset.Y += c.mouseDelta().Y * cs.Y / base.Dy()
@@ -439,7 +434,7 @@ func (c *Context) scrollbarVertical(cnt *container, b image.Rectangle, cs image.
 }
 
 // x = y, y = x, w = h, h = w
-func (c *Context) scrollbarHorizontal(cnt *container, b image.Rectangle, cs image.Point, containerID controlID) {
+func (c *Context) scrollbarHorizontal(cnt *container, b image.Rectangle, cs image.Point) {
 	maxscroll := cs.X - b.Dx()
 	if maxscroll > 0 && b.Dx() > 0 {
 		// get sizing / positioning
@@ -448,7 +443,7 @@ func (c *Context) scrollbarHorizontal(cnt *container, b image.Rectangle, cs imag
 		base.Max.Y = base.Min.Y + c.style().scrollbarSize
 
 		// handle input
-		id := c.idFromString("scrollbar-x", containerID)
+		id := c.idFromString("scrollbar-x")
 		c.updateControl(id, base, 0)
 		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 			cnt.layout.ScrollOffset.X += c.mouseDelta().X * cs.X / base.Dx()
@@ -474,15 +469,15 @@ func (c *Context) scrollbarHorizontal(cnt *container, b image.Rectangle, cs imag
 }
 
 // if `swap` is true, X = Y, Y = X, W = H, H = W
-func (c *Context) scrollbar(cnt *container, b image.Rectangle, cs image.Point, swap bool, containerID controlID) {
+func (c *Context) scrollbar(cnt *container, b image.Rectangle, cs image.Point, swap bool) {
 	if swap {
-		c.scrollbarHorizontal(cnt, b, cs, containerID)
+		c.scrollbarHorizontal(cnt, b, cs)
 	} else {
-		c.scrollbarVertical(cnt, b, cs, containerID)
+		c.scrollbarVertical(cnt, b, cs)
 	}
 }
 
-func (c *Context) scrollbars(cnt *container, body image.Rectangle, containerID controlID) image.Rectangle {
+func (c *Context) scrollbars(cnt *container, body image.Rectangle) image.Rectangle {
 	sz := c.style().scrollbarSize
 	cs := cnt.layout.ContentSize
 	cs.X += c.style().padding * 2
@@ -497,15 +492,15 @@ func (c *Context) scrollbars(cnt *container, body image.Rectangle, containerID c
 	}
 	// to create a horizontal or vertical scrollbar almost-identical code is
 	// used; only the references to `x|y` `w|h` need to be switched
-	c.scrollbar(cnt, body, cs, false, containerID)
-	c.scrollbar(cnt, body, cs, true, containerID)
+	c.scrollbar(cnt, body, cs, false)
+	c.scrollbar(cnt, body, cs, true)
 	c.popClipRect()
 	return body
 }
 
-func (c *Context) pushContainerBodyLayout(cnt *container, body image.Rectangle, opt option, containerID controlID) error {
+func (c *Context) pushContainerBodyLayout(cnt *container, body image.Rectangle, opt option) error {
 	if (^opt & optionNoScroll) != 0 {
-		body = c.scrollbars(cnt, body, containerID)
+		body = c.scrollbars(cnt, body)
 	}
 	if err := c.pushLayout(body.Inset(c.style().padding), cnt.layout.ScrollOffset, opt&optionAutoSize != 0); err != nil {
 		return err

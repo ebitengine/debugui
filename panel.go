@@ -13,8 +13,14 @@ func (c *Context) Panel(name string, f func(layout ContainerLayout)) {
 }
 
 func (c *Context) panel(name string, opt option, f func(layout ContainerLayout)) (err error) {
-	id := c.idFromString(name, emptyControlID)
+	id := c.idFromString(name)
+	c.idScopeFromControlID(id, func() {
+		err = c.doPanel(opt, id, f)
+	})
+	return
+}
 
+func (c *Context) doPanel(opt option, id controlID, f func(layout ContainerLayout)) (err error) {
 	cnt := c.container(id, opt)
 	l, err := c.layoutNext()
 	if err != nil {
@@ -28,7 +34,7 @@ func (c *Context) panel(name string, opt option, f func(layout ContainerLayout))
 	c.pushContainer(cnt)
 	defer c.popContainer()
 
-	if err := c.pushContainerBodyLayout(cnt, cnt.layout.Bounds, opt, id); err != nil {
+	if err := c.pushContainerBodyLayout(cnt, cnt.layout.Bounds, opt); err != nil {
 		return err
 	}
 	defer func() {
