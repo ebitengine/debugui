@@ -3,6 +3,13 @@
 
 package debugui
 
+// Button creates a button widget with the given label.
+//
+// Button returns true if the button has been clicked, otherwise false.
+//
+// A Button control is uniquely determined by its call location.
+// Function calls made in different locations will create different controls.
+// If you want to generate different controls with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) Button(label string) bool {
 	pc := caller()
 	var res bool
@@ -66,11 +73,20 @@ func (c *Context) SliderF(value *float64, lo, hi float64, step float64, digits i
 	return res
 }
 
-func (c *Context) Header(label string, expanded bool, f func()) {
+// Header creates a header widget with the given label.
+//
+// initialExpansion specifies whether the header is initially expanded.
+// f is called to render the content of the header.
+// The content is only rendered when the header is expanded.
+//
+// A Header control is uniquely determined by its call location.
+// Function calls made in different locations will create different controls.
+// If you want to generate different controls with the same function call in a loop (such as a for loop), use [IDScope].
+func (c *Context) Header(label string, initialExpansion bool, f func()) {
 	pc := caller()
 	c.wrapError(func() error {
 		var opt option
-		if expanded {
+		if initialExpansion {
 			opt |= optionExpanded
 		}
 		if err := c.header(label, false, opt, pc, func() error {
@@ -83,6 +99,11 @@ func (c *Context) Header(label string, expanded bool, f func()) {
 	})
 }
 
+// TreeNode creates a tree node widget with the given label.
+//
+// A TreeNode control is uniquely determined by its call location.
+// Function calls made in different locations will create different controls.
+// If you want to generate different controls with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) TreeNode(label string, f func()) {
 	pc := caller()
 	c.wrapError(func() error {
