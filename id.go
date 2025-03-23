@@ -33,6 +33,14 @@ func (c *Context) IDScope(name string, f func()) {
 	f()
 }
 
+func (c *Context) idScopeFromID(id controlID, f func()) {
+	c.idStack = append(c.idStack, id)
+	defer func() {
+		c.idStack = slices.Delete(c.idStack, len(c.idStack)-1, len(c.idStack))
+	}()
+	f()
+}
+
 func (c *Context) idScopeFromGlobalString(name string, f func()) {
 	c.idStack = append(c.idStack, controlID(fmt.Sprintf("string:%q", name)))
 	defer func() {
@@ -51,7 +59,7 @@ func (c *Context) idScopeToControlID() controlID {
 		if len(newID) > 0 {
 			newID += ":"
 		}
-		newID += id
+		newID += "[" + id + "]"
 	}
 	return newID
 }

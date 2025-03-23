@@ -3,18 +3,19 @@
 
 package debugui
 
-func (c *Context) Panel(name string, f func(layout ContainerLayout)) {
+func (c *Context) Panel(f func(layout ContainerLayout)) {
+	pc := caller()
+	id := c.idFromCaller(pc)
 	c.wrapError(func() error {
-		if err := c.panel(name, 0, f); err != nil {
+		if err := c.panel(0, id, f); err != nil {
 			return err
 		}
 		return nil
 	})
 }
 
-func (c *Context) panel(name string, opt option, f func(layout ContainerLayout)) (err error) {
-	id := c.idFromGlobalString(name)
-	c.idScopeFromGlobalString(name, func() {
+func (c *Context) panel(opt option, id controlID, f func(layout ContainerLayout)) (err error) {
+	c.idScopeFromID(id, func() {
 		err = c.doPanel(opt, id, f)
 	})
 	return

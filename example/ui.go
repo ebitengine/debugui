@@ -159,7 +159,7 @@ The Go Gopher by Renee French is licensed under the Creative Commons Attribution
 func (g *Game) logWindow(ctx *debugui.Context) {
 	ctx.Window("Log Window", image.Rect(350, 40, 650, 290), func(layout debugui.ContainerLayout) {
 		ctx.SetGridLayout([]int{-1}, []int{-1, 0})
-		ctx.Panel("Log Output", func(layout debugui.ContainerLayout) {
+		ctx.Panel(func(layout debugui.ContainerLayout) {
 			ctx.SetGridLayout([]int{-1}, []int{-1})
 			ctx.Text(g.logBuf)
 			if g.logUpdated {
