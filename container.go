@@ -132,7 +132,11 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 	if (^opt & optionNoTitle) != 0 {
 		tr := bounds
 		tr.Max.Y = tr.Min.Y + c.style().titleHeight
-		c.drawFrame(tr, colorTitleBG)
+		if !collapsed {
+			c.drawFrame(tr, colorTitleBG)
+		} else {
+			c.drawFrame(tr, colorTitleBGTransparent)
+		}
 
 		// do title text
 		if (^opt & optionNoTitle) != 0 {

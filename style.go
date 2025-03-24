@@ -23,6 +23,7 @@ const (
 	colorBorder
 	colorWindowBG
 	colorTitleBG
+	colorTitleBGTransparent
 	colorTitleText
 	colorPanelBG
 	colorButton
@@ -45,19 +46,20 @@ var defaultStyle style = style{
 	scrollbarSize: 12,
 	thumbSize:     8,
 	colors: [...]color.RGBA{
-		colorText:        {230, 230, 230, 255},
-		colorBorder:      {25, 25, 25, 255},
-		colorWindowBG:    {45, 45, 45, 230},
-		colorTitleBG:     {23, 23, 23, 230},
-		colorTitleText:   {240, 240, 240, 255},
-		colorPanelBG:     {0, 0, 0, 0},
-		colorButton:      {75, 75, 75, 255},
-		colorButtonHover: {95, 95, 95, 255},
-		colorButtonFocus: {115, 115, 115, 255},
-		colorBase:        {30, 30, 30, 255},
-		colorBaseHover:   {35, 35, 35, 255},
-		colorBaseFocus:   {40, 40, 40, 255},
-		colorScrollBase:  {43, 43, 43, 255},
-		colorScrollThumb: {30, 30, 30, 255},
+		colorText:               {230, 230, 230, 255},
+		colorBorder:             {25, 25, 25, 255},
+		colorWindowBG:           {45, 45, 45, 230},
+		colorTitleBG:            {30, 30, 30, 255},
+		colorTitleBGTransparent: {20, 20, 20, 204},
+		colorTitleText:          {240, 240, 240, 255},
+		colorPanelBG:            {0, 0, 0, 0},
+		colorButton:             {75, 75, 75, 255},
+		colorButtonHover:        {95, 95, 95, 255},
+		colorButtonFocus:        {115, 115, 115, 255},
+		colorBase:               {30, 30, 30, 255},
+		colorBaseHover:          {35, 35, 35, 255},
+		colorBaseFocus:          {40, 40, 40, 255},
+		colorScrollBase:         {43, 43, 43, 255},
+		colorScrollThumb:        {30, 30, 30, 255},
 	},
 }
