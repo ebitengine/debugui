@@ -105,9 +105,18 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 				})
 			})
 
-			ctx.Text("Lorem ipsum dolor sit amet, consectetur adipiscing " +
-				"elit. Maecenas lacinia, sem eu lacinia molestie, mi risus faucibus " +
-				"ipsum, eu varius magna felis a nulla.")
+			ctx.GridCell(func(bounds image.Rectangle) {
+				ctx.Header("English Text", false, func() {
+					ctx.Text("Lorem ipsum dolor sit amet, consectetur adipiscing " +
+						"elit. Maecenas lacinia, sem eu lacinia molestie, mi risus faucibus " +
+						"ipsum, eu varius magna felis a nulla.")
+				})
+				ctx.Header("Japanese Text", false, func() {
+					ctx.Text("隴西の李徴は博学才穎、天宝の末年、若くして名を虎榜に連ね、" +
+						"ついで江南尉に補せられたが、性、狷介、自ら恃むところ頗る厚く、" +
+						"賤吏に甘んずるを潔しとしなかった。")
+				})
+			})
 		})
 		ctx.Header("Color", true, func() {
 			ctx.SetGridLayout([]int{-3, -1}, []int{54})

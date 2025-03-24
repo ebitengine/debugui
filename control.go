@@ -6,7 +6,12 @@ package debugui
 import (
 	"fmt"
 	"image"
+	"iter"
 	"math"
+	"strings"
+	"unicode"
+
+	"github.com/rivo/uniseg"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -133,34 +138,63 @@ func (c *Context) control(id controlID, opt option, f func(bounds image.Rectangl
 	return res, nil
 }
 
+func removeSpaceAtLineTail(str string) string {
+	return strings.TrimRightFunc(str, unicode.IsSpace)
+}
+
+func lines(text string, width int) iter.Seq[string] {
+	return func(yield func(string) bool) {
+		var line string
+		var word string
+		state := -1
+		for len(text) > 0 {
+			cluster, nextText, boundaries, nextState := uniseg.StepString(text, state)
+			switch m := boundaries & uniseg.MaskLine; m {
+			default:
+				word += cluster
+			case uniseg.LineCanBreak, uniseg.LineMustBreak:
+				if line == "" {
+					line += word + cluster
+				} else {
+					l := removeSpaceAtLineTail(line + word + cluster)
+					if textWidth(l) > width {
+						if !yield(removeSpaceAtLineTail(line)) {
+							return
+						}
+						line = word + cluster
+					} else {
+						line += word + cluster
+					}
+				}
+				word = ""
+				if m == uniseg.LineMustBreak {
+					if !yield(removeSpaceAtLineTail(line)) {
+						return
+					}
+					line = ""
+				}
+			}
+			state = nextState
+			text = nextText
+		}
+
+		line += word
+		if len(line) > 0 {
+			if !yield(removeSpaceAtLineTail(line)) {
+				return
+			}
+		}
+	}
+}
+
 // Text creates a text label.
 func (c *Context) Text(text string) {
 	c.wrapError(func() error {
 		if err := c.gridCell(func(bounds image.Rectangle) error {
-			var endIdx, p int
 			c.SetGridLayout([]int{-1}, []int{lineHeight()})
-			for endIdx < len(text) {
+			for line := range lines(text, bounds.Dx()-c.style().padding) {
 				if _, err := c.control(emptyControlID, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
-					w := 0
-					endIdx = p
-					startIdx := endIdx
-					for endIdx < len(text) && text[endIdx] != '\n' {
-						word := p
-						for p < len(text) && text[p] != ' ' && text[p] != '\n' {
-							p++
-						}
-						w += textWidth(text[word:p])
-						if w > bounds.Dx()-c.style().padding && endIdx != startIdx {
-							break
-						}
-						if p < len(text) {
-							w += textWidth(string(text[p]))
-						}
-						endIdx = p
-						p++
-					}
-					c.drawControlText(text[startIdx:endIdx], bounds, colorText, 0)
-					p = endIdx + 1
+					c.drawControlText(line, bounds, colorText, 0)
 					return false, nil
 				}); err != nil {
 					return err
