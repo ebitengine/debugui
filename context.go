@@ -33,5 +33,8 @@ type Context struct {
 
 	lastMousePos image.Point
 
+	screenWidth  int
+	screenHeight int
+
 	err error
 }

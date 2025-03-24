@@ -141,7 +141,26 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 			c.updateControl(id, r, opt)
 			c.drawControlText(title, r, colorTitleText, opt)
 			if id == c.focus && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-				cnt.layout.Bounds = cnt.layout.Bounds.Add(c.mouseDelta())
+				b := cnt.layout.Bounds.Add(c.mouseDelta())
+				if c.screenWidth > 0 {
+					maxX := b.Max.X
+					if maxX >= c.screenWidth/c.Scale() {
+						b = b.Add(image.Pt(c.screenWidth/c.Scale()-maxX, 0))
+					}
+				}
+				if b.Min.X < 0 {
+					b = b.Add(image.Pt(-b.Min.X, 0))
+				}
+				if c.screenHeight > 0 {
+					maxY := b.Min.Y + tr.Dy()
+					if maxY >= c.screenHeight/c.Scale()-c.style().padding {
+						b = b.Add(image.Pt(0, c.screenHeight/c.Scale()-maxY))
+					}
+				}
+				if b.Min.Y < 0 {
+					b = b.Add(image.Pt(0, -b.Min.Y))
+				}
+				cnt.layout.Bounds = b
 			}
 			body.Min.Y += tr.Dy()
 		}
@@ -182,8 +201,8 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 		r := image.Rect(bounds.Max.X-sz, bounds.Max.Y-sz, bounds.Max.X, bounds.Max.Y)
 		c.updateControl(id, r, opt)
 		if id == c.focus && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-			cnt.layout.Bounds.Max.X = cnt.layout.Bounds.Min.X + max(96, cnt.layout.Bounds.Dx()+c.mouseDelta().X)
-			cnt.layout.Bounds.Max.Y = cnt.layout.Bounds.Min.Y + max(64, cnt.layout.Bounds.Dy()+c.mouseDelta().Y)
+			cnt.layout.Bounds.Max.X = min(cnt.layout.Bounds.Min.X+max(96, cnt.layout.Bounds.Dx()+c.mouseDelta().X), c.screenWidth/c.Scale())
+			cnt.layout.Bounds.Max.Y = min(cnt.layout.Bounds.Min.Y+max(64, cnt.layout.Bounds.Dy()+c.mouseDelta().Y), c.screenHeight/c.Scale())
 		}
 	}
 

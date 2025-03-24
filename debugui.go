@@ -24,6 +24,7 @@ func (d *DebugUI) Update(f func(ctx *Context) error) error {
 // Draw should be called once in the game's Draw function.
 func (d *DebugUI) Draw(screen *ebiten.Image) {
 	d.ctx.draw(screen)
+	d.ctx.screenWidth, d.ctx.screenHeight = screen.Bounds().Dx(), screen.Bounds().Dy()
 }
 
 // IsCapturingInput reports whether the debug UI is capturing input, e.g. when a control has focus.
