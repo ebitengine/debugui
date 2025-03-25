@@ -93,8 +93,7 @@ func (c *Context) draw(screen *ebiten.Image) {
 
 	target := screen
 	scale := c.Scale()
-	var cmd *command
-	for c.nextCommand(&cmd) {
+	for cmd := range c.commands() {
 		switch cmd.typ {
 		case commandRect:
 			vector.DrawFilledRect(

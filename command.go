@@ -6,6 +6,7 @@ package debugui
 import (
 	"image"
 	"image/color"
+	"iter"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -82,25 +83,30 @@ func (c *Context) appendJumpCommand(dstIdx int) int {
 	return len(c.commandList) - 1
 }
 
-func (c *Context) nextCommand(cmd **command) bool {
-	if len(c.commandList) == 0 {
-		return false
-	}
-	if *cmd == nil {
-		*cmd = c.commandList[0]
-	} else {
-		*cmd = c.commandList[(*cmd).idx+1]
-	}
+func (c *Context) commands() iter.Seq[*command] {
+	return func(yield func(command *command) bool) {
+		if len(c.commandList) == 0 {
+			return
+		}
 
-	for (*cmd).idx < len(c.commandList) {
-		if (*cmd).typ != commandJump {
-			return true
+		cmd := c.commandList[0]
+	loop:
+		for {
+			for cmd.idx < len(c.commandList) {
+				if cmd.typ != commandJump {
+					if !yield(cmd) {
+						return
+					}
+					cmd = c.commandList[cmd.idx+1]
+					continue loop
+				}
+				idx := cmd.jump.dstIdx
+				if idx > len(c.commandList)-1 {
+					return
+				}
+				cmd = c.commandList[idx]
+			}
+			return
 		}
-		idx := (*cmd).jump.dstIdx
-		if idx > len(c.commandList)-1 {
-			break
-		}
-		*cmd = c.commandList[idx]
 	}
-	return false
 }
