@@ -90,23 +90,19 @@ func (c *Context) commands() iter.Seq[*command] {
 		}
 
 		cmd := c.commandList[0]
-	loop:
-		for {
-			for cmd.idx < len(c.commandList) {
-				if cmd.typ != commandJump {
-					if !yield(cmd) {
-						return
-					}
-					cmd = c.commandList[cmd.idx+1]
-					continue loop
-				}
-				idx := cmd.jump.dstIdx
-				if idx > len(c.commandList)-1 {
+		for cmd.idx < len(c.commandList) {
+			if cmd.typ != commandJump {
+				if !yield(cmd) {
 					return
 				}
-				cmd = c.commandList[idx]
+				cmd = c.commandList[cmd.idx+1]
+				continue
 			}
-			return
+			idx := cmd.jump.dstIdx
+			if idx > len(c.commandList)-1 {
+				return
+			}
+			cmd = c.commandList[idx]
 		}
 	}
 }
