@@ -59,20 +59,20 @@ func (c *Context) handleInputForWidget(id WidgetID, bounds image.Rectangle, opt 
 		return false
 	}
 
-	pointingOver := c.pointingOver(bounds)
-
 	if c.focus == id {
 		c.keepFocus = true
 	}
 	if (opt & optionNoInteract) != 0 {
 		return false
 	}
-	if pointingOver && !c.pointing.pressed() {
+
+	hover := c.pointingOver(bounds)
+	if hover {
 		c.hover = id
 	}
 
 	if c.focus == id {
-		if c.pointing.justPressed() && !pointingOver {
+		if c.pointing.justPressed() && !hover {
 			c.setFocus(emptyWidgetID)
 			wasFocused = true
 		}
@@ -85,7 +85,7 @@ func (c *Context) handleInputForWidget(id WidgetID, bounds image.Rectangle, opt 
 	if c.hover == id {
 		if c.pointing.justPressed() {
 			c.setFocus(id)
-		} else if !pointingOver {
+		} else if !hover {
 			c.hover = emptyWidgetID
 		}
 	}
