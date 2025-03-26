@@ -4,7 +4,7 @@ go 1.23.0
 
 require (
 	github.com/hajimehoshi/bitmapfont/v3 v3.2.1
-	github.com/hajimehoshi/ebiten/v2 v2.8.6
+	github.com/hajimehoshi/ebiten/v2 v2.8.7
 	github.com/kisielk/errcheck v1.9.0
 	github.com/rivo/uniseg v0.4.7
 	golang.org/x/tools v0.31.0
