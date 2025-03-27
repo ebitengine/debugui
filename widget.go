@@ -7,9 +7,12 @@ import (
 	"image"
 )
 
-type widgetID string
+// WidgetID is a unique identifier for a widget.
+//
+// Do not rely on the string value of WidgetID, as it is not guaranteed to be stable across different runs of the program.
+type WidgetID string
 
-const emptyWidgetID widgetID = ""
+const emptyWidgetID WidgetID = ""
 
 type option int
 
@@ -59,7 +62,7 @@ func (c *Context) pointingPosition() image.Point {
 	return p
 }
 
-func (c *Context) updateWidget(id widgetID, bounds image.Rectangle, opt option) (wasFocused bool) {
+func (c *Context) updateWidget(id WidgetID, bounds image.Rectangle, opt option) (wasFocused bool) {
 	if id == emptyWidgetID {
 		return false
 	}
@@ -115,7 +118,8 @@ func (c *Context) Widget(f func(bounds image.Rectangle) bool) bool {
 	return res
 }
 
-func (c *Context) widget(id widgetID, opt option, f func(bounds image.Rectangle, wasFocused bool) (bool, error)) (bool, error) {
+func (c *Context) widget(id WidgetID, opt option, f func(bounds image.Rectangle, wasFocused bool) (bool, error)) (bool, error) {
+	c.currentID = id
 	r, err := c.layoutNext()
 	if err != nil {
 		return false, err
@@ -171,4 +175,9 @@ func (c *Context) isCapturingInput() bool {
 	}
 
 	return c.hoverRoot != nil || c.focus != emptyWidgetID
+}
+
+// CurrentWidgetID returns the ID of the current widget being processed.
+func (c *Context) CurrentWidgetID() WidgetID {
+	return c.currentID
 }

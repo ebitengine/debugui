@@ -41,11 +41,11 @@ func (c *Context) TextField(buf *string) bool {
 	return res
 }
 
-func (c *Context) textFieldRaw(buf *string, id widgetID, opt option) (bool, error) {
+func (c *Context) textFieldRaw(buf *string, id WidgetID, opt option) (bool, error) {
 	res, err := c.widget(id, opt|optionHoldFocus, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
 
-		f := c.currentContainer().textInputTextField(id)
+		f := c.currentContainer().textInputTextField(id, true)
 		if c.focus == id {
 			// handle text input
 			f.Focus()
@@ -104,23 +104,22 @@ func (c *Context) textFieldRaw(buf *string, id widgetID, opt option) (bool, erro
 
 }
 
-// SetTextFieldValue sets the value of the last text field with the given value.
+// SetTextFieldValue sets the value of the text field with the given widgetID.
 //
-// If there is no text field, SetTextFieldValue does nothing.
-func (c *Context) SetTextFieldValue(value string) {
-	id := c.lastTextFieldID
-	if id == emptyWidgetID {
+// If widgetID is not for a text field, this function does nothing.
+func (c *Context) SetTextFieldValue(widgetID WidgetID, value string) {
+	if widgetID == emptyWidgetID {
 		return
 	}
 	c.wrapError(func() error {
-		f := c.currentContainer().textInputTextField(id)
-		f.SetTextAndSelection(value, 0, 0)
+		if f := c.currentContainer().textInputTextField(widgetID, false); f != nil {
+			f.SetTextAndSelection(value, 0, 0)
+		}
 		return nil
 	})
 }
 
-func (c *Context) textField(buf *string, id widgetID, opt option) (bool, error) {
-	c.lastTextFieldID = id
+func (c *Context) textField(buf *string, id WidgetID, opt option) (bool, error) {
 	res, err := c.textFieldRaw(buf, id, opt)
 	if err != nil {
 		return false, err
@@ -177,7 +176,7 @@ func (c *Context) NumberFieldF(value *float64, step float64, digits int) bool {
 	return res
 }
 
-func (c *Context) numberField(value *int, step int, id widgetID, opt option) (bool, error) {
+func (c *Context) numberField(value *int, step int, id WidgetID, opt option) (bool, error) {
 	last := *value
 
 	res, err := c.numberTextField(value, id)
@@ -210,7 +209,7 @@ func (c *Context) numberField(value *int, step int, id widgetID, opt option) (bo
 	return res, nil
 }
 
-func (c *Context) numberFieldF(value *float64, step float64, digits int, id widgetID, opt option) (bool, error) {
+func (c *Context) numberFieldF(value *float64, step float64, digits int, id WidgetID, opt option) (bool, error) {
 	last := *value
 
 	res, err := c.numberTextFieldF(value, id)
@@ -243,7 +242,7 @@ func (c *Context) numberFieldF(value *float64, step float64, digits int, id widg
 	return res, nil
 }
 
-func (c *Context) numberTextField(value *int, id widgetID) (bool, error) {
+func (c *Context) numberTextField(value *int, id WidgetID) (bool, error) {
 	if c.pointing.justPressed() && ebiten.IsKeyPressed(ebiten.KeyShift) &&
 		c.hover == id {
 		c.numberEdit = id
@@ -267,7 +266,7 @@ func (c *Context) numberTextField(value *int, id widgetID) (bool, error) {
 	return false, nil
 }
 
-func (c *Context) numberTextFieldF(value *float64, id widgetID) (bool, error) {
+func (c *Context) numberTextFieldF(value *float64, id WidgetID) (bool, error) {
 	if c.pointing.justPressed() && ebiten.IsKeyPressed(ebiten.KeyShift) &&
 		c.hover == id {
 		c.numberEdit = id

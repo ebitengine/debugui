@@ -184,6 +184,7 @@ func (g *Game) logWindow(ctx *debugui.Context) {
 					submit = true
 				}
 			}
+			textFieldID := ctx.CurrentWidgetID()
 			if ctx.Button("Submit") {
 				if g.logSubmitBuf != "" {
 					submit = true
@@ -192,7 +193,7 @@ func (g *Game) logWindow(ctx *debugui.Context) {
 			if submit {
 				g.writeLog(g.logSubmitBuf)
 				g.logSubmitBuf = ""
-				ctx.SetTextFieldValue(g.logSubmitBuf)
+				ctx.SetTextFieldValue(textFieldID, g.logSubmitBuf)
 			}
 		})
 	})

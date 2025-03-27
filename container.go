@@ -17,8 +17,8 @@ type container struct {
 	open      bool
 	collapsed bool
 
-	toggledIDs          map[widgetID]struct{}
-	textInputTextFields map[widgetID]*textinput.Field
+	toggledIDs          map[WidgetID]struct{}
+	textInputTextFields map[WidgetID]*textinput.Field
 }
 
 // ContainerLayout represents the layout of a container widget.
@@ -37,7 +37,7 @@ type ContainerLayout struct {
 	ScrollOffset image.Point
 }
 
-func (c *Context) container(id widgetID, opt option) *container {
+func (c *Context) container(id WidgetID, opt option) *container {
 	if container, ok := c.idToContainer[id]; ok {
 		c.addUsedContainer(id)
 		return container
@@ -48,7 +48,7 @@ func (c *Context) container(id widgetID, opt option) *container {
 	}
 
 	if c.idToContainer == nil {
-		c.idToContainer = map[widgetID]*container{}
+		c.idToContainer = map[WidgetID]*container{}
 	}
 	cnt := &container{
 		headIdx: -1,
@@ -76,7 +76,7 @@ func (c *Context) Window(title string, rect image.Rectangle, f func(layout Conta
 	})
 }
 
-func (c *Context) window(title string, bounds image.Rectangle, opt option, id widgetID, f func(layout ContainerLayout)) error {
+func (c *Context) window(title string, bounds image.Rectangle, opt option, id WidgetID, f func(layout ContainerLayout)) error {
 	var err error
 	c.idScopeFromID(id, func() {
 		err = c.doWindow(title, bounds, opt, id, f)
@@ -84,7 +84,7 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, id wi
 	return err
 }
 
-func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id widgetID, f func(layout ContainerLayout)) (err error) {
+func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id WidgetID, f func(layout ContainerLayout)) (err error) {
 	cnt := c.container(id, opt)
 	if cnt == nil || !cnt.open {
 		return nil
@@ -296,31 +296,34 @@ func (c *Context) SetScroll(scroll image.Point) {
 	c.currentContainer().layout.ScrollOffset = scroll
 }
 
-func (c *container) textInputTextField(id widgetID) *textinput.Field {
+func (c *container) textInputTextField(id WidgetID, createIfNeeded bool) *textinput.Field {
 	if id == emptyWidgetID {
 		return nil
 	}
 	if _, ok := c.textInputTextFields[id]; !ok {
+		if !createIfNeeded {
+			return nil
+		}
 		if c.textInputTextFields == nil {
-			c.textInputTextFields = make(map[widgetID]*textinput.Field)
+			c.textInputTextFields = make(map[WidgetID]*textinput.Field)
 		}
 		c.textInputTextFields[id] = &textinput.Field{}
 	}
 	return c.textInputTextFields[id]
 }
 
-func (c *container) toggled(id widgetID) bool {
+func (c *container) toggled(id WidgetID) bool {
 	_, ok := c.toggledIDs[id]
 	return ok
 }
 
-func (c *container) toggle(id widgetID) {
+func (c *container) toggle(id WidgetID) {
 	if _, toggled := c.toggledIDs[id]; toggled {
 		delete(c.toggledIDs, id)
 		return
 	}
 	if c.toggledIDs == nil {
-		c.toggledIDs = map[widgetID]struct{}{}
+		c.toggledIDs = map[WidgetID]struct{}{}
 	}
 	c.toggledIDs[id] = struct{}{}
 }

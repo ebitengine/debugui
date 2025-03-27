@@ -24,15 +24,15 @@ func caller() uintptr {
 // IDScope is useful when you want to create multiple widgets at the same position e.g. in a for loop.
 func (c *Context) IDScope(name string, f func()) {
 	pc := caller()
-	c.idStack = append(c.idStack, widgetID(fmt.Sprintf("caller:%d", pc)))
-	c.idStack = append(c.idStack, widgetID(fmt.Sprintf("string:%q", name)))
+	c.idStack = append(c.idStack, WidgetID(fmt.Sprintf("caller:%d", pc)))
+	c.idStack = append(c.idStack, WidgetID(fmt.Sprintf("string:%q", name)))
 	defer func() {
 		c.idStack = slices.Delete(c.idStack, len(c.idStack)-2, len(c.idStack))
 	}()
 	f()
 }
 
-func (c *Context) idScopeFromID(id widgetID, f func()) {
+func (c *Context) idScopeFromID(id WidgetID, f func()) {
 	c.idStack = append(c.idStack, id)
 	defer func() {
 		c.idStack = slices.Delete(c.idStack, len(c.idStack)-1, len(c.idStack))
@@ -40,8 +40,8 @@ func (c *Context) idScopeFromID(id widgetID, f func()) {
 	f()
 }
 
-func (c *Context) idScopeToWidgetID() widgetID {
-	var newID widgetID
+func (c *Context) idScopeToWidgetID() WidgetID {
+	var newID WidgetID
 	for _, id := range c.idStack {
 		if len(newID) > 0 {
 			newID += ":"
@@ -51,25 +51,25 @@ func (c *Context) idScopeToWidgetID() widgetID {
 	return newID
 }
 
-func (c *Context) idFromGlobalString(str string) widgetID {
-	return widgetID(fmt.Sprintf("string:%q", str))
+func (c *Context) idFromGlobalString(str string) WidgetID {
+	return WidgetID(fmt.Sprintf("string:%q", str))
 }
 
-func (c *Context) idFromString(str string) widgetID {
+func (c *Context) idFromString(str string) WidgetID {
 	newID := c.idScopeToWidgetID()
 	if len(newID) > 0 {
 		newID += ":"
 	}
-	newID += widgetID(fmt.Sprintf("string:%q", str))
+	newID += WidgetID(fmt.Sprintf("string:%q", str))
 	return newID
 }
 
 // idFromCaller returns a hash value based on the caller's file and line number.
-func (c *Context) idFromCaller(callerPC uintptr) widgetID {
+func (c *Context) idFromCaller(callerPC uintptr) WidgetID {
 	newID := c.idScopeToWidgetID()
 	if len(newID) > 0 {
 		newID += ":"
 	}
-	newID += widgetID(fmt.Sprintf("caller:%d", callerPC))
+	newID += WidgetID(fmt.Sprintf("caller:%d", callerPC))
 	return newID
 }

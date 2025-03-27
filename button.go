@@ -27,7 +27,7 @@ func (c *Context) Button(label string) bool {
 	return res
 }
 
-func (c *Context) button(label string, opt option, id widgetID) (bool, error) {
+func (c *Context) button(label string, opt option, id WidgetID) (bool, error) {
 	res, err := c.widget(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
 		// handle click

@@ -15,28 +15,28 @@ import (
 type Context struct {
 	pointing pointing
 
-	scaleMinus1     int
-	hover           widgetID
-	focus           widgetID
-	lastID          widgetID
-	lastTextFieldID widgetID
-	lastZIndex      int
-	keepFocus       bool
-	hoverRoot       *container
-	nextHoverRoot   *container
-	scrollTarget    *container
-	numberEditBuf   string
-	numberEdit      widgetID
+	scaleMinus1   int
+	hover         WidgetID
+	focus         WidgetID
+	currentID     WidgetID
+	lastID        WidgetID
+	lastZIndex    int
+	keepFocus     bool
+	hoverRoot     *container
+	nextHoverRoot *container
+	scrollTarget  *container
+	numberEditBuf string
+	numberEdit    WidgetID
 
-	idStack        []widgetID
+	idStack        []WidgetID
 	commandList    []*command
 	rootList       []*container
 	containerStack []*container
-	usedContainers map[widgetID]struct{}
+	usedContainers map[WidgetID]struct{}
 	clipStack      []image.Rectangle
 	layoutStack    []layout
 
-	idToContainer map[widgetID]*container
+	idToContainer map[WidgetID]*container
 
 	lastPointingPos image.Point
 
@@ -75,8 +75,8 @@ func (c *Context) begin() {
 	c.scrollTarget = nil
 	c.hoverRoot = c.nextHoverRoot
 	c.nextHoverRoot = nil
+	c.currentID = emptyWidgetID
 	c.lastID = emptyWidgetID
-	c.lastTextFieldID = emptyWidgetID
 }
 
 func (c *Context) end() error {

@@ -14,14 +14,14 @@ func (c *Context) Panel(f func(layout ContainerLayout)) {
 	})
 }
 
-func (c *Context) panel(opt option, id widgetID, f func(layout ContainerLayout)) (err error) {
+func (c *Context) panel(opt option, id WidgetID, f func(layout ContainerLayout)) (err error) {
 	c.idScopeFromID(id, func() {
 		err = c.doPanel(opt, id, f)
 	})
 	return
 }
 
-func (c *Context) doPanel(opt option, id widgetID, f func(layout ContainerLayout)) (err error) {
+func (c *Context) doPanel(opt option, id WidgetID, f func(layout ContainerLayout)) (err error) {
 	cnt := c.container(id, opt)
 	l, err := c.layoutNext()
 	if err != nil {

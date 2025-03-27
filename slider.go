@@ -58,7 +58,7 @@ func (c *Context) SliderF(value *float64, lo, hi float64, step float64, digits i
 	return res
 }
 
-func (c *Context) slider(value *int, low, high, step int, id widgetID, opt option) (bool, error) {
+func (c *Context) slider(value *int, low, high, step int, id WidgetID, opt option) (bool, error) {
 	last := *value
 	v := last
 
@@ -103,7 +103,7 @@ func (c *Context) slider(value *int, low, high, step int, id widgetID, opt optio
 	return res, nil
 }
 
-func (c *Context) sliderF(value *float64, low, high, step float64, digits int, id widgetID, opt option) (bool, error) {
+func (c *Context) sliderF(value *float64, low, high, step float64, digits int, id WidgetID, opt option) (bool, error) {
 	last := *value
 	v := last
 

@@ -48,7 +48,7 @@ func (c *Context) TreeNode(label string, f func()) {
 	})
 }
 
-func (c *Context) header(label string, isTreeNode bool, opt option, id widgetID, f func() error) error {
+func (c *Context) header(label string, isTreeNode bool, opt option, id WidgetID, f func() error) error {
 	c.SetGridLayout(nil, nil)
 
 	var expanded bool
@@ -97,7 +97,7 @@ func (c *Context) header(label string, isTreeNode bool, opt option, id widgetID,
 	return nil
 }
 
-func (c *Context) treeNode(label string, opt option, id widgetID, f func()) error {
+func (c *Context) treeNode(label string, opt option, id WidgetID, f func()) error {
 	if err := c.header(label, true, opt, id, func() (err error) {
 		l, err := c.layout()
 		if err != nil {

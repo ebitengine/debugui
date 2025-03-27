@@ -214,7 +214,7 @@ func (c *Context) drawFrame(rect image.Rectangle, colorid int) {
 	}
 }
 
-func (c *Context) drawWidgetFrame(id widgetID, rect image.Rectangle, colorid int, opt option) {
+func (c *Context) drawWidgetFrame(id WidgetID, rect image.Rectangle, colorid int, opt option) {
 	if (opt & optionNoFrame) != 0 {
 		return
 	}
