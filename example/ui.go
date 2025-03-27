@@ -55,16 +55,17 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 			if ctx.Button("Button 3") {
 				g.writeLog("Pressed button 3")
 			}
-			if ctx.Button("Popup") {
-				ctx.OpenPopup("Test Popup")
-			}
-			ctx.Popup("Test Popup", func(layout debugui.ContainerLayout) {
+			popupWidgetID := ctx.Popup(func(layout debugui.ContainerLayout) {
+				popupWidgetID := ctx.CurrentWidgetID()
 				ctx.Button("Hello")
 				ctx.Button("World")
 				if ctx.Button("Close") {
-					ctx.ClosePopup("Test Popup")
+					ctx.ClosePopup(popupWidgetID)
 				}
 			})
+			if ctx.Button("Popup") {
+				ctx.OpenPopup(popupWidgetID)
+			}
 		})
 		ctx.Header("Tree and Text", true, func() {
 			ctx.SetGridLayout([]int{-1, -1}, nil)

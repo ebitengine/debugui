@@ -51,10 +51,6 @@ func (c *Context) idScopeToWidgetID() WidgetID {
 	return newID
 }
 
-func (c *Context) idFromGlobalString(str string) WidgetID {
-	return WidgetID(fmt.Sprintf("string:%q", str))
-}
-
 func (c *Context) idFromString(str string) WidgetID {
 	newID := c.idScopeToWidgetID()
 	if len(newID) > 0 {

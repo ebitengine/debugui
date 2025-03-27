@@ -77,6 +77,8 @@ func (c *Context) Window(title string, rect image.Rectangle, f func(layout Conta
 }
 
 func (c *Context) window(title string, bounds image.Rectangle, opt option, id WidgetID, f func(layout ContainerLayout)) error {
+	// A window is not a widget in the current implementation, but a window is a widget in the concept.
+	c.currentID = id
 	var err error
 	c.idScopeFromID(id, func() {
 		err = c.doWindow(title, bounds, opt, id, f)
@@ -234,10 +236,9 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 	return nil
 }
 
-func (c *Context) OpenPopup(name string) {
-	id := c.idFromGlobalString(name)
+func (c *Context) OpenPopup(widgetID WidgetID) {
 	c.wrapError(func() error {
-		cnt := c.container(id, 0)
+		cnt := c.container(widgetID, 0)
 		// set as hover root so popup isn't closed in begin_window_ex()
 		c.nextHoverRoot = cnt
 		c.hoverRoot = c.nextHoverRoot
@@ -253,24 +254,25 @@ func (c *Context) OpenPopup(name string) {
 	})
 }
 
-func (c *Context) ClosePopup(name string) {
-	id := c.idFromGlobalString(name)
+func (c *Context) ClosePopup(widgetID WidgetID) {
 	c.wrapError(func() error {
-		cnt := c.container(id, 0)
+		cnt := c.container(widgetID, 0)
 		cnt.open = false
 		return nil
 	})
 }
 
-func (c *Context) Popup(name string, f func(layout ContainerLayout)) {
-	id := c.idFromGlobalString(name)
+func (c *Context) Popup(f func(layout ContainerLayout)) WidgetID {
+	pc := caller()
+	id := c.idFromCaller(pc)
 	c.wrapError(func() error {
 		opt := optionPopup | optionAutoSize | optionNoResize | optionNoScroll | optionNoTitle | optionClosed
-		if err := c.window(name, image.Rectangle{}, opt, id, f); err != nil {
+		if err := c.window("", image.Rectangle{}, opt, id, f); err != nil {
 			return err
 		}
 		return nil
 	})
+	return id
 }
 
 func (c *Context) pushContainer(cnt *container) {
