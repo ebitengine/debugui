@@ -12,10 +12,11 @@ package debugui
 // If you want to generate different controls with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) Button(label string) bool {
 	pc := caller()
+	id := c.idFromCaller(pc)
 	var res bool
 	c.wrapError(func() error {
 		var err error
-		_, res, err = c.button(label, optionAlignCenter, pc)
+		res, err = c.button(label, optionAlignCenter, id)
 		if err != nil {
 			return err
 		}
@@ -84,12 +85,13 @@ func (c *Context) SliderF(value *float64, lo, hi float64, step float64, digits i
 // If you want to generate different controls with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) Header(label string, initialExpansion bool, f func()) {
 	pc := caller()
+	id := c.idFromCaller(pc)
 	c.wrapError(func() error {
 		var opt option
 		if initialExpansion {
 			opt |= optionExpanded
 		}
-		if err := c.header(label, false, opt, pc, func() error {
+		if err := c.header(label, false, opt, id, func() error {
 			f()
 			return nil
 		}); err != nil {
@@ -106,8 +108,9 @@ func (c *Context) Header(label string, initialExpansion bool, f func()) {
 // If you want to generate different controls with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) TreeNode(label string, f func()) {
 	pc := caller()
+	id := c.idFromCaller(pc)
 	c.wrapError(func() error {
-		if err := c.treeNode(label, 0, pc, f); err != nil {
+		if err := c.treeNode(label, 0, id, f); err != nil {
 			return err
 		}
 		return nil

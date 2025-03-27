@@ -7,18 +7,9 @@ type ControlID = controlID
 
 const EmptyControlID = emptyControlID
 
-func (c *Context) ButtonID(label string) ControlID {
+func (c *Context) IDFromCaller() ControlID {
 	pc := caller()
-	var id controlID
-	c.wrapError(func() error {
-		var err error
-		id, _, err = c.button(label, optionAlignCenter, pc)
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-	return id
+	return c.idFromCaller(pc)
 }
 
 func (d *DebugUI) ContainerCounter() int {

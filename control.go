@@ -208,8 +208,7 @@ func (c *Context) Text(text string) {
 	})
 }
 
-func (c *Context) button(label string, opt option, callerPC uintptr) (controlID, bool, error) {
-	id := c.idFromCaller(callerPC)
+func (c *Context) button(label string, opt option, id controlID) (bool, error) {
 	res, err := c.control(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
 		// handle click
@@ -224,9 +223,9 @@ func (c *Context) button(label string, opt option, callerPC uintptr) (controlID,
 		return res, nil
 	})
 	if err != nil {
-		return emptyControlID, false, err
+		return false, err
 	}
-	return id, res, nil
+	return res, nil
 }
 
 // Checkbox creates a checkbox with the given boolean state and text label.
@@ -356,8 +355,7 @@ func (c *Context) sliderF(value *float64, low, high, step float64, digits int, i
 	return res, nil
 }
 
-func (c *Context) header(label string, isTreeNode bool, opt option, callerPC uintptr, f func() error) error {
-	id := c.idFromCaller(callerPC)
+func (c *Context) header(label string, isTreeNode bool, opt option, id controlID, f func() error) error {
 	c.SetGridLayout(nil, nil)
 
 	var expanded bool
@@ -406,8 +404,8 @@ func (c *Context) header(label string, isTreeNode bool, opt option, callerPC uin
 	return nil
 }
 
-func (c *Context) treeNode(label string, opt option, callerPC uintptr, f func()) error {
-	if err := c.header(label, true, opt, callerPC, func() (err error) {
+func (c *Context) treeNode(label string, opt option, id controlID, f func()) error {
+	if err := c.header(label, true, opt, id, func() (err error) {
 		l, err := c.layout()
 		if err != nil {
 			return err
