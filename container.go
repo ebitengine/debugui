@@ -68,20 +68,22 @@ func (c *Context) currentContainer() *container {
 }
 
 func (c *Context) Window(title string, rect image.Rectangle, f func(layout ContainerLayout)) {
+	pc := caller()
+	id := c.idFromCaller(pc)
 	c.wrapError(func() error {
-		if err := c.window(title, rect, 0, f); err != nil {
+		if err := c.window(title, rect, 0, id, f); err != nil {
 			return err
 		}
 		return nil
 	})
 }
 
-func (c *Context) window(title string, bounds image.Rectangle, opt option, f func(layout ContainerLayout)) (err error) {
-	id := c.idFromGlobalString(title)
-	c.idScopeFromGlobalString(title, func() {
+func (c *Context) window(title string, bounds image.Rectangle, opt option, id controlID, f func(layout ContainerLayout)) error {
+	var err error
+	c.idScopeFromID(id, func() {
 		err = c.doWindow(title, bounds, opt, id, f)
 	})
-	return
+	return err
 }
 
 func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id controlID, f func(layout ContainerLayout)) (err error) {
@@ -263,9 +265,10 @@ func (c *Context) ClosePopup(name string) {
 }
 
 func (c *Context) Popup(name string, f func(layout ContainerLayout)) {
+	id := c.idFromGlobalString(name)
 	c.wrapError(func() error {
 		opt := optionPopup | optionAutoSize | optionNoResize | optionNoScroll | optionNoTitle | optionClosed
-		if err := c.window(name, image.Rectangle{}, opt, f); err != nil {
+		if err := c.window(name, image.Rectangle{}, opt, id, f); err != nil {
 			return err
 		}
 		return nil
