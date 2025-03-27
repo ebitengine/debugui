@@ -13,7 +13,7 @@ func (c *Context) bringToFront(cnt *container) {
 }
 
 func (c *Context) Focus() {
-	c.setFocus(c.lastID)
+	c.setFocus(c.currentID)
 }
 
 func (c *Context) setFocus(id WidgetID) {

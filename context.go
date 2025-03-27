@@ -19,7 +19,6 @@ type Context struct {
 	hover         WidgetID
 	focus         WidgetID
 	currentID     WidgetID
-	lastID        WidgetID
 	lastZIndex    int
 	keepFocus     bool
 	hoverRoot     *container
@@ -76,7 +75,6 @@ func (c *Context) begin() {
 	c.hoverRoot = c.nextHoverRoot
 	c.nextHoverRoot = nil
 	c.currentID = emptyWidgetID
-	c.lastID = emptyWidgetID
 }
 
 func (c *Context) end() error {
