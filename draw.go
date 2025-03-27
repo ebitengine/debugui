@@ -270,3 +270,24 @@ func (c *Context) checkClip(bounds image.Rectangle) int {
 	}
 	return clipPart
 }
+
+// SetScale sets the scale of the UI.
+//
+// The scale affects the rendering result of the UI.
+//
+// The default scale is 1.
+func (c *Context) SetScale(scale int) {
+	if scale < 1 {
+		panic("debugui: scale must be >= 1")
+	}
+	c.scaleMinus1 = scale - 1
+}
+
+// Scale returns the scale of the UI.
+func (c *Context) Scale() int {
+	return c.scaleMinus1 + 1
+}
+
+func (c *Context) style() *style {
+	return &defaultStyle
+}

@@ -1,0 +1,121 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: 2025 The Ebitengine Authors
+
+package debugui
+
+import "image"
+
+// Header creates a header widget with the given label.
+//
+// initialExpansion specifies whether the header is initially expanded.
+// f is called to render the content of the header.
+// The content is only rendered when the header is expanded.
+//
+// A Header control is uniquely determined by its call location.
+// Function calls made in different locations will create different controls.
+// If you want to generate different controls with the same function call in a loop (such as a for loop), use [IDScope].
+func (c *Context) Header(label string, initialExpansion bool, f func()) {
+	pc := caller()
+	id := c.idFromCaller(pc)
+	c.wrapError(func() error {
+		var opt option
+		if initialExpansion {
+			opt |= optionExpanded
+		}
+		if err := c.header(label, false, opt, id, func() error {
+			f()
+			return nil
+		}); err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+// TreeNode creates a tree node widget with the given label.
+//
+// A TreeNode control is uniquely determined by its call location.
+// Function calls made in different locations will create different controls.
+// If you want to generate different controls with the same function call in a loop (such as a for loop), use [IDScope].
+func (c *Context) TreeNode(label string, f func()) {
+	pc := caller()
+	id := c.idFromCaller(pc)
+	c.wrapError(func() error {
+		if err := c.treeNode(label, 0, id, f); err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+func (c *Context) header(label string, isTreeNode bool, opt option, id controlID, f func() error) error {
+	c.SetGridLayout(nil, nil)
+
+	var expanded bool
+	toggled := c.currentContainer().toggled(id)
+	if (opt & optionExpanded) != 0 {
+		expanded = !toggled
+	} else {
+		expanded = toggled
+	}
+
+	res, err := c.control(id, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
+		if c.pointing.justPressed() && c.focus == id {
+			c.currentContainer().toggle(id)
+		}
+		if isTreeNode {
+			if c.hover == id {
+				c.drawFrame(bounds, colorButtonHover)
+			}
+		} else {
+			c.drawControlFrame(id, bounds, colorButton, 0)
+		}
+		var icon icon
+		if expanded {
+			icon = iconExpanded
+		} else {
+			icon = iconCollapsed
+		}
+		c.drawIcon(
+			icon,
+			image.Rect(bounds.Min.X, bounds.Min.Y, bounds.Min.X+bounds.Dy(), bounds.Max.Y),
+			c.style().colors[colorText],
+		)
+		bounds.Min.X += bounds.Dy() - c.style().padding
+		c.drawControlText(label, bounds, colorText, 0)
+
+		return expanded, nil
+	})
+	if err != nil {
+		return err
+	}
+	if res {
+		if err := f(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *Context) treeNode(label string, opt option, id controlID, f func()) error {
+	if err := c.header(label, true, opt, id, func() (err error) {
+		l, err := c.layout()
+		if err != nil {
+			return err
+		}
+		l.indent += c.style().indent
+		defer func() {
+			l, err2 := c.layout()
+			if err2 != nil && err == nil {
+				err = err2
+				return
+			}
+			l.indent -= c.style().indent
+		}()
+		f()
+		return nil
+	}); err != nil {
+		return err
+	}
+	return nil
+}

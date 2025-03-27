@@ -277,6 +277,17 @@ func (c *Context) pushContainer(cnt *container) {
 	c.containerStack = append(c.containerStack, cnt)
 }
 
+func (c *Context) pushContainerBodyLayout(cnt *container, body image.Rectangle, opt option) error {
+	if (^opt & optionNoScroll) != 0 {
+		body = c.scrollbars(cnt, body)
+	}
+	if err := c.pushLayout(body.Inset(c.style().padding), cnt.layout.ScrollOffset, opt&optionAutoSize != 0); err != nil {
+		return err
+	}
+	cnt.layout.BodyBounds = body
+	return nil
+}
+
 func (c *Context) popContainer() {
 	c.containerStack = c.containerStack[:len(c.containerStack)-1]
 }
