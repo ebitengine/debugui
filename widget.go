@@ -7,9 +7,9 @@ import (
 	"image"
 )
 
-type controlID string
+type widgetID string
 
-const emptyControlID controlID = ""
+const emptyWidgetID widgetID = ""
 
 type option int
 
@@ -59,8 +59,8 @@ func (c *Context) pointingPosition() image.Point {
 	return p
 }
 
-func (c *Context) updateControl(id controlID, bounds image.Rectangle, opt option) (wasFocused bool) {
-	if id == emptyControlID {
+func (c *Context) updateWidget(id widgetID, bounds image.Rectangle, opt option) (wasFocused bool) {
+	if id == emptyWidgetID {
 		return false
 	}
 
@@ -78,11 +78,11 @@ func (c *Context) updateControl(id controlID, bounds image.Rectangle, opt option
 
 	if c.focus == id {
 		if c.pointing.justPressed() && !pointingOver {
-			c.setFocus(emptyControlID)
+			c.setFocus(emptyWidgetID)
 			wasFocused = true
 		}
 		if !c.pointing.pressed() && (^opt&optionHoldFocus) != 0 {
-			c.setFocus(emptyControlID)
+			c.setFocus(emptyWidgetID)
 			wasFocused = true
 		}
 	}
@@ -91,20 +91,20 @@ func (c *Context) updateControl(id controlID, bounds image.Rectangle, opt option
 		if c.pointing.justPressed() {
 			c.setFocus(id)
 		} else if !pointingOver {
-			c.hover = emptyControlID
+			c.hover = emptyWidgetID
 		}
 	}
 
 	return
 }
 
-func (c *Context) Control(f func(bounds image.Rectangle) bool) bool {
+func (c *Context) Widget(f func(bounds image.Rectangle) bool) bool {
 	pc := caller()
 	id := c.idFromCaller(pc)
 	var res bool
 	c.wrapError(func() error {
 		var err error
-		res, err = c.control(id, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
+		res, err = c.widget(id, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 			return f(bounds), nil
 		})
 		if err != nil {
@@ -115,12 +115,12 @@ func (c *Context) Control(f func(bounds image.Rectangle) bool) bool {
 	return res
 }
 
-func (c *Context) control(id controlID, opt option, f func(bounds image.Rectangle, wasFocused bool) (bool, error)) (bool, error) {
+func (c *Context) widget(id widgetID, opt option, f func(bounds image.Rectangle, wasFocused bool) (bool, error)) (bool, error) {
 	r, err := c.layoutNext()
 	if err != nil {
 		return false, err
 	}
-	wasFocused := c.updateControl(id, r, opt)
+	wasFocused := c.updateWidget(id, r, opt)
 	res, err := f(r, wasFocused)
 	if err != nil {
 		return false, err
@@ -130,30 +130,30 @@ func (c *Context) control(id controlID, opt option, f func(bounds image.Rectangl
 
 // Checkbox creates a checkbox with the given boolean state and text label.
 //
-// A Checkbox control is uniquely determined by its call location.
-// Function calls made in different locations will create different controls.
-// If you want to generate different controls with the same function call in a loop (such as a for loop), use [IDScope].
+// A Checkbox widget is uniquely determined by its call location.
+// Function calls made in different locations will create different widgets.
+// If you want to generate different widgets with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) Checkbox(state *bool, label string) bool {
 	pc := caller()
 	id := c.idFromCaller(pc)
 	var res bool
 	c.wrapError(func() error {
 		var err error
-		res, err = c.control(id, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
+		res, err = c.widget(id, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 			var res bool
 			box := image.Rect(bounds.Min.X, bounds.Min.Y+(bounds.Dy()-lineHeight())/2, bounds.Min.X+lineHeight(), bounds.Max.Y-(bounds.Dy()-lineHeight())/2)
-			c.updateControl(id, bounds, 0)
+			c.updateWidget(id, bounds, 0)
 			if c.pointing.justPressed() && c.focus == id {
 				res = true
 				*state = !*state
 			}
-			c.drawControlFrame(id, box, colorBase, 0)
+			c.drawWidgetFrame(id, box, colorBase, 0)
 			if *state {
 				c.drawIcon(iconCheck, box, c.style().colors[colorText])
 			}
 			if label != "" {
 				bounds = image.Rect(bounds.Min.X+lineHeight(), bounds.Min.Y, bounds.Max.X, bounds.Max.Y)
-				c.drawControlText(label, bounds, colorText, 0)
+				c.drawWidgetText(label, bounds, colorText, 0)
 			}
 			return res, nil
 		})
@@ -170,5 +170,5 @@ func (c *Context) isCapturingInput() bool {
 		return false
 	}
 
-	return c.hoverRoot != nil || c.focus != emptyControlID
+	return c.hoverRoot != nil || c.focus != emptyWidgetID
 }

@@ -129,8 +129,8 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 				ctx.Text("Blue:")
 				ctx.Slider(&g.bg[2], 0, 255, 1)
 			})
-			ctx.Control(func(bounds image.Rectangle) bool {
-				ctx.DrawControl(func(screen *ebiten.Image) {
+			ctx.Widget(func(bounds image.Rectangle) bool {
+				ctx.DrawWidget(func(screen *ebiten.Image) {
 					scale := ctx.Scale()
 					vector.DrawFilledRect(
 						screen,

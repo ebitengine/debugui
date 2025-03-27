@@ -27,7 +27,7 @@ func (d *DebugUI) Draw(screen *ebiten.Image) {
 	d.ctx.screenWidth, d.ctx.screenHeight = screen.Bounds().Dx(), screen.Bounds().Dy()
 }
 
-// IsCapturingInput reports whether the debug UI is capturing input, e.g. when a control has focus.
+// IsCapturingInput reports whether the debug UI is capturing input, e.g. when a widget has focus.
 func (d *DebugUI) IsCapturingInput() bool {
 	return d.ctx.isCapturingInput()
 }

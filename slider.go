@@ -15,9 +15,9 @@ import (
 //
 // Slider returns true if the value of the slider has been changed, otherwise false.
 //
-// A Slider control is uniquely determined by its call location.
-// Function calls made in different locations will create different controls.
-// If you want to generate different controls with the same function call in a loop (such as a for loop), use [IDScope].
+// A Slider widget is uniquely determined by its call location.
+// Function calls made in different locations will create different widgets.
+// If you want to generate different widgets with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) Slider(value *int, lo, hi int, step int) bool {
 	pc := caller()
 	id := c.idFromCaller(pc)
@@ -40,9 +40,9 @@ func (c *Context) Slider(value *int, lo, hi int, step int) bool {
 //
 // SliderF returns true if the value of the slider has been changed, otherwise false.
 //
-// A SliderF control is uniquely determined by its call location.
-// Function calls made in different locations will create different controls.
-// If you want to generate different controls with the same function call in a loop (such as a for loop), use [IDScope].
+// A SliderF widget is uniquely determined by its call location.
+// Function calls made in different locations will create different widgets.
+// If you want to generate different widgets with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) SliderF(value *float64, lo, hi float64, step float64, digits int) bool {
 	pc := caller()
 	id := c.idFromCaller(pc)
@@ -58,7 +58,7 @@ func (c *Context) SliderF(value *float64, lo, hi float64, step float64, digits i
 	return res
 }
 
-func (c *Context) slider(value *int, low, high, step int, id controlID, opt option) (bool, error) {
+func (c *Context) slider(value *int, low, high, step int, id widgetID, opt option) (bool, error) {
 	last := *value
 	v := last
 
@@ -71,7 +71,7 @@ func (c *Context) slider(value *int, low, high, step int, id controlID, opt opti
 		return false, nil
 	}
 
-	res, err = c.control(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
+	res, err = c.widget(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
 		if c.focus == id && c.pointing.pressed() {
 			if w := bounds.Dx() - defaultStyle.thumbSize; w > 0 {
@@ -87,13 +87,13 @@ func (c *Context) slider(value *int, low, high, step int, id controlID, opt opti
 			res = true
 		}
 
-		c.drawControlFrame(id, bounds, colorBase, opt)
+		c.drawWidgetFrame(id, bounds, colorBase, opt)
 		w := c.style().thumbSize
 		x := int((v - low) * (bounds.Dx() - w) / (high - low))
 		thumb := image.Rect(bounds.Min.X+x, bounds.Min.Y, bounds.Min.X+x+w, bounds.Max.Y)
-		c.drawControlFrame(id, thumb, colorButton, opt)
+		c.drawWidgetFrame(id, thumb, colorButton, opt)
 		text := fmt.Sprintf("%d", v)
-		c.drawControlText(text, bounds, colorText, opt)
+		c.drawWidgetText(text, bounds, colorText, opt)
 
 		return res, nil
 	})
@@ -103,7 +103,7 @@ func (c *Context) slider(value *int, low, high, step int, id controlID, opt opti
 	return res, nil
 }
 
-func (c *Context) sliderF(value *float64, low, high, step float64, digits int, id controlID, opt option) (bool, error) {
+func (c *Context) sliderF(value *float64, low, high, step float64, digits int, id widgetID, opt option) (bool, error) {
 	last := *value
 	v := last
 
@@ -116,7 +116,7 @@ func (c *Context) sliderF(value *float64, low, high, step float64, digits int, i
 		return false, nil
 	}
 
-	res, err = c.control(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
+	res, err = c.widget(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
 		if c.focus == id && c.pointing.pressed() {
 			if w := float64(bounds.Dx() - defaultStyle.thumbSize); w > 0 {
@@ -132,13 +132,13 @@ func (c *Context) sliderF(value *float64, low, high, step float64, digits int, i
 			res = true
 		}
 
-		c.drawControlFrame(id, bounds, colorBase, opt)
+		c.drawWidgetFrame(id, bounds, colorBase, opt)
 		w := c.style().thumbSize
 		x := int((v - low) * float64(bounds.Dx()-w) / (high - low))
 		thumb := image.Rect(bounds.Min.X+x, bounds.Min.Y, bounds.Min.X+x+w, bounds.Max.Y)
-		c.drawControlFrame(id, thumb, colorButton, opt)
+		c.drawWidgetFrame(id, thumb, colorButton, opt)
 		text := formatNumber(v, digits)
-		c.drawControlText(text, bounds, colorText, opt)
+		c.drawWidgetText(text, bounds, colorText, opt)
 
 		return res, nil
 	})

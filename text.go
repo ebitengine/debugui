@@ -67,8 +67,8 @@ func (c *Context) Text(text string) {
 		if err := c.gridCell(func(bounds image.Rectangle) error {
 			c.SetGridLayout([]int{-1}, []int{lineHeight()})
 			for line := range lines(text, bounds.Dx()-c.style().padding) {
-				if _, err := c.control(emptyControlID, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
-					c.drawControlText(line, bounds, colorText, 0)
+				if _, err := c.widget(emptyWidgetID, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
+					c.drawWidgetText(line, bounds, colorText, 0)
 					return false, nil
 				}); err != nil {
 					return err

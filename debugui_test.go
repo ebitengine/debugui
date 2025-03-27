@@ -15,14 +15,14 @@ func TestMultipleIDFromCallersInForLoop(t *testing.T) {
 	var d debugui.DebugUI
 	if err := d.Update(func(ctx *debugui.Context) error {
 		ctx.Window("Window", image.Rect(0, 0, 100, 100), func(layout debugui.ContainerLayout) {
-			var id debugui.ControlID
+			var id debugui.WidgetID
 			for range 10 {
 				id2 := ctx.IDFromCaller()
-				if id2 == debugui.EmptyControlID {
+				if id2 == debugui.EmptyWidgetID {
 					t.Errorf("IDFromCaller() returned 0")
 					continue
 				}
-				if id == debugui.EmptyControlID {
+				if id == debugui.EmptyWidgetID {
 					id = id2
 					continue
 				}
@@ -30,7 +30,7 @@ func TestMultipleIDFromCallersInForLoop(t *testing.T) {
 					t.Errorf("IDFromCaller) returned different values: %q and %q", id, id2)
 				}
 			}
-			if id == debugui.EmptyControlID {
+			if id == debugui.EmptyWidgetID {
 				t.Errorf("IDFromCaller() returned 0")
 			}
 		})

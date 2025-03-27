@@ -16,14 +16,14 @@ func (c *Context) Focus() {
 	c.setFocus(c.lastID)
 }
 
-func (c *Context) setFocus(id controlID) {
+func (c *Context) setFocus(id widgetID) {
 	c.focus = id
 	c.keepFocus = true
 }
 
-func (c *Context) addUsedContainer(id controlID) {
+func (c *Context) addUsedContainer(id widgetID) {
 	if c.usedContainers == nil {
-		c.usedContainers = map[controlID]struct{}{}
+		c.usedContainers = map[widgetID]struct{}{}
 	}
 	c.usedContainers[id] = struct{}{}
 }

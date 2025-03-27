@@ -192,7 +192,7 @@ func (c *Context) drawIcon(icon icon, rect image.Rectangle, color color.Color) {
 	}
 }
 
-func (c *Context) DrawControl(f func(screen *ebiten.Image)) {
+func (c *Context) DrawWidget(f func(screen *ebiten.Image)) {
 	if c.err != nil {
 		return
 	}
@@ -214,7 +214,7 @@ func (c *Context) drawFrame(rect image.Rectangle, colorid int) {
 	}
 }
 
-func (c *Context) drawControlFrame(id controlID, rect image.Rectangle, colorid int, opt option) {
+func (c *Context) drawWidgetFrame(id widgetID, rect image.Rectangle, colorid int, opt option) {
 	if (opt & optionNoFrame) != 0 {
 		return
 	}
@@ -226,7 +226,7 @@ func (c *Context) drawControlFrame(id controlID, rect image.Rectangle, colorid i
 	c.drawFrame(rect, colorid)
 }
 
-func (c *Context) drawControlText(str string, rect image.Rectangle, colorid int, opt option) {
+func (c *Context) drawWidgetText(str string, rect image.Rectangle, colorid int, opt option) {
 	var pos image.Point
 	tw := textWidth(str)
 	c.pushClipRect(rect)

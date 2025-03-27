@@ -16,7 +16,7 @@ func (c *Context) scrollbarVertical(cnt *container, b image.Rectangle, cs image.
 
 		// handle input
 		id := c.idFromString("scrollbar-y")
-		c.updateControl(id, base, 0)
+		c.updateWidget(id, base, 0)
 		if c.focus == id && c.pointing.pressed() {
 			cnt.layout.ScrollOffset.Y += c.pointingDelta().Y * cs.Y / base.Dy()
 		}
@@ -51,7 +51,7 @@ func (c *Context) scrollbarHorizontal(cnt *container, b image.Rectangle, cs imag
 
 		// handle input
 		id := c.idFromString("scrollbar-x")
-		c.updateControl(id, base, 0)
+		c.updateWidget(id, base, 0)
 		if c.focus == id && c.pointing.pressed() {
 			cnt.layout.ScrollOffset.X += c.pointingDelta().X * cs.X / base.Dx()
 		}

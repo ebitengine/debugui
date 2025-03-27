@@ -17,27 +17,27 @@ type container struct {
 	open      bool
 	collapsed bool
 
-	toggledIDs          map[controlID]struct{}
-	textInputTextFields map[controlID]*textinput.Field
+	toggledIDs          map[widgetID]struct{}
+	textInputTextFields map[widgetID]*textinput.Field
 }
 
-// ContainerLayout represents the layout of a container control.
+// ContainerLayout represents the layout of a container widget.
 type ContainerLayout struct {
-	// Bounds is the bounds of the control.
+	// Bounds is the bounds of the widget.
 	Bounds image.Rectangle
 
 	// BodyBounds is the bounds of the body area of the container.
 	BodyBounds image.Rectangle
 
 	// ContentSize is the size of the content.
-	// ContentSize can be larger than Bounds or BodyBounds. In this case, the control should be scrollable.
+	// ContentSize can be larger than Bounds or BodyBounds. In this case, the widget should be scrollable.
 	ContentSize image.Point
 
 	// ScrollOffset is the offset of the scroll.
 	ScrollOffset image.Point
 }
 
-func (c *Context) container(id controlID, opt option) *container {
+func (c *Context) container(id widgetID, opt option) *container {
 	if container, ok := c.idToContainer[id]; ok {
 		c.addUsedContainer(id)
 		return container
@@ -48,7 +48,7 @@ func (c *Context) container(id controlID, opt option) *container {
 	}
 
 	if c.idToContainer == nil {
-		c.idToContainer = map[controlID]*container{}
+		c.idToContainer = map[widgetID]*container{}
 	}
 	cnt := &container{
 		headIdx: -1,
@@ -76,7 +76,7 @@ func (c *Context) Window(title string, rect image.Rectangle, f func(layout Conta
 	})
 }
 
-func (c *Context) window(title string, bounds image.Rectangle, opt option, id controlID, f func(layout ContainerLayout)) error {
+func (c *Context) window(title string, bounds image.Rectangle, opt option, id widgetID, f func(layout ContainerLayout)) error {
 	var err error
 	c.idScopeFromID(id, func() {
 		err = c.doWindow(title, bounds, opt, id, f)
@@ -84,7 +84,7 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, id co
 	return err
 }
 
-func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id controlID, f func(layout ContainerLayout)) (err error) {
+func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id widgetID, f func(layout ContainerLayout)) (err error) {
 	cnt := c.container(id, opt)
 	if cnt == nil || !cnt.open {
 		return nil
@@ -142,8 +142,8 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 		if (^opt & optionNoTitle) != 0 {
 			id := c.idFromString("title")
 			r := image.Rect(tr.Min.X+tr.Dy()-c.style().padding, tr.Min.Y, tr.Max.X, tr.Max.Y)
-			c.updateControl(id, r, opt)
-			c.drawControlText(title, r, colorTitleText, opt)
+			c.updateWidget(id, r, opt)
+			c.drawWidgetText(title, r, colorTitleText, opt)
 			if id == c.focus && c.pointing.pressed() {
 				b := cnt.layout.Bounds.Add(c.pointingDelta())
 				if c.screenWidth > 0 {
@@ -178,7 +178,7 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 				icon = iconCollapsed
 			}
 			c.drawIcon(icon, r, c.style().colors[colorTitleText])
-			c.updateControl(id, r, opt)
+			c.updateWidget(id, r, opt)
 			if c.pointing.justPressed() && id == c.focus {
 				cnt.collapsed = !cnt.collapsed
 			}
@@ -203,7 +203,7 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 		sz := c.style().titleHeight
 		id := c.idFromString("resize")
 		r := image.Rect(bounds.Max.X-sz, bounds.Max.Y-sz, bounds.Max.X, bounds.Max.Y)
-		c.updateControl(id, r, opt)
+		c.updateWidget(id, r, opt)
 		if id == c.focus && c.pointing.pressed() {
 			cnt.layout.Bounds.Max.X = min(cnt.layout.Bounds.Min.X+max(96, cnt.layout.Bounds.Dx()+c.pointingDelta().X), c.screenWidth/c.Scale())
 			cnt.layout.Bounds.Max.Y = min(cnt.layout.Bounds.Min.Y+max(64, cnt.layout.Bounds.Dy()+c.pointingDelta().Y), c.screenHeight/c.Scale())
@@ -296,31 +296,31 @@ func (c *Context) SetScroll(scroll image.Point) {
 	c.currentContainer().layout.ScrollOffset = scroll
 }
 
-func (c *container) textInputTextField(id controlID) *textinput.Field {
-	if id == emptyControlID {
+func (c *container) textInputTextField(id widgetID) *textinput.Field {
+	if id == emptyWidgetID {
 		return nil
 	}
 	if _, ok := c.textInputTextFields[id]; !ok {
 		if c.textInputTextFields == nil {
-			c.textInputTextFields = make(map[controlID]*textinput.Field)
+			c.textInputTextFields = make(map[widgetID]*textinput.Field)
 		}
 		c.textInputTextFields[id] = &textinput.Field{}
 	}
 	return c.textInputTextFields[id]
 }
 
-func (c *container) toggled(id controlID) bool {
+func (c *container) toggled(id widgetID) bool {
 	_, ok := c.toggledIDs[id]
 	return ok
 }
 
-func (c *container) toggle(id controlID) {
+func (c *container) toggle(id widgetID) {
 	if _, toggled := c.toggledIDs[id]; toggled {
 		delete(c.toggledIDs, id)
 		return
 	}
 	if c.toggledIDs == nil {
-		c.toggledIDs = map[controlID]struct{}{}
+		c.toggledIDs = map[widgetID]struct{}{}
 	}
 	c.toggledIDs[id] = struct{}{}
 }

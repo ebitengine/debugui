@@ -16,27 +16,27 @@ type Context struct {
 	pointing pointing
 
 	scaleMinus1     int
-	hover           controlID
-	focus           controlID
-	lastID          controlID
-	lastTextFieldID controlID
+	hover           widgetID
+	focus           widgetID
+	lastID          widgetID
+	lastTextFieldID widgetID
 	lastZIndex      int
 	keepFocus       bool
 	hoverRoot       *container
 	nextHoverRoot   *container
 	scrollTarget    *container
 	numberEditBuf   string
-	numberEdit      controlID
+	numberEdit      widgetID
 
-	idStack        []controlID
+	idStack        []widgetID
 	commandList    []*command
 	rootList       []*container
 	containerStack []*container
-	usedContainers map[controlID]struct{}
+	usedContainers map[widgetID]struct{}
 	clipStack      []image.Rectangle
 	layoutStack    []layout
 
-	idToContainer map[controlID]*container
+	idToContainer map[widgetID]*container
 
 	lastPointingPos image.Point
 
@@ -75,8 +75,8 @@ func (c *Context) begin() {
 	c.scrollTarget = nil
 	c.hoverRoot = c.nextHoverRoot
 	c.nextHoverRoot = nil
-	c.lastID = emptyControlID
-	c.lastTextFieldID = emptyControlID
+	c.lastID = emptyWidgetID
+	c.lastTextFieldID = emptyWidgetID
 }
 
 func (c *Context) end() error {
@@ -103,7 +103,7 @@ func (c *Context) end() error {
 
 	// unset focus if focus id was not touched this frame
 	if !c.keepFocus {
-		c.focus = emptyControlID
+		c.focus = emptyWidgetID
 	}
 	c.keepFocus = false
 

@@ -3,11 +3,11 @@
 
 package debugui
 
-type ControlID = controlID
+type WidgetID = widgetID
 
-const EmptyControlID = emptyControlID
+const EmptyWidgetID = emptyWidgetID
 
-func (c *Context) IDFromCaller() ControlID {
+func (c *Context) IDFromCaller() WidgetID {
 	pc := caller()
 	return c.idFromCaller(pc)
 }

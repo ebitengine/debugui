@@ -23,9 +23,9 @@ const (
 //
 // TextField returns true when this TextField is unfocused or the user pressed Enter, otherwise false.
 //
-// A TextField control is uniquely determined by its call location.
-// Function calls made in different locations will create different controls.
-// If you want to generate different controls with the same function call in a loop (such as a for loop), use [IDScope].
+// A TextField widget is uniquely determined by its call location.
+// Function calls made in different locations will create different widgets.
+// If you want to generate different widgets with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) TextField(buf *string) bool {
 	pc := caller()
 	id := c.idFromCaller(pc)
@@ -41,8 +41,8 @@ func (c *Context) TextField(buf *string) bool {
 	return res
 }
 
-func (c *Context) textFieldRaw(buf *string, id controlID, opt option) (bool, error) {
-	res, err := c.control(id, opt|optionHoldFocus, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
+func (c *Context) textFieldRaw(buf *string, id widgetID, opt option) (bool, error) {
+	res, err := c.widget(id, opt|optionHoldFocus, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
 
 		f := c.currentContainer().textInputTextField(id)
@@ -80,7 +80,7 @@ func (c *Context) textFieldRaw(buf *string, id controlID, opt option) (bool, err
 		}
 
 		// draw
-		c.drawControlFrame(id, bounds, colorBase, opt)
+		c.drawWidgetFrame(id, bounds, colorBase, opt)
 		if c.focus == id {
 			color := c.style().colors[colorText]
 			textw := textWidth(*buf)
@@ -93,7 +93,7 @@ func (c *Context) textFieldRaw(buf *string, id controlID, opt option) (bool, err
 			c.drawRect(image.Rect(textx+textw, texty, textx+textw+1, texty+texth), color)
 			c.popClipRect()
 		} else {
-			c.drawControlText(*buf, bounds, colorText, opt)
+			c.drawWidgetText(*buf, bounds, colorText, opt)
 		}
 		return res, nil
 	})
@@ -109,7 +109,7 @@ func (c *Context) textFieldRaw(buf *string, id controlID, opt option) (bool, err
 // If there is no text field, SetTextFieldValue does nothing.
 func (c *Context) SetTextFieldValue(value string) {
 	id := c.lastTextFieldID
-	if id == emptyControlID {
+	if id == emptyWidgetID {
 		return
 	}
 	c.wrapError(func() error {
@@ -119,7 +119,7 @@ func (c *Context) SetTextFieldValue(value string) {
 	})
 }
 
-func (c *Context) textField(buf *string, id controlID, opt option) (bool, error) {
+func (c *Context) textField(buf *string, id widgetID, opt option) (bool, error) {
 	c.lastTextFieldID = id
 	res, err := c.textFieldRaw(buf, id, opt)
 	if err != nil {
@@ -134,9 +134,9 @@ func (c *Context) textField(buf *string, id controlID, opt option) (bool, error)
 //
 // NumberField returns true when the value has been changed, otherwise false.
 //
-// A NumberField control is uniquely determined by its call location.
-// Function calls made in different locations will create different controls.
-// If you want to generate different controls with the same function call in a loop (such as a for loop), use [IDScope].
+// A NumberField widget is uniquely determined by its call location.
+// Function calls made in different locations will create different widgets.
+// If you want to generate different widgets with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) NumberField(value *int, step int) bool {
 	pc := caller()
 	id := c.idFromCaller(pc)
@@ -159,9 +159,9 @@ func (c *Context) NumberField(value *int, step int) bool {
 //
 // NumberFieldF returns true when the value has been changed, otherwise false.
 //
-// A NumberFieldF control is uniquely determined by its call location.
-// Function calls made in different locations will create different controls.
-// If you want to generate different controls with the same function call in a loop (such as a for loop), use [IDScope].
+// A NumberFieldF widget is uniquely determined by its call location.
+// Function calls made in different locations will create different widgets.
+// If you want to generate different widgets with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) NumberFieldF(value *float64, step float64, digits int) bool {
 	pc := caller()
 	id := c.idFromCaller(pc)
@@ -177,7 +177,7 @@ func (c *Context) NumberFieldF(value *float64, step float64, digits int) bool {
 	return res
 }
 
-func (c *Context) numberField(value *int, step int, id controlID, opt option) (bool, error) {
+func (c *Context) numberField(value *int, step int, id widgetID, opt option) (bool, error) {
 	last := *value
 
 	res, err := c.numberTextField(value, id)
@@ -189,7 +189,7 @@ func (c *Context) numberField(value *int, step int, id controlID, opt option) (b
 	}
 
 	// handle normal mode
-	res, err = c.control(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
+	res, err = c.widget(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
 		if c.focus == id && c.pointing.pressed() {
 			*value += (c.pointingDelta().X) * step
@@ -198,9 +198,9 @@ func (c *Context) numberField(value *int, step int, id controlID, opt option) (b
 			res = true
 		}
 
-		c.drawControlFrame(id, bounds, colorBase, opt)
+		c.drawWidgetFrame(id, bounds, colorBase, opt)
 		text := fmt.Sprintf("%d", *value)
-		c.drawControlText(text, bounds, colorText, opt)
+		c.drawWidgetText(text, bounds, colorText, opt)
 
 		return res, nil
 	})
@@ -210,7 +210,7 @@ func (c *Context) numberField(value *int, step int, id controlID, opt option) (b
 	return res, nil
 }
 
-func (c *Context) numberFieldF(value *float64, step float64, digits int, id controlID, opt option) (bool, error) {
+func (c *Context) numberFieldF(value *float64, step float64, digits int, id widgetID, opt option) (bool, error) {
 	last := *value
 
 	res, err := c.numberTextFieldF(value, id)
@@ -222,7 +222,7 @@ func (c *Context) numberFieldF(value *float64, step float64, digits int, id cont
 	}
 
 	// handle normal mode
-	res, err = c.control(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
+	res, err = c.widget(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
 		if c.focus == id && c.pointing.pressed() {
 			*value += float64(c.pointingDelta().X) * step
@@ -231,9 +231,9 @@ func (c *Context) numberFieldF(value *float64, step float64, digits int, id cont
 			res = true
 		}
 
-		c.drawControlFrame(id, bounds, colorBase, opt)
+		c.drawWidgetFrame(id, bounds, colorBase, opt)
 		text := formatNumber(*value, digits)
-		c.drawControlText(text, bounds, colorText, opt)
+		c.drawWidgetText(text, bounds, colorText, opt)
 
 		return res, nil
 	})
@@ -243,7 +243,7 @@ func (c *Context) numberFieldF(value *float64, step float64, digits int, id cont
 	return res, nil
 }
 
-func (c *Context) numberTextField(value *int, id controlID) (bool, error) {
+func (c *Context) numberTextField(value *int, id widgetID) (bool, error) {
 	if c.pointing.justPressed() && ebiten.IsKeyPressed(ebiten.KeyShift) &&
 		c.hover == id {
 		c.numberEdit = id
@@ -260,14 +260,14 @@ func (c *Context) numberTextField(value *int, id controlID) (bool, error) {
 				nval = 0
 			}
 			*value = int(nval)
-			c.numberEdit = emptyControlID
+			c.numberEdit = emptyWidgetID
 		}
 		return true, nil
 	}
 	return false, nil
 }
 
-func (c *Context) numberTextFieldF(value *float64, id controlID) (bool, error) {
+func (c *Context) numberTextFieldF(value *float64, id widgetID) (bool, error) {
 	if c.pointing.justPressed() && ebiten.IsKeyPressed(ebiten.KeyShift) &&
 		c.hover == id {
 		c.numberEdit = id
@@ -284,7 +284,7 @@ func (c *Context) numberTextFieldF(value *float64, id controlID) (bool, error) {
 				nval = 0
 			}
 			*value = float64(nval)
-			c.numberEdit = emptyControlID
+			c.numberEdit = emptyWidgetID
 		}
 		return true, nil
 	}

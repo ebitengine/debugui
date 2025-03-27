@@ -96,7 +96,7 @@ func (c *Context) GridCell(f func(bounds image.Rectangle)) {
 }
 
 func (c *Context) gridCell(f func(bounds image.Rectangle) error) error {
-	_, err := c.control(emptyControlID, 0, func(bounds image.Rectangle, wasFocused bool) (res bool, err error) {
+	_, err := c.widget(emptyWidgetID, 0, func(bounds image.Rectangle, wasFocused bool) (res bool, err error) {
 		if err := c.pushLayout(bounds, image.Pt(0, 0), false); err != nil {
 			return false, err
 		}
