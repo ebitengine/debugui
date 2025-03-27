@@ -11,7 +11,7 @@ import (
 	"github.com/ebitengine/debugui"
 )
 
-func TestMultipleButtonsInForLoop(t *testing.T) {
+func TestMultipleIDFromCallersInForLoop(t *testing.T) {
 	var d debugui.DebugUI
 	if err := d.Update(func(ctx *debugui.Context) error {
 		ctx.Window("Window", image.Rect(0, 0, 100, 100), func(layout debugui.ContainerLayout) {
@@ -19,7 +19,7 @@ func TestMultipleButtonsInForLoop(t *testing.T) {
 			for range 10 {
 				id2 := ctx.IDFromCaller()
 				if id2 == debugui.EmptyControlID {
-					t.Errorf("Caller() returned 0")
+					t.Errorf("IDFromCaller() returned 0")
 					continue
 				}
 				if id == debugui.EmptyControlID {
@@ -27,11 +27,11 @@ func TestMultipleButtonsInForLoop(t *testing.T) {
 					continue
 				}
 				if id != id2 {
-					t.Errorf("Caller() returned different values: %q and %q", id, id2)
+					t.Errorf("IDFromCaller) returned different values: %q and %q", id, id2)
 				}
 			}
 			if id == debugui.EmptyControlID {
-				t.Errorf("Caller() returned 0")
+				t.Errorf("IDFromCaller() returned 0")
 			}
 		})
 		return nil
@@ -40,18 +40,18 @@ func TestMultipleButtonsInForLoop(t *testing.T) {
 	}
 }
 
-func TestMultipleButtonsOnOneLine(t *testing.T) {
+func TestMultipleIDFromCallersOnOneLine(t *testing.T) {
 	var d debugui.DebugUI
 	if err := d.Update(func(ctx *debugui.Context) error {
 		ctx.Window("Window", image.Rect(0, 0, 100, 100), func(layout debugui.ContainerLayout) {
 			idA1 := ctx.IDFromCaller()
 			idA2 := ctx.IDFromCaller()
 			if idA1 == idA2 {
-				t.Errorf("Button() returned the same value twice: %q", idA1)
+				t.Errorf("IDFromCaller() returned the same value twice: %q", idA1)
 			}
 			idB1, idB2 := ctx.IDFromCaller(), ctx.IDFromCaller()
 			if idB1 == idB2 {
-				t.Errorf("Button() returned the same value twice: %q", idB1)
+				t.Errorf("IDFromCaller() returned the same value twice: %q", idB1)
 			}
 		})
 		return nil
