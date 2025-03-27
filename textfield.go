@@ -191,8 +191,8 @@ func (c *Context) numberField(value *int, step int, id controlID, opt option) (b
 	// handle normal mode
 	res, err = c.control(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
-		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-			*value += (c.mouseDelta().X) * step
+		if c.focus == id && c.pointing.pressed() {
+			*value += (c.pointingDelta().X) * step
 		}
 		if *value != last {
 			res = true
@@ -224,8 +224,8 @@ func (c *Context) numberFieldF(value *float64, step float64, digits int, id cont
 	// handle normal mode
 	res, err = c.control(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
-		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-			*value += float64(c.mouseDelta().X) * step
+		if c.focus == id && c.pointing.pressed() {
+			*value += float64(c.pointingDelta().X) * step
 		}
 		if *value != last {
 			res = true
@@ -244,7 +244,7 @@ func (c *Context) numberFieldF(value *float64, step float64, digits int, id cont
 }
 
 func (c *Context) numberTextField(value *int, id controlID) (bool, error) {
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && ebiten.IsKeyPressed(ebiten.KeyShift) &&
+	if c.pointing.justPressed() && ebiten.IsKeyPressed(ebiten.KeyShift) &&
 		c.hover == id {
 		c.numberEdit = id
 		c.numberEditBuf = fmt.Sprintf("%d", *value)
@@ -268,7 +268,7 @@ func (c *Context) numberTextField(value *int, id controlID) (bool, error) {
 }
 
 func (c *Context) numberTextFieldF(value *float64, id controlID) (bool, error) {
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && ebiten.IsKeyPressed(ebiten.KeyShift) &&
+	if c.pointing.justPressed() && ebiten.IsKeyPressed(ebiten.KeyShift) &&
 		c.hover == id {
 		c.numberEdit = id
 		c.numberEditBuf = fmt.Sprintf(realFmt, *value)

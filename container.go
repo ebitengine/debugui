@@ -6,9 +6,7 @@ package debugui
 import (
 	"image"
 
-	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/exp/textinput"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 type container struct {
@@ -109,9 +107,9 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 		c.commandList[cnt.headIdx].jump.dstIdx = len(c.commandList) //- 1
 	}()
 
-	// set as hover root if the mouse is overlapping this container and it has a
+	// set as hover root if the pointing device is overlapping this container and it has a
 	// higher zindex than the current hover root
-	if c.cursorPosition().In(cnt.layout.Bounds) && (c.nextHoverRoot == nil || cnt.zIndex > c.nextHoverRoot.zIndex) {
+	if c.pointingPosition().In(cnt.layout.Bounds) && (c.nextHoverRoot == nil || cnt.zIndex > c.nextHoverRoot.zIndex) {
 		c.nextHoverRoot = cnt
 	}
 
@@ -146,8 +144,8 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 			r := image.Rect(tr.Min.X+tr.Dy()-c.style().padding, tr.Min.Y, tr.Max.X, tr.Max.Y)
 			c.updateControl(id, r, opt)
 			c.drawControlText(title, r, colorTitleText, opt)
-			if id == c.focus && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-				b := cnt.layout.Bounds.Add(c.mouseDelta())
+			if id == c.focus && c.pointing.pressed() {
+				b := cnt.layout.Bounds.Add(c.pointingDelta())
 				if c.screenWidth > 0 {
 					maxX := b.Max.X
 					if maxX >= c.screenWidth/c.Scale() {
@@ -181,7 +179,7 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 			}
 			c.drawIcon(icon, r, c.style().colors[colorTitleText])
 			c.updateControl(id, r, opt)
-			if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && id == c.focus {
+			if c.pointing.justPressed() && id == c.focus {
 				cnt.collapsed = !cnt.collapsed
 			}
 		}
@@ -206,9 +204,9 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 		id := c.idFromString("resize")
 		r := image.Rect(bounds.Max.X-sz, bounds.Max.Y-sz, bounds.Max.X, bounds.Max.Y)
 		c.updateControl(id, r, opt)
-		if id == c.focus && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-			cnt.layout.Bounds.Max.X = min(cnt.layout.Bounds.Min.X+max(96, cnt.layout.Bounds.Dx()+c.mouseDelta().X), c.screenWidth/c.Scale())
-			cnt.layout.Bounds.Max.Y = min(cnt.layout.Bounds.Min.Y+max(64, cnt.layout.Bounds.Dy()+c.mouseDelta().Y), c.screenHeight/c.Scale())
+		if id == c.focus && c.pointing.pressed() {
+			cnt.layout.Bounds.Max.X = min(cnt.layout.Bounds.Min.X+max(96, cnt.layout.Bounds.Dx()+c.pointingDelta().X), c.screenWidth/c.Scale())
+			cnt.layout.Bounds.Max.Y = min(cnt.layout.Bounds.Min.Y+max(64, cnt.layout.Bounds.Dy()+c.pointingDelta().Y), c.screenHeight/c.Scale())
 		}
 	}
 
@@ -224,7 +222,7 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 	}
 
 	// close if this is a popup window and elsewhere was clicked
-	if (opt&optionPopup) != 0 && inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.hoverRoot != cnt {
+	if (opt&optionPopup) != 0 && c.pointing.justPressed() && c.hoverRoot != cnt {
 		cnt.open = false
 	}
 
@@ -243,8 +241,8 @@ func (c *Context) OpenPopup(name string) {
 		// set as hover root so popup isn't closed in begin_window_ex()
 		c.nextHoverRoot = cnt
 		c.hoverRoot = c.nextHoverRoot
-		// position at mouse cursor, open and bring-to-front
-		pt := c.cursorPosition()
+		// position at pointing cursor, open and bring-to-front
+		pt := c.pointingPosition()
 		cnt.layout.Bounds = image.Rectangle{
 			Min: pt,
 			Max: pt.Add(image.Pt(1, 1)),

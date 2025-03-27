@@ -12,9 +12,6 @@ import (
 	"unicode"
 
 	"github.com/rivo/uniseg"
-
-	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 type controlID string
@@ -53,17 +50,17 @@ func (c *Context) inHoverRoot() bool {
 	return false
 }
 
-func (c *Context) mouseOver(bounds image.Rectangle) bool {
-	p := c.cursorPosition()
+func (c *Context) pointingOver(bounds image.Rectangle) bool {
+	p := c.pointingPosition()
 	return p.In(bounds) && p.In(c.clipRect()) && c.inHoverRoot()
 }
 
-func (c *Context) mouseDelta() image.Point {
-	return c.cursorPosition().Sub(c.lastMousePos)
+func (c *Context) pointingDelta() image.Point {
+	return c.pointingPosition().Sub(c.lastPointingPos)
 }
 
-func (c *Context) cursorPosition() image.Point {
-	p := image.Pt(ebiten.CursorPosition())
+func (c *Context) pointingPosition() image.Point {
+	p := c.pointing.position()
 	p.X /= c.Scale()
 	p.Y /= c.Scale()
 	return p
@@ -74,7 +71,7 @@ func (c *Context) updateControl(id controlID, bounds image.Rectangle, opt option
 		return false
 	}
 
-	mouseover := c.mouseOver(bounds)
+	pointingOver := c.pointingOver(bounds)
 
 	if c.focus == id {
 		c.keepFocus = true
@@ -82,25 +79,25 @@ func (c *Context) updateControl(id controlID, bounds image.Rectangle, opt option
 	if (opt & optionNoInteract) != 0 {
 		return false
 	}
-	if mouseover && !ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+	if pointingOver && !c.pointing.pressed() {
 		c.hover = id
 	}
 
 	if c.focus == id {
-		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && !mouseover {
+		if c.pointing.justPressed() && !pointingOver {
 			c.setFocus(emptyControlID)
 			wasFocused = true
 		}
-		if !ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) && (^opt&optionHoldFocus) != 0 {
+		if !c.pointing.pressed() && (^opt&optionHoldFocus) != 0 {
 			c.setFocus(emptyControlID)
 			wasFocused = true
 		}
 	}
 
 	if c.hover == id {
-		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+		if c.pointing.justPressed() {
 			c.setFocus(id)
-		} else if !mouseover {
+		} else if !pointingOver {
 			c.hover = emptyControlID
 		}
 	}
@@ -212,7 +209,7 @@ func (c *Context) button(label string, opt option, id controlID) (bool, error) {
 	res, err := c.control(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
 		// handle click
-		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.focus == id {
+		if c.pointing.justPressed() && c.focus == id {
 			res = true
 		}
 		// draw
@@ -243,7 +240,7 @@ func (c *Context) Checkbox(state *bool, label string) bool {
 			var res bool
 			box := image.Rect(bounds.Min.X, bounds.Min.Y+(bounds.Dy()-lineHeight())/2, bounds.Min.X+lineHeight(), bounds.Max.Y-(bounds.Dy()-lineHeight())/2)
 			c.updateControl(id, bounds, 0)
-			if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.focus == id {
+			if c.pointing.justPressed() && c.focus == id {
 				res = true
 				*state = !*state
 			}
@@ -280,9 +277,9 @@ func (c *Context) slider(value *int, low, high, step int, id controlID, opt opti
 
 	res, err = c.control(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
-		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+		if c.focus == id && c.pointing.pressed() {
 			if w := bounds.Dx() - defaultStyle.thumbSize; w > 0 {
-				v = low + (c.cursorPosition().X-bounds.Min.X)*(high-low)/w
+				v = low + (c.pointingPosition().X-bounds.Min.X)*(high-low)/w
 			}
 			if step != 0 {
 				v = v / step * step
@@ -325,9 +322,9 @@ func (c *Context) sliderF(value *float64, low, high, step float64, digits int, i
 
 	res, err = c.control(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
-		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+		if c.focus == id && c.pointing.pressed() {
 			if w := float64(bounds.Dx() - defaultStyle.thumbSize); w > 0 {
-				v = low + float64(c.cursorPosition().X-bounds.Min.X)*(high-low)/w
+				v = low + float64(c.pointingPosition().X-bounds.Min.X)*(high-low)/w
 			}
 			if step != 0 {
 				v = math.Round(v/step) * step
@@ -367,7 +364,7 @@ func (c *Context) header(label string, isTreeNode bool, opt option, id controlID
 	}
 
 	res, err := c.control(id, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
-		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && c.focus == id {
+		if c.pointing.justPressed() && c.focus == id {
 			c.currentContainer().toggle(id)
 		}
 		if isTreeNode {
@@ -439,8 +436,8 @@ func (c *Context) scrollbarVertical(cnt *container, b image.Rectangle, cs image.
 		// handle input
 		id := c.idFromString("scrollbar-y")
 		c.updateControl(id, base, 0)
-		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-			cnt.layout.ScrollOffset.Y += c.mouseDelta().Y * cs.Y / base.Dy()
+		if c.focus == id && c.pointing.pressed() {
+			cnt.layout.ScrollOffset.Y += c.pointingDelta().Y * cs.Y / base.Dy()
 		}
 		// clamp scroll to limits
 		cnt.layout.ScrollOffset.Y = clamp(cnt.layout.ScrollOffset.Y, 0, maxscroll)
@@ -453,8 +450,8 @@ func (c *Context) scrollbarVertical(cnt *container, b image.Rectangle, cs image.
 		c.drawFrame(thumb, colorScrollThumb)
 
 		// set this as the scroll_target (will get scrolled on mousewheel)
-		// if the mouse is over it
-		if c.mouseOver(b) {
+		// if the pointing device is over it
+		if c.pointingOver(b) {
 			c.scrollTarget = cnt
 		}
 	} else {
@@ -474,8 +471,8 @@ func (c *Context) scrollbarHorizontal(cnt *container, b image.Rectangle, cs imag
 		// handle input
 		id := c.idFromString("scrollbar-x")
 		c.updateControl(id, base, 0)
-		if c.focus == id && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-			cnt.layout.ScrollOffset.X += c.mouseDelta().X * cs.X / base.Dx()
+		if c.focus == id && c.pointing.pressed() {
+			cnt.layout.ScrollOffset.X += c.pointingDelta().X * cs.X / base.Dx()
 		}
 		// clamp scroll to limits
 		cnt.layout.ScrollOffset.X = clamp(cnt.layout.ScrollOffset.X, 0, maxscroll)
@@ -488,8 +485,8 @@ func (c *Context) scrollbarHorizontal(cnt *container, b image.Rectangle, cs imag
 		c.drawFrame(thumb, colorScrollThumb)
 
 		// set this as the scroll_target (will get scrolled on mousewheel)
-		// if the mouse is over it
-		if c.mouseOver(b) {
+		// if the pointing device is over it
+		if c.pointingOver(b) {
 			c.scrollTarget = cnt
 		}
 	} else {
