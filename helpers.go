@@ -12,10 +12,6 @@ func (c *Context) bringToFront(cnt *container) {
 	cnt.zIndex = c.lastZIndex
 }
 
-func (c *Context) Focus() {
-	c.setFocus(c.currentID)
-}
-
 func (c *Context) setFocus(id WidgetID) {
 	c.focus = id
 	c.keepFocus = true
