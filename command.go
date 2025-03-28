@@ -77,9 +77,10 @@ func (c *Context) appendCommand(cmd_type int) *command {
 }
 
 // appendJumpCommand appends a new jump command to the command list.
-func (c *Context) appendJumpCommand(dstIdx int) int {
+// dstIdx is set to -1. This can be updated later.
+func (c *Context) appendJumpCommand() int {
 	cmd := c.appendCommand(commandJump)
-	cmd.jump.dstIdx = dstIdx
+	cmd.jump.dstIdx = -1
 	return len(c.commandList) - 1
 }
 

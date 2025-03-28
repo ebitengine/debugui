@@ -100,12 +100,12 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 
 	// push container to roots list and push head command
 	c.rootList = append(c.rootList, cnt)
-	cnt.headIdx = c.appendJumpCommand(-1)
+	cnt.headIdx = c.appendJumpCommand()
 	defer func() {
 		// push tail 'goto' jump command and set head 'skip' command. the final steps
 		// on initing these are done in End
 		cnt := c.currentContainer()
-		cnt.tailIdx = c.appendJumpCommand(-1)
+		cnt.tailIdx = c.appendJumpCommand()
 		c.commandList[cnt.headIdx].jump.dstIdx = len(c.commandList) //- 1
 	}()
 
