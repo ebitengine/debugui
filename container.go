@@ -332,3 +332,15 @@ func (c *container) toggle(id WidgetID) {
 	}
 	c.toggledIDs[id] = struct{}{}
 }
+
+func (c *Context) bringToFront(cnt *container) {
+	c.lastZIndex++
+	cnt.zIndex = c.lastZIndex
+}
+
+func (c *Context) addUsedContainer(id WidgetID) {
+	if c.usedContainers == nil {
+		c.usedContainers = map[WidgetID]struct{}{}
+	}
+	c.usedContainers[id] = struct{}{}
+}

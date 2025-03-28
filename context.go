@@ -12,6 +12,10 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+func clamp[T int | float64](x, a, b T) T {
+	return min(b, max(a, x))
+}
+
 type Context struct {
 	pointing pointing
 
@@ -42,6 +46,13 @@ type Context struct {
 	screenHeight int
 
 	err error
+}
+
+func (c *Context) wrapError(f func() error) {
+	if c.err != nil {
+		return
+	}
+	c.err = f()
 }
 
 func (c *Context) update(f func(ctx *Context) error) (err error) {

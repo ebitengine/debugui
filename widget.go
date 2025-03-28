@@ -176,3 +176,8 @@ func (c *Context) isCapturingInput() bool {
 func (c *Context) CurrentWidgetID() WidgetID {
 	return c.currentID
 }
+
+func (c *Context) setFocus(id WidgetID) {
+	c.focus = id
+	c.keepFocus = true
+}
