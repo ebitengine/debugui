@@ -28,8 +28,7 @@ type Context struct {
 	numberEdit    WidgetID
 
 	idStack        []WidgetID
-	commandList    []*command
-	rootList       []*container
+	rootContainers []*container
 	containerStack []*container
 	usedContainers map[WidgetID]struct{}
 	clipStack      []image.Rectangle
@@ -69,8 +68,10 @@ func (c *Context) update(f func(ctx *Context) error) (err error) {
 }
 
 func (c *Context) begin() {
-	c.commandList = slices.Delete(c.commandList, 0, len(c.commandList))
-	c.rootList = slices.Delete(c.rootList, 0, len(c.rootList))
+	for _, cnt := range c.rootContainers {
+		cnt.commandList = slices.Delete(cnt.commandList, 0, len(cnt.commandList))
+	}
+	c.rootContainers = slices.Delete(c.rootContainers, 0, len(c.rootContainers))
 	c.scrollTarget = nil
 	c.hoverRoot = c.nextHoverRoot
 	c.nextHoverRoot = nil
@@ -116,33 +117,9 @@ func (c *Context) end() error {
 	c.lastPointingPos = c.pointingPosition()
 
 	// sort root containers by zindex
-	sort.SliceStable(c.rootList, func(i, j int) bool {
-		return c.rootList[i].zIndex < c.rootList[j].zIndex
+	sort.SliceStable(c.rootContainers, func(i, j int) bool {
+		return c.rootContainers[i].zIndex < c.rootContainers[j].zIndex
 	})
-
-	// set root container jump commands
-	for i := range c.rootList {
-		cnt := c.rootList[i]
-		// if this is the first container then make the first command jump to it.
-		// otherwise set the previous container's tail to jump to this one
-		if i == 0 {
-			cmd := c.commandList[0]
-			if cmd.typ != commandJump {
-				panic("debugui: expected jump command")
-			}
-			cmd.jump.dstIdx = cnt.headIdx + 1
-			if cnt.headIdx >= len(c.commandList) {
-				panic("debugui: invalid head index")
-			}
-		} else {
-			prev := c.rootList[i-1]
-			c.commandList[prev.tailIdx].jump.dstIdx = cnt.headIdx + 1
-		}
-		// make the last container's tail jump to the end of command list
-		if i == len(c.rootList)-1 {
-			c.commandList[cnt.tailIdx].jump.dstIdx = len(c.commandList)
-		}
-	}
 
 	for id := range c.idToContainer {
 		if _, ok := c.usedContainers[id]; !ok {

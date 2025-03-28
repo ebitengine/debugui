@@ -12,8 +12,7 @@ import (
 )
 
 const (
-	commandJump = 1 + iota
-	commandClip
+	commandClip = 1 + iota
 	commandRect
 	commandText
 	commandIcon
@@ -55,38 +54,35 @@ type drawCommand struct {
 
 type command struct {
 	typ  int
-	idx  int
 	base baseCommand // type 0 (TODO)
-	jump jumpCommand // type 1
-	clip clipCommand // type 2
-	rect rectCommand // type 3
-	text textCommand // type 4
-	icon iconCommand // type 5
-	draw drawCommand // type 6
+	clip clipCommand // type 1
+	rect rectCommand // type 2
+	text textCommand // type 3
+	icon iconCommand // type 4
+	draw drawCommand // type 5
 }
 
 // appendCommand adds a new command with type cmd_type to the command list.
-func (c *Context) appendCommand(cmd_type int) *command {
+func (c *Context) appendCommand(cmdType int) *command {
 	cmd := command{
-		typ: cmd_type,
+		typ: cmdType,
 	}
-	cmd.base.typ = cmd_type
-	cmd.idx = len(c.commandList)
-	c.commandList = append(c.commandList, &cmd)
+	cmd.base.typ = cmdType
+	cnt := c.currentRootContainer()
+	cnt.commandList = append(cnt.commandList, &cmd)
 	return &cmd
-}
-
-// appendJumpCommand appends a new jump command to the command list.
-// dstIdx is set to -1. This can be updated later.
-func (c *Context) appendJumpCommand() int {
-	cmd := c.appendCommand(commandJump)
-	cmd.jump.dstIdx = -1
-	return len(c.commandList) - 1
 }
 
 func (c *Context) commands() iter.Seq[*command] {
 	return func(yield func(command *command) bool) {
-		if len(c.commandList) == 0 {
+		for _, cnt := range c.rootContainers {
+			for _, cmd := range cnt.commandList {
+				if !yield(cmd) {
+					return
+				}
+			}
+		}
+		/*if len(c.commandList) == 0 {
 			return
 		}
 
@@ -104,6 +100,6 @@ func (c *Context) commands() iter.Seq[*command] {
 				return
 			}
 			cmd = c.commandList[idx]
-		}
+		}*/
 	}
 }

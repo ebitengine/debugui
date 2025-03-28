@@ -10,12 +10,16 @@ import (
 )
 
 type container struct {
+	parent *container
+
 	layout    ContainerLayout
-	headIdx   int
-	tailIdx   int
 	zIndex    int
 	open      bool
 	collapsed bool
+
+	// commandList is valid only for root containers.
+	// See the implementation of appendCommand which is the only place to append commands.
+	commandList []*command
 
 	toggledIDs          map[WidgetID]struct{}
 	textInputTextFields map[WidgetID]*textinput.Field
@@ -51,9 +55,7 @@ func (c *Context) container(id WidgetID, opt option) *container {
 		c.idToContainer = map[WidgetID]*container{}
 	}
 	cnt := &container{
-		headIdx: -1,
-		tailIdx: -1,
-		open:    true,
+		open: true,
 	}
 	c.idToContainer[id] = cnt
 	c.addUsedContainer(id)
@@ -63,6 +65,13 @@ func (c *Context) container(id WidgetID, opt option) *container {
 
 func (c *Context) currentContainer() *container {
 	return c.containerStack[len(c.containerStack)-1]
+}
+
+func (c *Context) currentRootContainer() *container {
+	var cnt *container
+	for cnt = c.currentContainer(); cnt != nil && cnt.parent != nil; cnt = cnt.parent {
+	}
+	return cnt
 }
 
 func (c *Context) Window(title string, rect image.Rectangle, f func(layout ContainerLayout)) {
@@ -95,19 +104,10 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 		cnt.layout.Bounds = bounds
 	}
 
-	c.pushContainer(cnt)
+	c.pushContainer(cnt, true)
 	defer c.popContainer()
 
-	// push container to roots list and push head command
-	c.rootList = append(c.rootList, cnt)
-	cnt.headIdx = c.appendJumpCommand()
-	defer func() {
-		// push tail 'goto' jump command and set head 'skip' command. the final steps
-		// on initing these are done in End
-		cnt := c.currentContainer()
-		cnt.tailIdx = c.appendJumpCommand()
-		c.commandList[cnt.headIdx].jump.dstIdx = len(c.commandList) //- 1
-	}()
+	c.rootContainers = append(c.rootContainers, cnt)
 
 	// set as hover root if the pointing device is overlapping this container and it has a
 	// higher zindex than the current hover root
@@ -275,7 +275,10 @@ func (c *Context) Popup(f func(layout ContainerLayout)) WidgetID {
 	return id
 }
 
-func (c *Context) pushContainer(cnt *container) {
+func (c *Context) pushContainer(cnt *container, root bool) {
+	if !root && len(c.containerStack) > 0 {
+		cnt.parent = c.containerStack[len(c.containerStack)-1]
+	}
 	c.containerStack = append(c.containerStack, cnt)
 }
 

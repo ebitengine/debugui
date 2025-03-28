@@ -32,7 +32,7 @@ func (c *Context) doPanel(opt option, id WidgetID, f func(layout ContainerLayout
 		c.drawFrame(cnt.layout.Bounds, colorPanelBG)
 	}
 
-	c.pushContainer(cnt)
+	c.pushContainer(cnt, false)
 	defer c.popContainer()
 
 	if err := c.pushContainerBodyLayout(cnt, cnt.layout.Bounds, opt); err != nil {

@@ -37,11 +37,6 @@ func (c *Context) inHoverRoot() bool {
 		if c.containerStack[i] == c.hoverRoot {
 			return true
 		}
-		// only root containers have their `head` field set; stop searching if we've
-		// reached the current root container
-		if c.containerStack[i].headIdx >= 0 {
-			break
-		}
 	}
 	return false
 }
