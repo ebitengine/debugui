@@ -6,8 +6,8 @@ package debugui
 import (
 	"errors"
 	"image"
+	"maps"
 	"slices"
-	"sort"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -23,7 +23,6 @@ type Context struct {
 	hover         WidgetID
 	focus         WidgetID
 	currentID     WidgetID
-	lastZIndex    int
 	keepFocus     bool
 	hoverRoot     *container
 	nextHoverRoot *container
@@ -33,8 +32,17 @@ type Context struct {
 
 	idStack []WidgetID
 
-	idToContainer  map[WidgetID]*container
+	// idToContainer maps widget IDs to containers.
+	// Only unused containers are removed from this map at the end of Update.
+	idToContainer map[WidgetID]*container
+
+	// rootContainers is a list of root containers.
+	// rootContainers contains only root containers. For example, a panel is not contained.
+	//
+	// The order represents the z-order of the containers.
+	// Only unused containers are removed from this list at the end of Update.
 	rootContainers []*container
+
 	containerStack []*container
 
 	clipStack   []image.Rectangle
@@ -62,9 +70,9 @@ func (c *Context) update(f func(ctx *Context) error) (err error) {
 
 	c.pointing.update()
 
-	c.begin()
+	c.beginUpdate()
 	defer func() {
-		if err2 := c.end(); err2 != nil && err == nil {
+		if err2 := c.endUpdate(); err2 != nil && err == nil {
 			err = err2
 		}
 	}()
@@ -78,18 +86,17 @@ func (c *Context) update(f func(ctx *Context) error) (err error) {
 	return nil
 }
 
-func (c *Context) begin() {
+func (c *Context) beginUpdate() {
 	for _, cnt := range c.rootContainers {
 		cnt.commandList = slices.Delete(cnt.commandList, 0, len(cnt.commandList))
 	}
-	c.rootContainers = slices.Delete(c.rootContainers, 0, len(c.rootContainers))
 	c.scrollTarget = nil
 	c.hoverRoot = c.nextHoverRoot
 	c.nextHoverRoot = nil
 	c.currentID = emptyWidgetID
 }
 
-func (c *Context) end() error {
+func (c *Context) endUpdate() error {
 	// check stacks
 	if len(c.idStack) > 0 {
 		return errors.New("debugui: id stack must be empty")
@@ -125,16 +132,14 @@ func (c *Context) end() error {
 	// reset input state
 	c.lastPointingPos = c.pointingPosition()
 
-	// sort root containers by zindex
-	sort.SliceStable(c.rootContainers, func(i, j int) bool {
-		return c.rootContainers[i].zIndex < c.rootContainers[j].zIndex
-	})
-
 	// Remove unused containers.
-	for id, cnt := range c.idToContainer {
-		if !cnt.used {
-			delete(c.idToContainer, id)
-		}
+	c.rootContainers = slices.DeleteFunc(c.rootContainers, func(cnt *container) bool {
+		return !cnt.used
+	})
+	maps.DeleteFunc(c.idToContainer, func(id WidgetID, cnt *container) bool {
+		return !cnt.used
+	})
+	for _, cnt := range c.idToContainer {
 		cnt.used = false
 	}
 

@@ -5,6 +5,7 @@ package debugui
 
 import (
 	"image"
+	"slices"
 
 	"github.com/hajimehoshi/ebiten/v2/exp/textinput"
 )
@@ -13,7 +14,6 @@ type container struct {
 	parent *container
 
 	layout    ContainerLayout
-	zIndex    int
 	open      bool
 	collapsed bool
 
@@ -108,11 +108,13 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 	c.pushContainer(cnt, true)
 	defer c.popContainer()
 
-	c.rootContainers = append(c.rootContainers, cnt)
+	if !slices.Contains(c.rootContainers, cnt) {
+		c.rootContainers = append(c.rootContainers, cnt)
+	}
 
 	// set as hover root if the pointing device is overlapping this container and it has a
 	// higher zindex than the current hover root
-	if c.pointingPosition().In(cnt.layout.Bounds) && (c.nextHoverRoot == nil || cnt.zIndex > c.nextHoverRoot.zIndex) {
+	if c.pointingPosition().In(cnt.layout.Bounds) && (c.nextHoverRoot == nil || c.containerZ(cnt) > c.containerZ(c.nextHoverRoot)) {
 		c.nextHoverRoot = cnt
 	}
 
@@ -334,7 +336,13 @@ func (c *container) toggle(id WidgetID) {
 	c.toggledIDs[id] = struct{}{}
 }
 
+func (c *Context) containerZ(cnt *container) int {
+	return slices.Index(c.rootContainers, cnt)
+}
+
 func (c *Context) bringToFront(cnt *container) {
-	c.lastZIndex++
-	cnt.zIndex = c.lastZIndex
+	c.rootContainers = slices.DeleteFunc(c.rootContainers, func(c *container) bool {
+		return c == cnt
+	})
+	c.rootContainers = append(c.rootContainers, cnt)
 }
