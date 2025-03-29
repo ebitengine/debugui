@@ -169,7 +169,16 @@ func (c *Context) isCapturingInput() bool {
 		return false
 	}
 
-	return c.hoverRoot != nil || c.focus != emptyWidgetID
+	// Check whether the cursor is on any of the root containers.
+	pt := c.pointingPosition()
+	for _, cnt := range c.rootContainers {
+		if pt.In(cnt.layout.Bounds) {
+			return true
+		}
+	}
+
+	// Check whether there is a focused widget like a text field.
+	return c.focus != emptyWidgetID
 }
 
 // CurrentWidgetID returns the ID of the current widget being processed.
