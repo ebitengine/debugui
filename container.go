@@ -239,10 +239,10 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 func (c *Context) OpenPopup(widgetID WidgetID) {
 	c.wrapError(func() error {
 		cnt := c.container(widgetID, 0)
-		// set as hover root so popup isn't closed in begin_window_ex()
+		// Set as hover root so popup isn't closed in doWindow.
 		c.nextHoverRoot = cnt
 		c.hoverRoot = c.nextHoverRoot
-		// position at pointing cursor, open and bring-to-front
+		// Position at pointing cursor, open and bring-to-front.
 		pt := c.pointingPosition()
 		cnt.layout.Bounds = image.Rectangle{
 			Min: pt,
