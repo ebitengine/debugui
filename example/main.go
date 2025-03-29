@@ -14,6 +14,7 @@ import (
 	"os"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 
 	"github.com/ebitengine/debugui"
 )
@@ -29,7 +30,8 @@ type Game struct {
 	vy          int
 	hiRes       bool
 
-	debugUI debugui.DebugUI
+	debugUI       debugui.DebugUI
+	inputCaptured bool
 
 	logBuf       string
 	logSubmitBuf string
@@ -82,14 +84,16 @@ func (g *Game) Update() error {
 	if ebiten.IsKeyPressed(ebiten.KeyEscape) {
 		return ebiten.Termination
 	}
-	if err := g.debugUI.Update(func(ctx *debugui.Context) error {
+	inputCaptured, err := g.debugUI.Update(func(ctx *debugui.Context) error {
 		g.testWindow(ctx)
 		g.logWindow(ctx)
 		g.buttonWindows(ctx)
 		return nil
-	}); err != nil {
+	})
+	if err != nil {
 		return err
 	}
+	g.inputCaptured = inputCaptured
 	return nil
 }
 
@@ -98,6 +102,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(float64(g.x), float64(g.y))
 	screen.DrawImage(g.gopherImage, op)
+
+	if g.inputCaptured {
+		ebitenutil.DebugPrint(screen, "Input captured by DebugUI")
+	}
 
 	g.debugUI.Draw(screen)
 }
