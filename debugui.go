@@ -14,9 +14,16 @@ type DebugUI struct {
 
 // Update updates the debug UI.
 //
+// Update returns true if the debug UI is capturing input, e.g. when a widget has focus.
+// Otherwise, Update returns false.
+//
 // Update should be called once in the game's Update function.
-func (d *DebugUI) Update(f func(ctx *Context) error) error {
-	return d.ctx.update(f)
+func (d *DebugUI) Update(f func(ctx *Context) error) (bool, error) {
+	captured, err := d.ctx.update(f)
+	if err != nil {
+		return false, err
+	}
+	return captured, nil
 }
 
 // Draw draws the debug UI.
@@ -25,9 +32,4 @@ func (d *DebugUI) Update(f func(ctx *Context) error) error {
 func (d *DebugUI) Draw(screen *ebiten.Image) {
 	d.ctx.draw(screen)
 	d.ctx.screenWidth, d.ctx.screenHeight = screen.Bounds().Dx(), screen.Bounds().Dy()
-}
-
-// IsCapturingInput reports whether the debug UI is capturing input, e.g. when a widget has focus.
-func (d *DebugUI) IsCapturingInput() bool {
-	return d.ctx.isCapturingInput()
 }

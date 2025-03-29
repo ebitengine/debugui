@@ -65,9 +65,9 @@ func (c *Context) wrapError(f func() error) {
 	c.err = f()
 }
 
-func (c *Context) update(f func(ctx *Context) error) (err error) {
+func (c *Context) update(f func(ctx *Context) error) (captured bool, err error) {
 	if c.err != nil {
-		return c.err
+		return false, c.err
 	}
 
 	c.pointing.update()
@@ -80,12 +80,12 @@ func (c *Context) update(f func(ctx *Context) error) (err error) {
 	}()
 
 	if err := f(c); err != nil {
-		return err
+		return false, err
 	}
 	if c.err != nil {
-		return c.err
+		return false, c.err
 	}
-	return nil
+	return c.isCapturingInput(), nil
 }
 
 func (c *Context) beginUpdate() {
