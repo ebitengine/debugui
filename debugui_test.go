@@ -13,7 +13,7 @@ import (
 
 func TestMultipleIDFromCallersInForLoop(t *testing.T) {
 	var d debugui.DebugUI
-	if err := d.Update(func(ctx *debugui.Context) error {
+	if _, err := d.Update(func(ctx *debugui.Context) error {
 		ctx.Window("Window", image.Rect(0, 0, 100, 100), func(layout debugui.ContainerLayout) {
 			var id debugui.WidgetID
 			for range 10 {
@@ -42,7 +42,7 @@ func TestMultipleIDFromCallersInForLoop(t *testing.T) {
 
 func TestMultipleIDFromCallersOnOneLine(t *testing.T) {
 	var d debugui.DebugUI
-	if err := d.Update(func(ctx *debugui.Context) error {
+	if _, err := d.Update(func(ctx *debugui.Context) error {
 		ctx.Window("Window", image.Rect(0, 0, 100, 100), func(layout debugui.ContainerLayout) {
 			idA1 := ctx.IDFromCaller()
 			idA2 := ctx.IDFromCaller()
@@ -63,16 +63,17 @@ func TestMultipleIDFromCallersOnOneLine(t *testing.T) {
 func TestError(t *testing.T) {
 	e := errors.New("test")
 	var d debugui.DebugUI
-	if got, want := d.Update(func(ctx *debugui.Context) error {
+	_, err := d.Update(func(ctx *debugui.Context) error {
 		return e
-	}), e; got != want {
+	})
+	if got, want := err, e; got != want {
 		t.Errorf("got: %v, want: %v", got, want)
 	}
 }
 
 func TestUpdateWithoutWindow(t *testing.T) {
 	var d debugui.DebugUI
-	if err := d.Update(func(ctx *debugui.Context) error {
+	if _, err := d.Update(func(ctx *debugui.Context) error {
 		ctx.SetGridLayout(nil, nil)
 		return nil
 	}); err == nil {
@@ -82,7 +83,7 @@ func TestUpdateWithoutWindow(t *testing.T) {
 
 func TestUnusedContainer(t *testing.T) {
 	var d debugui.DebugUI
-	if err := d.Update(func(ctx *debugui.Context) error {
+	if _, err := d.Update(func(ctx *debugui.Context) error {
 		ctx.Window("Window1", image.Rect(0, 0, 100, 100), func(layout debugui.ContainerLayout) {
 		})
 		return nil
@@ -93,7 +94,7 @@ func TestUnusedContainer(t *testing.T) {
 		t.Errorf("got: %v, want: %v", got, want)
 	}
 
-	if err := d.Update(func(ctx *debugui.Context) error {
+	if _, err := d.Update(func(ctx *debugui.Context) error {
 		ctx.Window("Window1", image.Rect(0, 0, 100, 100), func(layout debugui.ContainerLayout) {
 		})
 		ctx.Window("Window2", image.Rect(0, 0, 100, 100), func(layout debugui.ContainerLayout) {
@@ -106,7 +107,7 @@ func TestUnusedContainer(t *testing.T) {
 		t.Errorf("got: %v, want: %v", got, want)
 	}
 
-	if err := d.Update(func(ctx *debugui.Context) error {
+	if _, err := d.Update(func(ctx *debugui.Context) error {
 		ctx.Window("Window1", image.Rect(0, 0, 100, 100), func(layout debugui.ContainerLayout) {
 		})
 		return nil
@@ -117,7 +118,7 @@ func TestUnusedContainer(t *testing.T) {
 		t.Errorf("got: %v, want: %v", got, want)
 	}
 
-	if err := d.Update(func(ctx *debugui.Context) error {
+	if _, err := d.Update(func(ctx *debugui.Context) error {
 		return nil
 	}); err != nil {
 		t.Fatal(err)
@@ -126,7 +127,7 @@ func TestUnusedContainer(t *testing.T) {
 		t.Errorf("got: %v, want: %v", got, want)
 	}
 
-	if err := d.Update(func(ctx *debugui.Context) error {
+	if _, err := d.Update(func(ctx *debugui.Context) error {
 		ctx.Window("Window2", image.Rect(0, 0, 100, 100), func(layout debugui.ContainerLayout) {
 		})
 		return nil
