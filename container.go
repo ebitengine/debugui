@@ -23,6 +23,8 @@ type container struct {
 
 	toggledIDs          map[WidgetID]struct{}
 	textInputTextFields map[WidgetID]*textinput.Field
+
+	used bool
 }
 
 // ContainerLayout represents the layout of a container widget.
@@ -43,7 +45,7 @@ type ContainerLayout struct {
 
 func (c *Context) container(id WidgetID, opt option) *container {
 	if container, ok := c.idToContainer[id]; ok {
-		c.addUsedContainer(id)
+		container.used = true
 		return container
 	}
 
@@ -58,8 +60,7 @@ func (c *Context) container(id WidgetID, opt option) *container {
 		open: true,
 	}
 	c.idToContainer[id] = cnt
-	c.addUsedContainer(id)
-	c.bringToFront(cnt)
+	cnt.used = true
 	return cnt
 }
 
@@ -336,11 +337,4 @@ func (c *container) toggle(id WidgetID) {
 func (c *Context) bringToFront(cnt *container) {
 	c.lastZIndex++
 	cnt.zIndex = c.lastZIndex
-}
-
-func (c *Context) addUsedContainer(id WidgetID) {
-	if c.usedContainers == nil {
-		c.usedContainers = map[WidgetID]struct{}{}
-	}
-	c.usedContainers[id] = struct{}{}
 }

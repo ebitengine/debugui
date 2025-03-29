@@ -23,10 +23,6 @@ type baseCommand struct {
 	typ int
 }
 
-type jumpCommand struct {
-	dstIdx int
-}
-
 type clipCommand struct {
 	rect image.Rectangle
 }

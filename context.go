@@ -31,14 +31,14 @@ type Context struct {
 	numberEditBuf string
 	numberEdit    WidgetID
 
-	idStack        []WidgetID
+	idStack []WidgetID
+
+	idToContainer  map[WidgetID]*container
 	rootContainers []*container
 	containerStack []*container
-	usedContainers map[WidgetID]struct{}
-	clipStack      []image.Rectangle
-	layoutStack    []layout
 
-	idToContainer map[WidgetID]*container
+	clipStack   []image.Rectangle
+	layoutStack []layout
 
 	lastPointingPos image.Point
 
@@ -117,10 +117,8 @@ func (c *Context) end() error {
 	}
 	c.keepFocus = false
 
-	// bring hover root to front if the pointing device was pressed
-	if c.pointing.justPressed() && c.nextHoverRoot != nil &&
-		c.nextHoverRoot.zIndex < c.lastZIndex &&
-		c.nextHoverRoot.zIndex >= 0 {
+	// Bring hover root to front if the pointing device was pressed
+	if c.pointing.justPressed() && c.nextHoverRoot != nil {
 		c.bringToFront(c.nextHoverRoot)
 	}
 
@@ -132,12 +130,13 @@ func (c *Context) end() error {
 		return c.rootContainers[i].zIndex < c.rootContainers[j].zIndex
 	})
 
-	for id := range c.idToContainer {
-		if _, ok := c.usedContainers[id]; !ok {
+	// Remove unused containers.
+	for id, cnt := range c.idToContainer {
+		if !cnt.used {
 			delete(c.idToContainer, id)
 		}
+		cnt.used = false
 	}
-	clear(c.usedContainers)
 
 	return nil
 }
