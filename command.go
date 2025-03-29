@@ -19,10 +19,6 @@ const (
 	commandDraw
 )
 
-type baseCommand struct {
-	typ int
-}
-
 type clipCommand struct {
 	rect image.Rectangle
 }
@@ -50,25 +46,24 @@ type drawCommand struct {
 
 type command struct {
 	typ  int
-	base baseCommand // type 0 (TODO)
-	clip clipCommand // type 1
-	rect rectCommand // type 2
-	text textCommand // type 3
-	icon iconCommand // type 4
-	draw drawCommand // type 5
+	clip clipCommand
+	rect rectCommand
+	text textCommand
+	icon iconCommand
+	draw drawCommand
 }
 
-// appendCommand adds a new command with type cmd_type to the command list.
+// appendCommand adds a new command with type cmdType to the command list.
 func (c *Context) appendCommand(cmdType int) *command {
 	cmd := command{
 		typ: cmdType,
 	}
-	cmd.base.typ = cmdType
 	cnt := c.currentRootContainer()
 	cnt.commandList = append(cnt.commandList, &cmd)
 	return &cmd
 }
 
+// commands returns a sequence of commands from all root containers.
 func (c *Context) commands() iter.Seq[*command] {
 	return func(yield func(command *command) bool) {
 		for _, cnt := range c.rootContainers {
@@ -78,24 +73,5 @@ func (c *Context) commands() iter.Seq[*command] {
 				}
 			}
 		}
-		/*if len(c.commandList) == 0 {
-			return
-		}
-
-		cmd := c.commandList[0]
-		for cmd.idx < len(c.commandList) {
-			if cmd.typ != commandJump {
-				if !yield(cmd) {
-					return
-				}
-				cmd = c.commandList[cmd.idx+1]
-				continue
-			}
-			idx := cmd.jump.dstIdx
-			if idx > len(c.commandList)-1 {
-				return
-			}
-			cmd = c.commandList[idx]
-		}*/
 	}
 }

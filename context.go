@@ -33,14 +33,16 @@ type Context struct {
 	idStack []WidgetID
 
 	// idToContainer maps widget IDs to containers.
-	// Only unused containers are removed from this map at the end of Update.
+	//
+	// Unused containers are removed from this map at the end of Update.
 	idToContainer map[WidgetID]*container
 
 	// rootContainers is a list of root containers.
 	// rootContainers contains only root containers. For example, a panel is not contained.
 	//
 	// The order represents the z-order of the containers.
-	// Only unused containers are removed from this list at the end of Update.
+	//
+	// Unused containers are removed from this list at the end of Update.
 	rootContainers []*container
 
 	containerStack []*container
