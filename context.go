@@ -89,6 +89,9 @@ func (c *Context) update(f func(ctx *Context) error) (captured bool, err error) 
 }
 
 func (c *Context) beginUpdate() {
+	for _, cnt := range c.idToContainer {
+		cnt.used = false
+	}
 	for _, cnt := range c.rootContainers {
 		cnt.commandList = slices.Delete(cnt.commandList, 0, len(cnt.commandList))
 	}
@@ -141,9 +144,6 @@ func (c *Context) endUpdate() error {
 	maps.DeleteFunc(c.idToContainer, func(id WidgetID, cnt *container) bool {
 		return !cnt.used
 	})
-	for _, cnt := range c.idToContainer {
-		cnt.used = false
-	}
 
 	return nil
 }
