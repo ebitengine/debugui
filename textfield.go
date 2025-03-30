@@ -21,28 +21,22 @@ const (
 
 // TextField creates a text field to modify the value of a string buf.
 //
-// TextField returns true when this TextField is unfocused or the user pressed Enter, otherwise false.
+// TextField returns an EventHandler to handle events when the value is confirmed, such as on blur or Enter key press.
+// A returned EventHandler is never nil.
 //
 // A TextField widget is uniquely determined by its call location.
 // Function calls made in different locations will create different widgets.
 // If you want to generate different widgets with the same function call in a loop (such as a for loop), use [IDScope].
-func (c *Context) TextField(buf *string) bool {
+func (c *Context) TextField(buf *string) EventHandler {
 	pc := caller()
 	id := c.idFromCaller(pc)
-	var res bool
-	c.wrapError(func() error {
-		var err error
-		res, err = c.textField(buf, id, 0)
-		if err != nil {
-			return err
-		}
-		return nil
+	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
+		return c.textField(buf, id, 0)
 	})
-	return res
 }
 
-func (c *Context) textFieldRaw(buf *string, id WidgetID, opt option) (bool, error) {
-	res, err := c.widget(id, opt|optionHoldFocus, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
+func (c *Context) textFieldRaw(buf *string, id WidgetID, opt option) (EventHandler, error) {
+	return c.widget(id, opt|optionHoldFocus, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
 
 		f := c.currentContainer().textInputTextField(id, true)
@@ -97,11 +91,6 @@ func (c *Context) textFieldRaw(buf *string, id WidgetID, opt option) (bool, erro
 		}
 		return res, nil
 	})
-	if err != nil {
-		return false, err
-	}
-	return res, nil
-
 }
 
 // SetTextFieldValue sets the value of the text field with the given widgetID.
@@ -111,44 +100,34 @@ func (c *Context) SetTextFieldValue(widgetID WidgetID, value string) {
 	if widgetID == emptyWidgetID {
 		return
 	}
-	c.wrapError(func() error {
+	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		if f := c.currentContainer().textInputTextField(widgetID, false); f != nil {
 			f.SetTextAndSelection(value, 0, 0)
 		}
-		return nil
+		return nil, nil
 	})
 }
 
-func (c *Context) textField(buf *string, id WidgetID, opt option) (bool, error) {
-	res, err := c.textFieldRaw(buf, id, opt)
-	if err != nil {
-		return false, err
-	}
-	return res, nil
+func (c *Context) textField(buf *string, id WidgetID, opt option) (EventHandler, error) {
+	return c.textFieldRaw(buf, id, opt)
 }
 
 // NumberField creates a number field to modify the value of a int value.
 //
 // step is the amount to increment or decrement the value when the user drags the thumb.
 //
-// NumberField returns true when the value has been changed, otherwise false.
+// NumberField returns an EventHandler to handle value change events.
+// A returned EventHandler is never nil.
 //
 // A NumberField widget is uniquely determined by its call location.
 // Function calls made in different locations will create different widgets.
 // If you want to generate different widgets with the same function call in a loop (such as a for loop), use [IDScope].
-func (c *Context) NumberField(value *int, step int) bool {
+func (c *Context) NumberField(value *int, step int) EventHandler {
 	pc := caller()
 	id := c.idFromCaller(pc)
-	var res bool
-	c.wrapError(func() error {
-		var err error
-		res, err = c.numberField(value, step, id, optionAlignCenter)
-		if err != nil {
-			return err
-		}
-		return nil
+	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
+		return c.numberField(value, step, id, optionAlignCenter)
 	})
-	return res
 }
 
 // NumberFieldF creates a number field to modify the value of a float64 value.
@@ -156,39 +135,34 @@ func (c *Context) NumberField(value *int, step int) bool {
 // step is the amount to increment or decrement the value when the user drags the thumb.
 // digits is the number of decimal places to display.
 //
-// NumberFieldF returns true when the value has been changed, otherwise false.
+// NumberFieldF returns an EventHandler to handle value change events.
+// A returned EventHandler is never nil.
 //
 // A NumberFieldF widget is uniquely determined by its call location.
 // Function calls made in different locations will create different widgets.
 // If you want to generate different widgets with the same function call in a loop (such as a for loop), use [IDScope].
-func (c *Context) NumberFieldF(value *float64, step float64, digits int) bool {
+func (c *Context) NumberFieldF(value *float64, step float64, digits int) EventHandler {
 	pc := caller()
 	id := c.idFromCaller(pc)
-	var res bool
-	c.wrapError(func() error {
-		var err error
-		res, err = c.numberFieldF(value, step, digits, id, optionAlignCenter)
-		if err != nil {
-			return err
-		}
-		return nil
+	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
+		return c.numberFieldF(value, step, digits, id, optionAlignCenter)
 	})
-	return res
 }
 
-func (c *Context) numberField(value *int, step int, id WidgetID, opt option) (bool, error) {
+func (c *Context) numberField(value *int, step int, id WidgetID, opt option) (EventHandler, error) {
 	last := *value
 
-	res, err := c.numberTextField(value, id)
+	e, err := c.numberTextField(value, id)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-	if res {
-		return false, nil
+	if e != nil {
+		e.On(func() {})
+		return nil, nil
 	}
 
 	// handle normal mode
-	res, err = c.widget(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
+	return c.widget(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
 		if c.focus == id && c.pointing.pressed() {
 			*value += (c.pointingDelta().X) * step
@@ -203,25 +177,22 @@ func (c *Context) numberField(value *int, step int, id WidgetID, opt option) (bo
 
 		return res, nil
 	})
-	if err != nil {
-		return false, err
-	}
-	return res, nil
 }
 
-func (c *Context) numberFieldF(value *float64, step float64, digits int, id WidgetID, opt option) (bool, error) {
+func (c *Context) numberFieldF(value *float64, step float64, digits int, id WidgetID, opt option) (EventHandler, error) {
 	last := *value
 
-	res, err := c.numberTextFieldF(value, id)
+	oner, err := c.numberTextFieldF(value, id)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-	if res {
-		return false, nil
+	if oner != nil {
+		oner.On(func() {})
+		return nil, nil
 	}
 
 	// handle normal mode
-	res, err = c.widget(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
+	return c.widget(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
 		if c.focus == id && c.pointing.pressed() {
 			*value += float64(c.pointingDelta().X) * step
@@ -236,58 +207,62 @@ func (c *Context) numberFieldF(value *float64, step float64, digits int, id Widg
 
 		return res, nil
 	})
-	if err != nil {
-		return false, err
-	}
-	return res, nil
 }
 
-func (c *Context) numberTextField(value *int, id WidgetID) (bool, error) {
+func (c *Context) numberTextField(value *int, id WidgetID) (EventHandler, error) {
 	if c.pointing.justPressed() && ebiten.IsKeyPressed(ebiten.KeyShift) &&
 		c.hover == id {
 		c.numberEdit = id
 		c.numberEditBuf = fmt.Sprintf("%d", *value)
 	}
 	if c.numberEdit == id {
-		res, err := c.textFieldRaw(&c.numberEditBuf, id, 0)
+		e, err := c.textFieldRaw(&c.numberEditBuf, id, 0)
 		if err != nil {
-			return false, err
+			return nil, err
 		}
-		if res || c.focus != id {
-			nval, err := strconv.ParseInt(c.numberEditBuf, 10, 64)
-			if err != nil {
-				nval = 0
-			}
-			*value = int(nval)
-			c.numberEdit = emptyWidgetID
-		}
-		return true, nil
+		return &preprendedEventHandler{
+			e: e,
+			f: func() {
+				if e != nil || c.focus != id {
+					nval, err := strconv.ParseInt(c.numberEditBuf, 10, 64)
+					if err != nil {
+						nval = 0
+					}
+					*value = int(nval)
+					c.numberEdit = emptyWidgetID
+				}
+			},
+		}, nil
 	}
-	return false, nil
+	return nil, nil
 }
 
-func (c *Context) numberTextFieldF(value *float64, id WidgetID) (bool, error) {
+func (c *Context) numberTextFieldF(value *float64, id WidgetID) (EventHandler, error) {
 	if c.pointing.justPressed() && ebiten.IsKeyPressed(ebiten.KeyShift) &&
 		c.hover == id {
 		c.numberEdit = id
 		c.numberEditBuf = fmt.Sprintf(realFmt, *value)
 	}
 	if c.numberEdit == id {
-		res, err := c.textFieldRaw(&c.numberEditBuf, id, 0)
+		e, err := c.textFieldRaw(&c.numberEditBuf, id, 0)
 		if err != nil {
-			return false, err
+			return nil, err
 		}
-		if res || c.focus != id {
-			nval, err := strconv.ParseFloat(c.numberEditBuf, 64)
-			if err != nil {
-				nval = 0
-			}
-			*value = float64(nval)
-			c.numberEdit = emptyWidgetID
-		}
-		return true, nil
+		return &preprendedEventHandler{
+			e: e,
+			f: func() {
+				if e != nil || c.focus != id {
+					nval, err := strconv.ParseFloat(c.numberEditBuf, 64)
+					if err != nil {
+						nval = 0
+					}
+					*value = float64(nval)
+					c.numberEdit = emptyWidgetID
+				}
+			},
+		}, nil
 	}
-	return false, nil
+	return nil, nil
 }
 
 func formatNumber(v float64, digits int) string {

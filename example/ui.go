@@ -33,39 +33,39 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 			ctx.Text(fmt.Sprintf("%d, %d", layout.Bounds.Dx(), layout.Bounds.Dy()))
 		})
 		ctx.Header("Game Config", true, func() {
-			if ctx.Checkbox(&g.hiRes, "Hi-Res") {
+			ctx.Checkbox(&g.hiRes, "Hi-Res").On(func() {
 				if g.hiRes {
 					ctx.SetScale(2)
 				} else {
 					ctx.SetScale(1)
 				}
 				g.resetPosition()
-			}
+			})
 		})
 		ctx.Header("Test Buttons", true, func() {
 			ctx.SetGridLayout([]int{-2, -1, -1}, nil)
 			ctx.Text("Test buttons 1:")
-			if ctx.Button("Button 1") {
+			ctx.Button("Button 1").On(func() {
 				g.writeLog("Pressed button 1")
-			}
-			if ctx.Button("Button 2") {
+			})
+			ctx.Button("Button 2").On(func() {
 				g.writeLog("Pressed button 2")
-			}
+			})
 			ctx.Text("Test buttons 2:")
-			if ctx.Button("Button 3") {
+			ctx.Button("Button 3").On(func() {
 				g.writeLog("Pressed button 3")
-			}
+			})
 			popupWidgetID := ctx.Popup(func(layout debugui.ContainerLayout) {
 				popupWidgetID := ctx.CurrentWidgetID()
 				ctx.Button("Hello")
 				ctx.Button("World")
-				if ctx.Button("Close") {
+				ctx.Button("Close").On(func() {
 					ctx.ClosePopup(popupWidgetID)
-				}
+				})
 			})
-			if ctx.Button("Popup") {
+			ctx.Button("Popup").On(func() {
 				ctx.OpenPopup(popupWidgetID)
-			}
+			})
 		})
 		ctx.Header("Tree and Text", true, func() {
 			ctx.SetGridLayout([]int{-1, -1}, nil)
@@ -76,28 +76,28 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 						ctx.Text("World")
 					})
 					ctx.TreeNode("Test 1b", func() {
-						if ctx.Button("Button 1") {
+						ctx.Button("Button 1").On(func() {
 							g.writeLog("Pressed button 1")
-						}
-						if ctx.Button("Button 2") {
+						})
+						ctx.Button("Button 2").On(func() {
 							g.writeLog("Pressed button 2")
-						}
+						})
 					})
 				})
 				ctx.TreeNode("Test 2", func() {
 					ctx.SetGridLayout([]int{-1, -1}, nil)
-					if ctx.Button("Button 3") {
+					ctx.Button("Button 3").On(func() {
 						g.writeLog("Pressed button 3")
-					}
-					if ctx.Button("Button 4") {
+					})
+					ctx.Button("Button 4").On(func() {
 						g.writeLog("Pressed button 4")
-					}
-					if ctx.Button("Button 5") {
+					})
+					ctx.Button("Button 5").On(func() {
 						g.writeLog("Pressed button 5")
-					}
-					if ctx.Button("Button 6") {
+					})
+					ctx.Button("Button 6").On(func() {
 						g.writeLog("Pressed button 6")
-					}
+					})
 				})
 				ctx.TreeNode("Test 3", func() {
 					ctx.Checkbox(&g.checks[0], "Checkbox 1")
@@ -180,17 +180,17 @@ func (g *Game) logWindow(ctx *debugui.Context) {
 		ctx.GridCell(func(bounds image.Rectangle) {
 			var submit bool
 			ctx.SetGridLayout([]int{-3, -1}, nil)
-			if ctx.TextField(&g.logSubmitBuf) {
+			ctx.TextField(&g.logSubmitBuf).On(func() {
 				if g.logSubmitBuf != "" && ebiten.IsKeyPressed(ebiten.KeyEnter) {
 					submit = true
 				}
-			}
+			})
 			textFieldID := ctx.CurrentWidgetID()
-			if ctx.Button("Submit") {
+			ctx.Button("Submit").On(func() {
 				if g.logSubmitBuf != "" {
 					submit = true
 				}
-			}
+			})
 			if submit {
 				g.writeLog(g.logSubmitBuf)
 				g.logSubmitBuf = ""
@@ -205,9 +205,9 @@ func (g *Game) buttonWindows(ctx *debugui.Context) {
 		ctx.SetGridLayout([]int{-1, -1, -1, -1}, nil)
 		for i := 0; i < 100; i++ {
 			ctx.IDScope(fmt.Sprintf("%d", i), func() {
-				if ctx.Button("Button") {
+				ctx.Button("Button").On(func() {
 					g.writeLog(fmt.Sprintf("Pressed button %d in Button Window", i))
-				}
+				})
 			})
 		}
 	})

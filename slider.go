@@ -13,24 +13,18 @@ import (
 //
 // lo and hi specify the range of the slider.
 //
-// Slider returns true if the value of the slider has been changed, otherwise false.
+// Slider returns an EventHandler to handle value change events.
+// A returned EventHandler is never nil.
 //
 // A Slider widget is uniquely determined by its call location.
 // Function calls made in different locations will create different widgets.
 // If you want to generate different widgets with the same function call in a loop (such as a for loop), use [IDScope].
-func (c *Context) Slider(value *int, lo, hi int, step int) bool {
+func (c *Context) Slider(value *int, lo, hi int, step int) EventHandler {
 	pc := caller()
 	id := c.idFromCaller(pc)
-	var res bool
-	c.wrapError(func() error {
-		var err error
-		res, err = c.slider(value, lo, hi, step, id, optionAlignCenter)
-		if err != nil {
-			return err
-		}
-		return nil
+	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
+		return c.slider(value, lo, hi, step, id, optionAlignCenter)
 	})
-	return res
 }
 
 // SliderF cretes a slider widget with the given float64 value, range, step, and number of digits.
@@ -38,40 +32,36 @@ func (c *Context) Slider(value *int, lo, hi int, step int) bool {
 // lo and hi specify the range of the slider.
 // digits specifies the number of digits to display after the decimal point.
 //
-// SliderF returns true if the value of the slider has been changed, otherwise false.
+// SliderF returns an EventHandler to handle value change events.
+// A returned EventHandler is never nil.
 //
 // A SliderF widget is uniquely determined by its call location.
 // Function calls made in different locations will create different widgets.
 // If you want to generate different widgets with the same function call in a loop (such as a for loop), use [IDScope].
-func (c *Context) SliderF(value *float64, lo, hi float64, step float64, digits int) bool {
+func (c *Context) SliderF(value *float64, lo, hi float64, step float64, digits int) EventHandler {
 	pc := caller()
 	id := c.idFromCaller(pc)
-	var res bool
-	c.wrapError(func() error {
-		var err error
-		res, err = c.sliderF(value, lo, hi, step, digits, id, optionAlignCenter)
-		if err != nil {
-			return err
-		}
-		return nil
+	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
+		return c.sliderF(value, lo, hi, step, digits, id, optionAlignCenter)
 	})
-	return res
 }
 
-func (c *Context) slider(value *int, low, high, step int, id WidgetID, opt option) (bool, error) {
+func (c *Context) slider(value *int, low, high, step int, id WidgetID, opt option) (EventHandler, error) {
 	last := *value
 	v := last
 
-	res, err := c.numberTextField(&v, id)
+	e, err := c.numberTextField(&v, id)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-	if res {
-		*value = v
-		return false, nil
+	if e != nil {
+		e.On(func() {
+			*value = v
+		})
+		return nil, nil
 	}
 
-	res, err = c.widget(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
+	return c.widget(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
 		if c.focus == id && c.pointing.pressed() {
 			if w := bounds.Dx() - defaultStyle.thumbSize; w > 0 {
@@ -97,26 +87,24 @@ func (c *Context) slider(value *int, low, high, step int, id WidgetID, opt optio
 
 		return res, nil
 	})
-	if err != nil {
-		return false, err
-	}
-	return res, nil
 }
 
-func (c *Context) sliderF(value *float64, low, high, step float64, digits int, id WidgetID, opt option) (bool, error) {
+func (c *Context) sliderF(value *float64, low, high, step float64, digits int, id WidgetID, opt option) (EventHandler, error) {
 	last := *value
 	v := last
 
-	res, err := c.numberTextFieldF(&v, id)
+	e, err := c.numberTextFieldF(&v, id)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-	if res {
-		*value = v
-		return false, nil
+	if e != nil {
+		e.On(func() {
+			*value = v
+		})
+		return nil, nil
 	}
 
-	res, err = c.widget(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
+	return c.widget(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
 		if c.focus == id && c.pointing.pressed() {
 			if w := float64(bounds.Dx() - defaultStyle.thumbSize); w > 0 {
@@ -142,8 +130,4 @@ func (c *Context) sliderF(value *float64, low, high, step float64, digits int, i
 
 		return res, nil
 	})
-	if err != nil {
-		return false, err
-	}
-	return res, nil
 }

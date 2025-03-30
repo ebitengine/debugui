@@ -63,7 +63,7 @@ func lines(text string, width int) iter.Seq[string] {
 
 // Text creates a text label.
 func (c *Context) Text(text string) {
-	c.wrapError(func() error {
+	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		if err := c.gridCell(func(bounds image.Rectangle) error {
 			c.SetGridLayout([]int{-1}, []int{lineHeight()})
 			for line := range lines(text, bounds.Dx()-c.style().padding) {
@@ -76,8 +76,8 @@ func (c *Context) Text(text string) {
 			}
 			return nil
 		}); err != nil {
-			return err
+			return nil, err
 		}
-		return nil
+		return nil, nil
 	})
 }

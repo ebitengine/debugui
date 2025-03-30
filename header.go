@@ -17,7 +17,7 @@ import "image"
 func (c *Context) Header(label string, initialExpansion bool, f func()) {
 	pc := caller()
 	id := c.idFromCaller(pc)
-	c.wrapError(func() error {
+	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		var opt option
 		if initialExpansion {
 			opt |= optionExpanded
@@ -26,9 +26,9 @@ func (c *Context) Header(label string, initialExpansion bool, f func()) {
 			f()
 			return nil
 		}); err != nil {
-			return err
+			return nil, err
 		}
-		return nil
+		return nil, nil
 	})
 }
 
@@ -40,11 +40,11 @@ func (c *Context) Header(label string, initialExpansion bool, f func()) {
 func (c *Context) TreeNode(label string, f func()) {
 	pc := caller()
 	id := c.idFromCaller(pc)
-	c.wrapError(func() error {
+	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		if err := c.treeNode(label, 0, id, f); err != nil {
-			return err
+			return nil, err
 		}
-		return nil
+		return nil, nil
 	})
 }
 
@@ -59,7 +59,7 @@ func (c *Context) header(label string, isTreeNode bool, opt option, id WidgetID,
 		expanded = toggled
 	}
 
-	res, err := c.widget(id, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
+	e, err := c.widget(id, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		if c.pointing.justPressed() && c.focus == id {
 			c.currentContainer().toggle(id)
 		}
@@ -89,11 +89,11 @@ func (c *Context) header(label string, isTreeNode bool, opt option, id WidgetID,
 	if err != nil {
 		return err
 	}
-	if res {
-		if err := f(); err != nil {
-			return err
+	e.On(func() {
+		if err := f(); err != nil && c.err == nil {
+			c.err = err
 		}
-	}
+	})
 	return nil
 }
 

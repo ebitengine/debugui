@@ -84,14 +84,14 @@ func (c *Context) popLayout() error {
 }
 
 func (c *Context) GridCell(f func(bounds image.Rectangle)) {
-	c.wrapError(func() error {
+	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		if err := c.gridCell(func(bounds image.Rectangle) error {
 			f(bounds)
 			return nil
 		}); err != nil {
-			return err
+			return nil, err
 		}
-		return nil
+		return nil, nil
 	})
 }
 
@@ -143,8 +143,11 @@ func (c *Context) layout() (*layout, error) {
 //
 // When the number of items exceeds the number of grid cells, a new row starts with the same grid layout.
 func (c *Context) SetGridLayout(widths []int, heights []int) {
-	c.wrapError(func() error {
-		return c.setGridLayout(widths, heights)
+	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
+		if err := c.setGridLayout(widths, heights); err != nil {
+			return nil, err
+		}
+		return nil, nil
 	})
 }
 

@@ -78,11 +78,11 @@ func (c *Context) currentRootContainer() *container {
 func (c *Context) Window(title string, rect image.Rectangle, f func(layout ContainerLayout)) {
 	pc := caller()
 	id := c.idFromCaller(pc)
-	c.wrapError(func() error {
+	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		if err := c.window(title, rect, 0, id, f); err != nil {
-			return err
+			return nil, err
 		}
-		return nil
+		return nil, nil
 	})
 }
 
@@ -240,7 +240,7 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 }
 
 func (c *Context) OpenPopup(widgetID WidgetID) {
-	c.wrapError(func() error {
+	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		cnt := c.container(widgetID, 0)
 		// Set as hover root so popup isn't closed in doWindow.
 		c.nextHoverRoot = cnt
@@ -253,27 +253,27 @@ func (c *Context) OpenPopup(widgetID WidgetID) {
 		}
 		cnt.open = true
 		c.bringToFront(cnt)
-		return nil
+		return nil, nil
 	})
 }
 
 func (c *Context) ClosePopup(widgetID WidgetID) {
-	c.wrapError(func() error {
+	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		cnt := c.container(widgetID, 0)
 		cnt.open = false
-		return nil
+		return nil, nil
 	})
 }
 
 func (c *Context) Popup(f func(layout ContainerLayout)) WidgetID {
 	pc := caller()
 	id := c.idFromCaller(pc)
-	c.wrapError(func() error {
+	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		opt := optionPopup | optionAutoSize | optionNoResize | optionNoScroll | optionNoTitle | optionClosed
 		if err := c.window("", image.Rectangle{}, opt, id, f); err != nil {
-			return err
+			return nil, err
 		}
-		return nil
+		return nil, nil
 	})
 	return id
 }

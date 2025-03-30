@@ -6,11 +6,11 @@ package debugui
 func (c *Context) Panel(f func(layout ContainerLayout)) {
 	pc := caller()
 	id := c.idFromCaller(pc)
-	c.wrapError(func() error {
+	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		if err := c.panel(0, id, f); err != nil {
-			return err
+			return nil, err
 		}
-		return nil
+		return nil, nil
 	})
 }
 

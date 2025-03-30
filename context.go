@@ -58,11 +58,19 @@ type Context struct {
 	err error
 }
 
-func (c *Context) wrapError(f func() error) {
+func (c *Context) wrapEventHandlerAndError(f func() (EventHandler, error)) EventHandler {
 	if c.err != nil {
-		return
+		return &nullEventHandler{}
 	}
-	c.err = f()
+	e, err := f()
+	if err != nil {
+		c.err = err
+		return &nullEventHandler{}
+	}
+	if e == nil {
+		return &nullEventHandler{}
+	}
+	return e
 }
 
 func (c *Context) update(f func(ctx *Context) error) (captured bool, err error) {

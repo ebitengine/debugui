@@ -88,35 +88,28 @@ func (c *Context) updateWidget(id WidgetID, bounds image.Rectangle, opt option) 
 	return
 }
 
-func (c *Context) Widget(f func(bounds image.Rectangle) bool) bool {
+func (c *Context) Widget(f func(bounds image.Rectangle) bool) EventHandler {
 	pc := caller()
 	id := c.idFromCaller(pc)
-	var res bool
-	c.wrapError(func() error {
-		var err error
-		res, err = c.widget(id, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
+	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
+		return c.widget(id, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 			return f(bounds), nil
 		})
-		if err != nil {
-			return err
-		}
-		return nil
 	})
-	return res
 }
 
-func (c *Context) widget(id WidgetID, opt option, f func(bounds image.Rectangle, wasFocused bool) (bool, error)) (bool, error) {
+func (c *Context) widget(id WidgetID, opt option, f func(bounds image.Rectangle, wasFocused bool) (bool, error)) (EventHandler, error) {
 	c.currentID = id
 	r, err := c.layoutNext()
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 	wasFocused := c.updateWidget(id, r, opt)
 	res, err := f(r, wasFocused)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-	return res, nil
+	return &eventHandler{res: res}, nil
 }
 
 // Checkbox creates a checkbox with the given boolean state and text label.
@@ -124,13 +117,11 @@ func (c *Context) widget(id WidgetID, opt option, f func(bounds image.Rectangle,
 // A Checkbox widget is uniquely determined by its call location.
 // Function calls made in different locations will create different widgets.
 // If you want to generate different widgets with the same function call in a loop (such as a for loop), use [IDScope].
-func (c *Context) Checkbox(state *bool, label string) bool {
+func (c *Context) Checkbox(state *bool, label string) EventHandler {
 	pc := caller()
 	id := c.idFromCaller(pc)
-	var res bool
-	c.wrapError(func() error {
-		var err error
-		res, err = c.widget(id, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
+	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
+		return c.widget(id, 0, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 			var res bool
 			box := image.Rect(bounds.Min.X, bounds.Min.Y+(bounds.Dy()-lineHeight())/2, bounds.Min.X+lineHeight(), bounds.Max.Y-(bounds.Dy()-lineHeight())/2)
 			c.updateWidget(id, bounds, 0)
@@ -148,12 +139,7 @@ func (c *Context) Checkbox(state *bool, label string) bool {
 			}
 			return res, nil
 		})
-		if err != nil {
-			return err
-		}
-		return nil
 	})
-	return res
 }
 
 func (c *Context) isCapturingInput() bool {
