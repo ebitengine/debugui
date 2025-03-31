@@ -19,20 +19,6 @@ func (o *eventHandler) On(f func()) {
 	}
 }
 
-type preprendedEventHandler struct {
-	e EventHandler
-	f func()
-}
-
-func (o *preprendedEventHandler) On(f func()) {
-	o.e.On(func() {
-		if o.f != nil {
-			o.f()
-		}
-		f()
-	})
-}
-
 type nullEventHandler struct{}
 
 func (n *nullEventHandler) On(func()) {}

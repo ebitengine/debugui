@@ -152,12 +152,10 @@ func (c *Context) NumberFieldF(value *float64, step float64, digits int) EventHa
 func (c *Context) numberField(value *int, step int, id WidgetID, opt option) (EventHandler, error) {
 	last := *value
 
-	e, err := c.numberTextField(value, id)
-	if err != nil {
+	if err := c.numberTextField(value, id); err != nil {
 		return nil, err
 	}
-	if e != nil {
-		e.On(func() {})
+	if c.numberEdit == id {
 		return nil, nil
 	}
 
@@ -182,12 +180,10 @@ func (c *Context) numberField(value *int, step int, id WidgetID, opt option) (Ev
 func (c *Context) numberFieldF(value *float64, step float64, digits int, id WidgetID, opt option) (EventHandler, error) {
 	last := *value
 
-	oner, err := c.numberTextFieldF(value, id)
-	if err != nil {
+	if err := c.numberTextFieldF(value, id); err != nil {
 		return nil, err
 	}
-	if oner != nil {
-		oner.On(func() {})
+	if c.numberEdit == id {
 		return nil, nil
 	}
 
@@ -209,60 +205,52 @@ func (c *Context) numberFieldF(value *float64, step float64, digits int, id Widg
 	})
 }
 
-func (c *Context) numberTextField(value *int, id WidgetID) (EventHandler, error) {
-	if c.pointing.justPressed() && ebiten.IsKeyPressed(ebiten.KeyShift) &&
-		c.hover == id {
+func (c *Context) numberTextField(value *int, id WidgetID) error {
+	if c.pointing.justPressed() && ebiten.IsKeyPressed(ebiten.KeyShift) && c.hover == id {
 		c.numberEdit = id
 		c.numberEditBuf = fmt.Sprintf("%d", *value)
 	}
 	if c.numberEdit == id {
 		e, err := c.textFieldRaw(&c.numberEditBuf, id, 0)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		return &preprendedEventHandler{
-			e: e,
-			f: func() {
-				if e != nil || c.focus != id {
-					nval, err := strconv.ParseInt(c.numberEditBuf, 10, 64)
-					if err != nil {
-						nval = 0
-					}
-					*value = int(nval)
-					c.numberEdit = emptyWidgetID
+		if e != nil {
+			e.On(func() {
+				nval, err := strconv.ParseInt(c.numberEditBuf, 10, 64)
+				if err != nil {
+					nval = 0
 				}
-			},
-		}, nil
+				*value = int(nval)
+				c.numberEdit = emptyWidgetID
+			})
+		}
 	}
-	return nil, nil
+	return nil
 }
 
-func (c *Context) numberTextFieldF(value *float64, id WidgetID) (EventHandler, error) {
-	if c.pointing.justPressed() && ebiten.IsKeyPressed(ebiten.KeyShift) &&
-		c.hover == id {
+func (c *Context) numberTextFieldF(value *float64, id WidgetID) error {
+	if c.pointing.justPressed() && ebiten.IsKeyPressed(ebiten.KeyShift) && c.hover == id {
 		c.numberEdit = id
 		c.numberEditBuf = fmt.Sprintf(realFmt, *value)
 	}
 	if c.numberEdit == id {
 		e, err := c.textFieldRaw(&c.numberEditBuf, id, 0)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		return &preprendedEventHandler{
-			e: e,
-			f: func() {
-				if e != nil || c.focus != id {
-					nval, err := strconv.ParseFloat(c.numberEditBuf, 64)
-					if err != nil {
-						nval = 0
-					}
-					*value = float64(nval)
-					c.numberEdit = emptyWidgetID
+		if e != nil {
+			e.On(func() {
+				nval, err := strconv.ParseFloat(c.numberEditBuf, 64)
+				if err != nil {
+					nval = 0
 				}
-			},
-		}, nil
+				*value = float64(nval)
+				c.numberEdit = emptyWidgetID
+			})
+		}
 	}
-	return nil, nil
+	return nil
 }
 
 func formatNumber(v float64, digits int) string {

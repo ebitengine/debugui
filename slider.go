@@ -50,16 +50,13 @@ func (c *Context) slider(value *int, low, high, step int, id WidgetID, opt optio
 	last := *value
 	v := last
 
-	e, err := c.numberTextField(&v, id)
-	if err != nil {
+	if err := c.numberTextField(&v, id); err != nil {
 		return nil, err
 	}
-	if e != nil {
-		e.On(func() {
-			*value = v
-		})
+	if c.numberEdit == id {
 		return nil, nil
 	}
+	*value = v
 
 	return c.widget(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
@@ -93,16 +90,13 @@ func (c *Context) sliderF(value *float64, low, high, step float64, digits int, i
 	last := *value
 	v := last
 
-	e, err := c.numberTextFieldF(&v, id)
-	if err != nil {
+	if err := c.numberTextFieldF(&v, id); err != nil {
 		return nil, err
 	}
-	if e != nil {
-		e.On(func() {
-			*value = v
-		})
+	if c.numberEdit == id {
 		return nil, nil
 	}
+	*value = v
 
 	return c.widget(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
 		var res bool
