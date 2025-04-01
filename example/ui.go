@@ -131,7 +131,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 				ctx.Slider(&g.bg[2], 0, 255, 1)
 			})
 			ctx.GridCell(func(bounds image.Rectangle) {
-				ctx.RenderOnlyWidget(func(screen *ebiten.Image) {
+				ctx.DrawOnlyWidget(func(screen *ebiten.Image) {
 					scale := ctx.Scale()
 					vector.DrawFilledRect(
 						screen,
