@@ -58,8 +58,8 @@ func (c *Context) slider(value *int, low, high, step int, id WidgetID, opt optio
 	}
 	*value = v
 
-	return c.widget(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
-		var res bool
+	return c.widget(id, opt, func(bounds image.Rectangle, wasFocused bool) (EventHandler, error) {
+		var e EventHandler
 		if c.focus == id && c.pointing.pressed() {
 			if w := bounds.Dx() - defaultStyle.thumbSize; w > 0 {
 				v = low + (c.pointingPosition().X-bounds.Min.X)*(high-low)/w
@@ -71,7 +71,7 @@ func (c *Context) slider(value *int, low, high, step int, id WidgetID, opt optio
 		*value = clamp(v, low, high)
 		v = *value
 		if last != v {
-			res = true
+			e = &eventHandler{}
 		}
 
 		c.drawWidgetFrame(id, bounds, colorBase, opt)
@@ -82,7 +82,7 @@ func (c *Context) slider(value *int, low, high, step int, id WidgetID, opt optio
 		text := fmt.Sprintf("%d", v)
 		c.drawWidgetText(text, bounds, colorText, opt)
 
-		return res, nil
+		return e, nil
 	})
 }
 
@@ -98,8 +98,8 @@ func (c *Context) sliderF(value *float64, low, high, step float64, digits int, i
 	}
 	*value = v
 
-	return c.widget(id, opt, func(bounds image.Rectangle, wasFocused bool) (bool, error) {
-		var res bool
+	return c.widget(id, opt, func(bounds image.Rectangle, wasFocused bool) (EventHandler, error) {
+		var e EventHandler
 		if c.focus == id && c.pointing.pressed() {
 			if w := float64(bounds.Dx() - defaultStyle.thumbSize); w > 0 {
 				v = low + float64(c.pointingPosition().X-bounds.Min.X)*(high-low)/w
@@ -111,7 +111,7 @@ func (c *Context) sliderF(value *float64, low, high, step float64, digits int, i
 		*value = clamp(v, low, high)
 		v = *value
 		if last != v {
-			res = true
+			e = &eventHandler{}
 		}
 
 		c.drawWidgetFrame(id, bounds, colorBase, opt)
@@ -122,6 +122,6 @@ func (c *Context) sliderF(value *float64, low, high, step float64, digits int, i
 		text := formatNumber(v, digits)
 		c.drawWidgetText(text, bounds, colorText, opt)
 
-		return res, nil
+		return e, nil
 	})
 }

@@ -10,13 +10,10 @@ type EventHandler interface {
 }
 
 type eventHandler struct {
-	res bool
 }
 
 func (o *eventHandler) On(f func()) {
-	if o.res {
-		f()
-	}
+	f()
 }
 
 type nullEventHandler struct{}

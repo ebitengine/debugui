@@ -96,9 +96,9 @@ func (c *Context) GridCell(f func(bounds image.Rectangle)) {
 }
 
 func (c *Context) gridCell(f func(bounds image.Rectangle) error) error {
-	_, err := c.widget(emptyWidgetID, 0, func(bounds image.Rectangle, wasFocused bool) (res bool, err error) {
+	_, err := c.widget(emptyWidgetID, 0, func(bounds image.Rectangle, wasFocused bool) (e EventHandler, err error) {
 		if err := c.pushLayout(bounds, image.Pt(0, 0), false); err != nil {
-			return false, err
+			return nil, err
 		}
 		defer func() {
 			if err2 := c.popLayout(); err2 != nil && err == nil {
@@ -106,7 +106,7 @@ func (c *Context) gridCell(f func(bounds image.Rectangle) error) error {
 			}
 		}()
 		if err := f(bounds); err != nil {
-			return false, err
+			return nil, err
 		}
 		b := &c.layoutStack[len(c.layoutStack)-1]
 		// inherit position/next_row/max from child layout if they are greater
@@ -115,7 +115,7 @@ func (c *Context) gridCell(f func(bounds image.Rectangle) error) error {
 		a.nextRowY = max(a.nextRowY, b.nextRowY+b.body.Min.Y-a.body.Min.Y)
 		a.max.X = max(a.max.X, b.max.X)
 		a.max.Y = max(a.max.Y, b.max.Y)
-		return false, nil
+		return nil, nil
 	})
 	if err != nil {
 		return err
