@@ -64,17 +64,14 @@ func lines(text string, width int) iter.Seq[string] {
 // Text creates a text label.
 func (c *Context) Text(text string) {
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		if err := c.gridCell(func(bounds image.Rectangle) error {
+		if err := c.gridCell(func(bounds image.Rectangle) {
 			c.SetGridLayout([]int{-1}, []int{lineHeight()})
 			for line := range lines(text, bounds.Dx()-c.style().padding) {
-				if _, err := c.widget(emptyWidgetID, 0, func(bounds image.Rectangle, wasFocused bool) (EventHandler, error) {
+				_, _ = c.widget(emptyWidgetID, 0, func(bounds image.Rectangle, wasFocused bool) (EventHandler, error) {
 					c.drawWidgetText(line, bounds, colorText, 0)
 					return nil, nil
-				}); err != nil {
-					return err
-				}
+				})
 			}
-			return nil
 		}); err != nil {
 			return nil, err
 		}

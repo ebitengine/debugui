@@ -85,9 +85,8 @@ func (c *Context) popLayout() error {
 
 func (c *Context) GridCell(f func(bounds image.Rectangle)) {
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		if err := c.gridCell(func(bounds image.Rectangle) error {
+		if err := c.gridCell(func(bounds image.Rectangle) {
 			f(bounds)
-			return nil
 		}); err != nil {
 			return nil, err
 		}
@@ -95,7 +94,7 @@ func (c *Context) GridCell(f func(bounds image.Rectangle)) {
 	})
 }
 
-func (c *Context) gridCell(f func(bounds image.Rectangle) error) error {
+func (c *Context) gridCell(f func(bounds image.Rectangle)) error {
 	_, err := c.widget(emptyWidgetID, 0, func(bounds image.Rectangle, wasFocused bool) (e EventHandler, err error) {
 		if err := c.pushLayout(bounds, image.Pt(0, 0), false); err != nil {
 			return nil, err
@@ -105,9 +104,7 @@ func (c *Context) gridCell(f func(bounds image.Rectangle) error) error {
 				err = err2
 			}
 		}()
-		if err := f(bounds); err != nil {
-			return nil, err
-		}
+		f(bounds)
 		b := &c.layoutStack[len(c.layoutStack)-1]
 		// inherit position/next_row/max from child layout if they are greater
 		a := &c.layoutStack[len(c.layoutStack)-2]
