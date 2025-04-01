@@ -193,14 +193,15 @@ func (c *Context) drawIcon(icon icon, rect image.Rectangle, color color.Color) {
 }
 
 func (c *Context) DrawWidget(f func(screen *ebiten.Image)) {
-	if c.err != nil {
-		return
-	}
-
-	c.setClip(c.clipRect())
-	defer c.setClip(unclippedRect)
-	cmd := c.appendCommand(commandDraw)
-	cmd.draw.f = f
+	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
+		_, _ = c.widget(emptyWidgetID, 0, nil, nil, func(bounds image.Rectangle) {
+			c.setClip(c.clipRect())
+			defer c.setClip(unclippedRect)
+			cmd := c.appendCommand(commandDraw)
+			cmd.draw.f = f
+		})
+		return nil, nil
+	})
 }
 
 func (c *Context) drawFrame(rect image.Rectangle, colorid int) {

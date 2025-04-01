@@ -88,7 +88,7 @@ func (c *Context) updateWidget(id WidgetID, bounds image.Rectangle, opt option) 
 	return
 }
 
-func (c *Context) widget(id WidgetID, opt option, f func(bounds image.Rectangle, wasFocused bool) (EventHandler, error)) (EventHandler, error) {
+func (c *Context) widget(id WidgetID, opt option, layout func(bounds image.Rectangle), handleInput func(bounds image.Rectangle, wasFocused bool) (EventHandler, error), draw func(bounds image.Rectangle)) (EventHandler, error) {
 	c.currentID = id
 	bounds, err := c.layoutNext()
 	if err != nil {
@@ -111,10 +111,21 @@ func (c *Context) widget(id WidgetID, opt option, f func(bounds image.Rectangle,
 		}
 	}()
 
+	if layout != nil {
+		layout(bounds)
+	}
+
 	wasFocused := c.updateWidget(id, bounds, opt)
-	e, err := f(bounds, wasFocused)
-	if err != nil {
-		return nil, err
+	var e EventHandler
+	if handleInput != nil {
+		var err error
+		e, err = handleInput(bounds, wasFocused)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if draw != nil {
+		draw(bounds)
 	}
 	return e, nil
 }
@@ -128,14 +139,16 @@ func (c *Context) Checkbox(state *bool, label string) EventHandler {
 	pc := caller()
 	id := c.idFromCaller(pc)
 	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		return c.widget(id, 0, func(bounds image.Rectangle, wasFocused bool) (EventHandler, error) {
+		return c.widget(id, 0, nil, func(bounds image.Rectangle, wasFocused bool) (EventHandler, error) {
 			var e EventHandler
-			box := image.Rect(bounds.Min.X, bounds.Min.Y+(bounds.Dy()-lineHeight())/2, bounds.Min.X+lineHeight(), bounds.Max.Y-(bounds.Dy()-lineHeight())/2)
 			c.updateWidget(id, bounds, 0)
 			if c.pointing.justPressed() && c.focus == id {
 				e = &eventHandler{}
 				*state = !*state
 			}
+			return e, nil
+		}, func(bounds image.Rectangle) {
+			box := image.Rect(bounds.Min.X, bounds.Min.Y+(bounds.Dy()-lineHeight())/2, bounds.Min.X+lineHeight(), bounds.Max.Y-(bounds.Dy()-lineHeight())/2)
 			c.drawWidgetFrame(id, box, colorBase, 0)
 			if *state {
 				c.drawIcon(iconCheck, box, c.style().colors[colorText])
@@ -144,7 +157,6 @@ func (c *Context) Checkbox(state *bool, label string) EventHandler {
 				bounds = image.Rect(bounds.Min.X+lineHeight(), bounds.Min.Y, bounds.Max.X, bounds.Max.Y)
 				c.drawWidgetText(label, bounds, colorText, 0)
 			}
-			return e, nil
 		})
 	})
 }

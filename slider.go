@@ -58,7 +58,7 @@ func (c *Context) slider(value *int, low, high, step int, id WidgetID, opt optio
 	}
 	*value = v
 
-	return c.widget(id, opt, func(bounds image.Rectangle, wasFocused bool) (EventHandler, error) {
+	return c.widget(id, opt, nil, func(bounds image.Rectangle, wasFocused bool) (EventHandler, error) {
 		var e EventHandler
 		if c.focus == id && c.pointing.pressed() {
 			if w := bounds.Dx() - defaultStyle.thumbSize; w > 0 {
@@ -73,7 +73,8 @@ func (c *Context) slider(value *int, low, high, step int, id WidgetID, opt optio
 		if last != v {
 			e = &eventHandler{}
 		}
-
+		return e, nil
+	}, func(bounds image.Rectangle) {
 		c.drawWidgetFrame(id, bounds, colorBase, opt)
 		w := c.style().thumbSize
 		x := int((v - low) * (bounds.Dx() - w) / (high - low))
@@ -81,8 +82,6 @@ func (c *Context) slider(value *int, low, high, step int, id WidgetID, opt optio
 		c.drawWidgetFrame(id, thumb, colorButton, opt)
 		text := fmt.Sprintf("%d", v)
 		c.drawWidgetText(text, bounds, colorText, opt)
-
-		return e, nil
 	})
 }
 
@@ -98,7 +97,7 @@ func (c *Context) sliderF(value *float64, low, high, step float64, digits int, i
 	}
 	*value = v
 
-	return c.widget(id, opt, func(bounds image.Rectangle, wasFocused bool) (EventHandler, error) {
+	return c.widget(id, opt, nil, func(bounds image.Rectangle, wasFocused bool) (EventHandler, error) {
 		var e EventHandler
 		if c.focus == id && c.pointing.pressed() {
 			if w := float64(bounds.Dx() - defaultStyle.thumbSize); w > 0 {
@@ -113,7 +112,8 @@ func (c *Context) sliderF(value *float64, low, high, step float64, digits int, i
 		if last != v {
 			e = &eventHandler{}
 		}
-
+		return e, nil
+	}, func(bounds image.Rectangle) {
 		c.drawWidgetFrame(id, bounds, colorBase, opt)
 		w := c.style().thumbSize
 		x := int((v - low) * float64(bounds.Dx()-w) / (high - low))
@@ -121,7 +121,5 @@ func (c *Context) sliderF(value *float64, low, high, step float64, digits int, i
 		c.drawWidgetFrame(id, thumb, colorButton, opt)
 		text := formatNumber(v, digits)
 		c.drawWidgetText(text, bounds, colorText, opt)
-
-		return e, nil
 	})
 }

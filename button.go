@@ -22,17 +22,16 @@ func (c *Context) Button(label string) EventHandler {
 }
 
 func (c *Context) button(label string, opt option, id WidgetID) (EventHandler, error) {
-	return c.widget(id, opt, func(bounds image.Rectangle, wasFocused bool) (EventHandler, error) {
+	return c.widget(id, opt, nil, func(bounds image.Rectangle, wasFocused bool) (EventHandler, error) {
 		var e EventHandler
-		// handle click
 		if c.pointing.justPressed() && c.focus == id {
 			e = &eventHandler{}
 		}
-		// draw
+		return e, nil
+	}, func(bounds image.Rectangle) {
 		c.drawWidgetFrame(id, bounds, colorButton, opt)
 		if len(label) > 0 {
 			c.drawWidgetText(label, bounds, colorText, opt)
 		}
-		return e, nil
 	})
 }

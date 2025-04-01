@@ -36,7 +36,7 @@ func (c *Context) TextField(buf *string) EventHandler {
 }
 
 func (c *Context) textFieldRaw(buf *string, id WidgetID, opt option) (EventHandler, error) {
-	return c.widget(id, opt|optionHoldFocus, func(bounds image.Rectangle, wasFocused bool) (EventHandler, error) {
+	return c.widget(id, opt|optionHoldFocus, nil, func(bounds image.Rectangle, wasFocused bool) (EventHandler, error) {
 		var e EventHandler
 
 		f := c.currentContainer().textInputTextField(id, true)
@@ -72,10 +72,12 @@ func (c *Context) textFieldRaw(buf *string, id WidgetID, opt option) (EventHandl
 				e = &eventHandler{}
 			}
 		}
-
-		// draw
+		return e, nil
+	}, func(bounds image.Rectangle) {
 		c.drawWidgetFrame(id, bounds, colorBase, opt)
 		if c.focus == id {
+			f := c.currentContainer().textInputTextField(id, true)
+
 			color := c.style().colors[colorText]
 			textw := textWidth(*buf)
 			texth := lineHeight()
@@ -89,7 +91,6 @@ func (c *Context) textFieldRaw(buf *string, id WidgetID, opt option) (EventHandl
 		} else {
 			c.drawWidgetText(*buf, bounds, colorText, opt)
 		}
-		return e, nil
 	})
 }
 
@@ -160,7 +161,7 @@ func (c *Context) numberField(value *int, step int, id WidgetID, opt option) (Ev
 	}
 
 	// handle normal mode
-	return c.widget(id, opt, func(bounds image.Rectangle, wasFocused bool) (EventHandler, error) {
+	return c.widget(id, opt, nil, func(bounds image.Rectangle, wasFocused bool) (EventHandler, error) {
 		var e EventHandler
 		if c.focus == id && c.pointing.pressed() {
 			*value += (c.pointingDelta().X) * step
@@ -168,12 +169,11 @@ func (c *Context) numberField(value *int, step int, id WidgetID, opt option) (Ev
 		if *value != last {
 			e = &eventHandler{}
 		}
-
+		return e, nil
+	}, func(bounds image.Rectangle) {
 		c.drawWidgetFrame(id, bounds, colorBase, opt)
 		text := fmt.Sprintf("%d", *value)
 		c.drawWidgetText(text, bounds, colorText, opt)
-
-		return e, nil
 	})
 }
 
@@ -188,7 +188,7 @@ func (c *Context) numberFieldF(value *float64, step float64, digits int, id Widg
 	}
 
 	// handle normal mode
-	return c.widget(id, opt, func(bounds image.Rectangle, wasFocused bool) (EventHandler, error) {
+	return c.widget(id, opt, nil, func(bounds image.Rectangle, wasFocused bool) (EventHandler, error) {
 		var e EventHandler
 		if c.focus == id && c.pointing.pressed() {
 			*value += float64(c.pointingDelta().X) * step
@@ -196,12 +196,11 @@ func (c *Context) numberFieldF(value *float64, step float64, digits int, id Widg
 		if *value != last {
 			e = &eventHandler{}
 		}
-
+		return e, nil
+	}, func(bounds image.Rectangle) {
 		c.drawWidgetFrame(id, bounds, colorBase, opt)
 		text := formatNumber(*value, digits)
 		c.drawWidgetText(text, bounds, colorText, opt)
-
-		return e, nil
 	})
 }
 
