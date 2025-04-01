@@ -90,12 +90,29 @@ func (c *Context) updateWidget(id WidgetID, bounds image.Rectangle, opt option) 
 
 func (c *Context) widget(id WidgetID, opt option, f func(bounds image.Rectangle, wasFocused bool) (EventHandler, error)) (EventHandler, error) {
 	c.currentID = id
-	r, err := c.layoutNext()
+	bounds, err := c.layoutNext()
 	if err != nil {
 		return nil, err
 	}
-	wasFocused := c.updateWidget(id, r, opt)
-	e, err := f(r, wasFocused)
+
+	if err := c.pushLayout(bounds, image.Pt(0, 0), false); err != nil {
+		return nil, err
+	}
+	defer func() {
+		b := &c.layoutStack[len(c.layoutStack)-1]
+		// inherit position/next_row/max from child layout if they are greater
+		a := &c.layoutStack[len(c.layoutStack)-2]
+		a.position.X = max(a.position.X, b.position.X+b.body.Min.X-a.body.Min.X)
+		a.nextRowY = max(a.nextRowY, b.nextRowY+b.body.Min.Y-a.body.Min.Y)
+		a.max.X = max(a.max.X, b.max.X)
+		a.max.Y = max(a.max.Y, b.max.Y)
+		if err2 := c.popLayout(); err2 != nil && err == nil {
+			err = err2
+		}
+	}()
+
+	wasFocused := c.updateWidget(id, bounds, opt)
+	e, err := f(bounds, wasFocused)
 	if err != nil {
 		return nil, err
 	}
