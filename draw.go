@@ -192,7 +192,8 @@ func (c *Context) drawIcon(icon icon, rect image.Rectangle, color color.Color) {
 	}
 }
 
-func (c *Context) DrawWidget(f func(screen *ebiten.Image)) {
+// RenderOnlyWidget adds a widget that only draws the given function without user interaction.
+func (c *Context) RenderOnlyWidget(f func(screen *ebiten.Image)) {
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		_, _ = c.widget(emptyWidgetID, 0, nil, nil, func(bounds image.Rectangle) {
 			c.setClip(c.clipRect())
