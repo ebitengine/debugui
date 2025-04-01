@@ -88,16 +88,6 @@ func (c *Context) updateWidget(id WidgetID, bounds image.Rectangle, opt option) 
 	return
 }
 
-func (c *Context) Widget(f func(bounds image.Rectangle) EventHandler) EventHandler {
-	pc := caller()
-	id := c.idFromCaller(pc)
-	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		return c.widget(id, 0, func(bounds image.Rectangle, wasFocused bool) (EventHandler, error) {
-			return f(bounds), nil
-		})
-	})
-}
-
 func (c *Context) widget(id WidgetID, opt option, f func(bounds image.Rectangle, wasFocused bool) (EventHandler, error)) (EventHandler, error) {
 	c.currentID = id
 	r, err := c.layoutNext()

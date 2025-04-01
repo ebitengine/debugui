@@ -130,7 +130,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 				ctx.Text("Blue:")
 				ctx.Slider(&g.bg[2], 0, 255, 1)
 			})
-			ctx.Widget(func(bounds image.Rectangle) debugui.EventHandler {
+			ctx.GridCell(func(bounds image.Rectangle) {
 				ctx.DrawWidget(func(screen *ebiten.Image) {
 					scale := ctx.Scale()
 					vector.DrawFilledRect(
@@ -149,7 +149,6 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 					op.SecondaryAlign = text.AlignCenter
 					debugui.DrawText(screen, txt, op)
 				})
-				return nil
 			})
 		})
 		ctx.Header("Number", true, func() {
