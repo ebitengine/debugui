@@ -59,14 +59,14 @@ func (c *Context) header(label string, isTreeNode bool, opt option, id WidgetID,
 		expanded = toggled
 	}
 
-	e, err := c.widget(id, 0, nil, func(bounds image.Rectangle, wasFocused bool) (EventHandler, error) {
+	e, err := c.widget(id, 0, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
 		if c.pointing.justPressed() && c.focus == id {
 			c.currentContainer().toggle(id)
 		}
 		if expanded {
-			return &eventHandler{}, nil
+			return &eventHandler{}
 		}
-		return nil, nil
+		return nil
 	}, func(bounds image.Rectangle) {
 		if isTreeNode {
 			if c.hover == id {

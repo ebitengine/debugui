@@ -88,7 +88,7 @@ func (c *Context) updateWidget(id WidgetID, bounds image.Rectangle, opt option) 
 	return
 }
 
-func (c *Context) widget(id WidgetID, opt option, layout func(bounds image.Rectangle), handleInput func(bounds image.Rectangle, wasFocused bool) (EventHandler, error), draw func(bounds image.Rectangle)) (EventHandler, error) {
+func (c *Context) widget(id WidgetID, opt option, layout func(bounds image.Rectangle), handleInput func(bounds image.Rectangle, wasFocused bool) EventHandler, draw func(bounds image.Rectangle)) (EventHandler, error) {
 	c.currentID = id
 	bounds, err := c.layoutNext()
 	if err != nil {
@@ -117,11 +117,7 @@ func (c *Context) widget(id WidgetID, opt option, layout func(bounds image.Recta
 	wasFocused := c.updateWidget(id, bounds, opt)
 	var e EventHandler
 	if handleInput != nil {
-		var err error
-		e, err = handleInput(bounds, wasFocused)
-		if err != nil {
-			return nil, err
-		}
+		e = handleInput(bounds, wasFocused)
 	}
 	if draw != nil {
 		draw(bounds)
@@ -138,14 +134,14 @@ func (c *Context) Checkbox(state *bool, label string) EventHandler {
 	pc := caller()
 	id := c.idFromCaller(pc)
 	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		return c.widget(id, 0, nil, func(bounds image.Rectangle, wasFocused bool) (EventHandler, error) {
+		return c.widget(id, 0, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
 			var e EventHandler
 			c.updateWidget(id, bounds, 0)
 			if c.pointing.justPressed() && c.focus == id {
 				e = &eventHandler{}
 				*state = !*state
 			}
-			return e, nil
+			return e
 		}, func(bounds image.Rectangle) {
 			box := image.Rect(bounds.Min.X, bounds.Min.Y+(bounds.Dy()-lineHeight())/2, bounds.Min.X+lineHeight(), bounds.Max.Y-(bounds.Dy()-lineHeight())/2)
 			c.drawWidgetFrame(id, box, colorBase, 0)
