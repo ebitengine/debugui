@@ -49,7 +49,7 @@ func (c *Context) pointingPosition() image.Point {
 	return p
 }
 
-func (c *Context) updateWidget(id WidgetID, bounds image.Rectangle, opt option) (wasFocused bool) {
+func (c *Context) handleInputForWidget(id WidgetID, bounds image.Rectangle, opt option) (wasFocused bool) {
 	if id == emptyWidgetID {
 		return false
 	}
@@ -114,7 +114,7 @@ func (c *Context) widget(id WidgetID, opt option, layout func(bounds image.Recta
 		layout(bounds)
 	}
 
-	wasFocused := c.updateWidget(id, bounds, opt)
+	wasFocused := c.handleInputForWidget(id, bounds, opt)
 	var e EventHandler
 	if handleInput != nil {
 		e = handleInput(bounds, wasFocused)
@@ -128,7 +128,7 @@ func (c *Context) widget(id WidgetID, opt option, layout func(bounds image.Recta
 func (c *Context) widgetWithBounds(id WidgetID, opt option, bounds image.Rectangle, handleInput func(bounds image.Rectangle, wasFocused bool) EventHandler, draw func(bounds image.Rectangle)) EventHandler {
 	c.currentID = id
 
-	wasFocused := c.updateWidget(id, bounds, opt)
+	wasFocused := c.handleInputForWidget(id, bounds, opt)
 	var e EventHandler
 	if handleInput != nil {
 		e = handleInput(bounds, wasFocused)
@@ -150,7 +150,7 @@ func (c *Context) Checkbox(state *bool, label string) EventHandler {
 	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		return c.widget(id, 0, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
 			var e EventHandler
-			c.updateWidget(id, bounds, 0)
+			c.handleInputForWidget(id, bounds, 0)
 			if c.pointing.justPressed() && c.focus == id {
 				e = &eventHandler{}
 				*state = !*state
