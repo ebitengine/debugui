@@ -147,46 +147,52 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 		if (^opt & optionNoTitle) != 0 {
 			id := c.idFromString("title")
 			r := image.Rect(tr.Min.X+tr.Dy()-c.style().padding, tr.Min.Y, tr.Max.X, tr.Max.Y)
-			c.handleInputForWidget(id, r, opt)
-			c.drawWidgetText(title, r, colorTitleText, opt)
-			if id == c.focus && c.pointing.pressed() {
-				b := cnt.layout.Bounds.Add(c.pointingDelta())
-				if c.screenWidth > 0 {
-					maxX := b.Max.X
-					if maxX >= c.screenWidth/c.Scale() {
-						b = b.Add(image.Pt(c.screenWidth/c.Scale()-maxX, 0))
+			_ = c.widgetWithBounds(id, opt, r, func(bounds image.Rectangle, wasFocused bool) EventHandler {
+				if id == c.focus && c.pointing.pressed() {
+					b := cnt.layout.Bounds.Add(c.pointingDelta())
+					if c.screenWidth > 0 {
+						maxX := b.Max.X
+						if maxX >= c.screenWidth/c.Scale() {
+							b = b.Add(image.Pt(c.screenWidth/c.Scale()-maxX, 0))
+						}
 					}
-				}
-				if b.Min.X < 0 {
-					b = b.Add(image.Pt(-b.Min.X, 0))
-				}
-				if c.screenHeight > 0 {
-					maxY := b.Min.Y + tr.Dy()
-					if maxY >= c.screenHeight/c.Scale()-c.style().padding {
-						b = b.Add(image.Pt(0, c.screenHeight/c.Scale()-maxY))
+					if b.Min.X < 0 {
+						b = b.Add(image.Pt(-b.Min.X, 0))
 					}
+					if c.screenHeight > 0 {
+						maxY := b.Min.Y + tr.Dy()
+						if maxY >= c.screenHeight/c.Scale()-c.style().padding {
+							b = b.Add(image.Pt(0, c.screenHeight/c.Scale()-maxY))
+						}
+					}
+					if b.Min.Y < 0 {
+						b = b.Add(image.Pt(0, -b.Min.Y))
+					}
+					cnt.layout.Bounds = b
 				}
-				if b.Min.Y < 0 {
-					b = b.Add(image.Pt(0, -b.Min.Y))
-				}
-				cnt.layout.Bounds = b
-			}
-			body.Min.Y += tr.Dy()
+				body.Min.Y += tr.Dy()
+				return nil
+			}, func(bounds image.Rectangle) {
+				c.drawWidgetText(title, r, colorTitleText, opt)
+			})
 		}
 
 		// do `collapse` button
 		if (^opt & optionNoClose) != 0 {
 			id := c.idFromString("collapse")
 			r := image.Rect(tr.Min.X, tr.Min.Y, tr.Min.X+tr.Dy(), tr.Max.Y)
-			icon := iconExpanded
-			if collapsed {
-				icon = iconCollapsed
-			}
-			c.drawIcon(icon, r, c.style().colors[colorTitleText])
-			c.handleInputForWidget(id, r, opt)
-			if c.pointing.justPressed() && id == c.focus {
-				cnt.collapsed = !cnt.collapsed
-			}
+			_ = c.widgetWithBounds(id, opt, r, func(bounds image.Rectangle, wasFocused bool) EventHandler {
+				if c.pointing.justPressed() && id == c.focus {
+					cnt.collapsed = !cnt.collapsed
+				}
+				return nil
+			}, func(bounds image.Rectangle) {
+				icon := iconExpanded
+				if collapsed {
+					icon = iconCollapsed
+				}
+				c.drawIcon(icon, r, c.style().colors[colorTitleText])
+			})
 		}
 	}
 
@@ -208,11 +214,13 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 		sz := c.style().titleHeight
 		id := c.idFromString("resize")
 		r := image.Rect(bounds.Max.X-sz, bounds.Max.Y-sz, bounds.Max.X, bounds.Max.Y)
-		c.handleInputForWidget(id, r, opt)
-		if id == c.focus && c.pointing.pressed() {
-			cnt.layout.Bounds.Max.X = min(cnt.layout.Bounds.Min.X+max(96, cnt.layout.Bounds.Dx()+c.pointingDelta().X), c.screenWidth/c.Scale())
-			cnt.layout.Bounds.Max.Y = min(cnt.layout.Bounds.Min.Y+max(64, cnt.layout.Bounds.Dy()+c.pointingDelta().Y), c.screenHeight/c.Scale())
-		}
+		_ = c.widgetWithBounds(id, 0, r, func(bounds image.Rectangle, wasFocused bool) EventHandler {
+			if id == c.focus && c.pointing.pressed() {
+				cnt.layout.Bounds.Max.X = min(cnt.layout.Bounds.Min.X+max(96, cnt.layout.Bounds.Dx()+c.pointingDelta().X), c.screenWidth/c.Scale())
+				cnt.layout.Bounds.Max.Y = min(cnt.layout.Bounds.Min.Y+max(64, cnt.layout.Bounds.Dy()+c.pointingDelta().Y), c.screenHeight/c.Scale())
+			}
+			return nil
+		}, nil)
 	}
 
 	// resize to content size
