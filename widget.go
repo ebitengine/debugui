@@ -125,6 +125,20 @@ func (c *Context) widget(id WidgetID, opt option, layout func(bounds image.Recta
 	return e, nil
 }
 
+func (c *Context) widgetWithBounds(id WidgetID, opt option, bounds image.Rectangle, handleInput func(bounds image.Rectangle, wasFocused bool) EventHandler, draw func(bounds image.Rectangle)) EventHandler {
+	c.currentID = id
+
+	wasFocused := c.updateWidget(id, bounds, opt)
+	var e EventHandler
+	if handleInput != nil {
+		e = handleInput(bounds, wasFocused)
+	}
+	if draw != nil {
+		draw(bounds)
+	}
+	return e
+}
+
 // Checkbox creates a checkbox with the given boolean state and text label.
 //
 // A Checkbox widget is uniquely determined by its call location.
