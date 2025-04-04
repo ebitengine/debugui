@@ -349,8 +349,29 @@ func (c *Context) containerZ(cnt *container) int {
 }
 
 func (c *Context) bringToFront(cnt *container) {
-	c.rootContainers = slices.DeleteFunc(c.rootContainers, func(c *container) bool {
+	idx := slices.IndexFunc(c.rootContainers, func(c *container) bool {
 		return c == cnt
 	})
+	if idx == -1 {
+		return
+	}
+	if idx == len(c.rootContainers)-1 {
+		return
+	}
+	c.rootContainers = slices.Delete(c.rootContainers, idx, idx+1)
 	c.rootContainers = append(c.rootContainers, cnt)
+}
+
+func (c *Context) hoveringRootContainer() *container {
+	p := c.pointingPosition()
+	for i := len(c.rootContainers) - 1; i >= 0; i-- {
+		cnt := c.rootContainers[i]
+		if !cnt.open {
+			continue
+		}
+		if p.In(cnt.layout.Bounds) {
+			return cnt
+		}
+	}
+	return nil
 }

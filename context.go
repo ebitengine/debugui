@@ -137,9 +137,11 @@ func (c *Context) endUpdate() error {
 	}
 	c.keepFocus = false
 
-	// Bring hover root to front if the pointing device was pressed
-	if c.pointing.justPressed() && c.nextHoverRoot != nil {
-		c.bringToFront(c.nextHoverRoot)
+	// Bring the hovering root container to front if the pointing device was pressed.
+	if c.pointing.justPressed() {
+		if cnt := c.hoveringRootContainer(); cnt != nil {
+			c.bringToFront(cnt)
+		}
 	}
 
 	// reset input state
