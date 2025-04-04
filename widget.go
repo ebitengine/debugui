@@ -5,7 +5,6 @@ package debugui
 
 import (
 	"image"
-	"slices"
 )
 
 // WidgetID is a unique identifier for a widget.
@@ -35,7 +34,19 @@ const (
 
 func (c *Context) pointingOver(bounds image.Rectangle) bool {
 	p := c.pointingPosition()
-	return p.In(bounds) && p.In(c.clipRect()) && slices.Contains(c.containerStack, c.hoverRoot)
+	if !p.In(bounds) {
+		return false
+	}
+	if !p.In(c.clipRect()) {
+		return false
+	}
+	currentRoot := c.currentRootContainer()
+	for i := len(c.rootContainers) - 1; i >= 0; i-- {
+		if p.In(c.rootContainers[i].layout.Bounds) {
+			return c.rootContainers[i] == currentRoot
+		}
+	}
+	return false
 }
 
 func (c *Context) pointingDelta() image.Point {
