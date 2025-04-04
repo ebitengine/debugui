@@ -339,13 +339,12 @@ func (c *Context) bringToFront(cnt *container) {
 	idx := slices.IndexFunc(c.rootContainers, func(c *container) bool {
 		return c == cnt
 	})
-	if idx == -1 {
-		return
-	}
 	if idx == len(c.rootContainers)-1 {
 		return
 	}
-	c.rootContainers = slices.Delete(c.rootContainers, idx, idx+1)
+	if idx >= 0 {
+		c.rootContainers = slices.Delete(c.rootContainers, idx, idx+1)
+	}
 	c.rootContainers = append(c.rootContainers, cnt)
 }
 
