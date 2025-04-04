@@ -135,6 +135,8 @@ func (c *Context) endUpdate() error {
 
 	// Bring the hovering root container to front if the pointing device was pressed.
 	if c.pointing.justPressed() {
+		// TODO: When showing a popup, the position might be on the popup and the parent container might not be brought to front.
+		// Fix this issue.
 		if cnt := c.hoveringRootContainer(); cnt != nil {
 			c.bringToFront(cnt)
 		}
