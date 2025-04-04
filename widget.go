@@ -42,8 +42,15 @@ func (c *Context) pointingOver(bounds image.Rectangle) bool {
 	}
 	currentRoot := c.currentRootContainer()
 	for i := len(c.rootContainers) - 1; i >= 0; i-- {
-		if p.In(c.rootContainers[i].layout.Bounds) {
-			return c.rootContainers[i] == currentRoot
+		cnt := c.rootContainers[i]
+		if !cnt.open {
+			if cnt == currentRoot {
+				return false
+			}
+			continue
+		}
+		if p.In(cnt.layout.Bounds) {
+			return cnt == currentRoot
 		}
 	}
 	return false
