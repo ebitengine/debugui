@@ -112,12 +112,6 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 		c.rootContainers = append(c.rootContainers, cnt)
 	}
 
-	// set as hover root if the pointing device is overlapping this container and it has a
-	// higher zindex than the current hover root
-	if c.pointingPosition().In(cnt.layout.Bounds) && (c.nextHoverRoot == nil || c.containerZ(cnt) > c.containerZ(c.nextHoverRoot)) {
-		c.nextHoverRoot = cnt
-	}
-
 	// clipping is reset here in case a root-container is made within
 	// another root-containers's begin/end block; this prevents the inner
 	// root-container being clipped to the outer
@@ -235,7 +229,7 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 	}
 
 	// close if this is a popup window and elsewhere was clicked
-	if (opt&optionPopup) != 0 && c.pointing.justPressed() && c.hoverRoot != cnt {
+	if (opt&optionPopup) != 0 && c.pointing.justPressed() && c.hoveringRootContainer() != cnt {
 		cnt.open = false
 	}
 
@@ -250,9 +244,6 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 func (c *Context) OpenPopup(widgetID WidgetID) {
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		cnt := c.container(widgetID, 0)
-		// Set as hover root so popup isn't closed in doWindow.
-		c.nextHoverRoot = cnt
-		c.hoverRoot = c.nextHoverRoot
 		// Position at pointing cursor, open and bring-to-front.
 		pt := c.pointingPosition()
 		cnt.layout.Bounds = image.Rectangle{
@@ -342,10 +333,6 @@ func (c *container) toggle(id WidgetID) {
 		c.toggledIDs = map[WidgetID]struct{}{}
 	}
 	c.toggledIDs[id] = struct{}{}
-}
-
-func (c *Context) containerZ(cnt *container) int {
-	return slices.Index(c.rootContainers, cnt)
 }
 
 func (c *Context) bringToFront(cnt *container) {

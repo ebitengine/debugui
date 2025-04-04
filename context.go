@@ -24,8 +24,6 @@ type Context struct {
 	focus         WidgetID
 	currentID     WidgetID
 	keepFocus     bool
-	hoverRoot     *container
-	nextHoverRoot *container
 	scrollTarget  *container
 	numberEditBuf string
 	numberEdit    WidgetID
@@ -104,8 +102,6 @@ func (c *Context) beginUpdate() {
 		cnt.commandList = slices.Delete(cnt.commandList, 0, len(cnt.commandList))
 	}
 	c.scrollTarget = nil
-	c.hoverRoot = c.nextHoverRoot
-	c.nextHoverRoot = nil
 	c.currentID = emptyWidgetID
 }
 
