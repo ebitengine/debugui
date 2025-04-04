@@ -249,8 +249,6 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 
 func (c *Context) OpenPopup(widgetID WidgetID) {
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		c.bringToFront(c.currentContainer())
-
 		cnt := c.container(widgetID, 0)
 		// Set as hover root so popup isn't closed in doWindow.
 		c.nextHoverRoot = cnt
