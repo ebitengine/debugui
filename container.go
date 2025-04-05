@@ -241,9 +241,13 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 	return nil
 }
 
-func (c *Context) OpenPopup(widgetID WidgetID) {
+// PopupID is the ID of a popup window.
+type PopupID WidgetID
+
+// OpenPopup opens a popup window at the current pointing position.
+func (c *Context) OpenPopup(popupID PopupID) {
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		cnt := c.container(widgetID, 0)
+		cnt := c.container(WidgetID(popupID), 0)
 		// Position at pointing cursor, open and bring-to-front.
 		pt := c.pointingPosition()
 		cnt.layout.Bounds = image.Rectangle{
@@ -256,25 +260,31 @@ func (c *Context) OpenPopup(widgetID WidgetID) {
 	})
 }
 
-func (c *Context) ClosePopup(widgetID WidgetID) {
+// ClosePopup closes a popup window.
+func (c *Context) ClosePopup(popupID PopupID) {
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		cnt := c.container(widgetID, 0)
+		cnt := c.container(WidgetID(popupID), 0)
 		cnt.open = false
 		return nil, nil
 	})
 }
 
-func (c *Context) Popup(f func(layout ContainerLayout)) WidgetID {
+// Popup creates a popup window with the content defined by the provided function.
+// By default, the popup window is hidden.
+// To show the popup window, call OpenPopup with the PopupID returned by this function.
+func (c *Context) Popup(f func(layout ContainerLayout, popupID PopupID)) PopupID {
 	pc := caller()
 	id := c.idFromCaller(pc)
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		opt := optionPopup | optionAutoSize | optionNoResize | optionNoScroll | optionNoTitle | optionClosed
-		if err := c.window("", image.Rectangle{}, opt, id, f); err != nil {
+		if err := c.window("", image.Rectangle{}, opt, id, func(layout ContainerLayout) {
+			f(layout, PopupID(id))
+		}); err != nil {
 			return nil, err
 		}
 		return nil, nil
 	})
-	return id
+	return PopupID(id)
 }
 
 func (c *Context) pushContainer(cnt *container, root bool) {
