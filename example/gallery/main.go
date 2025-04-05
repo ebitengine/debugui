@@ -14,10 +14,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/ebitengine/debugui"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-
-	"github.com/ebitengine/debugui"
 )
 
 //go:embed gophers.jpg

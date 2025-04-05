@@ -8,11 +8,10 @@ import (
 	"image"
 	"image/color"
 
+	"github.com/ebitengine/debugui"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
-
-	"github.com/ebitengine/debugui"
 )
 
 func (g *Game) writeLog(text string) {
