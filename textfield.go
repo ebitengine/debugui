@@ -35,7 +35,7 @@ func (c *Context) TextField(buf *string) EventHandler {
 	})
 }
 
-func (c *Context) textFieldRaw(buf *string, id WidgetID, opt option) (EventHandler, error) {
+func (c *Context) textFieldRaw(buf *string, id widgetID, opt option) (EventHandler, error) {
 	return c.widget(id, opt|optionHoldFocus, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
 		var e EventHandler
 
@@ -94,22 +94,19 @@ func (c *Context) textFieldRaw(buf *string, id WidgetID, opt option) (EventHandl
 	})
 }
 
-// SetTextFieldValue sets the value of the text field with the given widgetID.
+// SetTextFieldValue sets the value of the current text field.
 //
-// If widgetID is not for a text field, this function does nothing.
-func (c *Context) SetTextFieldValue(widgetID WidgetID, value string) {
-	if widgetID == emptyWidgetID {
-		return
-	}
+// If the last widget is not a text field, this function does nothing.
+func (c *Context) SetTextFieldValue(value string) {
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		if f := c.currentContainer().textInputTextField(widgetID, false); f != nil {
+		if f := c.currentContainer().textInputTextField(c.currentID, false); f != nil {
 			f.SetTextAndSelection(value, 0, 0)
 		}
 		return nil, nil
 	})
 }
 
-func (c *Context) textField(buf *string, id WidgetID, opt option) (EventHandler, error) {
+func (c *Context) textField(buf *string, id widgetID, opt option) (EventHandler, error) {
 	return c.textFieldRaw(buf, id, opt)
 }
 
@@ -150,7 +147,7 @@ func (c *Context) NumberFieldF(value *float64, step float64, digits int) EventHa
 	})
 }
 
-func (c *Context) numberField(value *int, step int, id WidgetID, opt option) (EventHandler, error) {
+func (c *Context) numberField(value *int, step int, id widgetID, opt option) (EventHandler, error) {
 	last := *value
 
 	if err := c.numberTextField(value, id); err != nil {
@@ -177,7 +174,7 @@ func (c *Context) numberField(value *int, step int, id WidgetID, opt option) (Ev
 	})
 }
 
-func (c *Context) numberFieldF(value *float64, step float64, digits int, id WidgetID, opt option) (EventHandler, error) {
+func (c *Context) numberFieldF(value *float64, step float64, digits int, id widgetID, opt option) (EventHandler, error) {
 	last := *value
 
 	if err := c.numberTextFieldF(value, id); err != nil {
@@ -204,7 +201,7 @@ func (c *Context) numberFieldF(value *float64, step float64, digits int, id Widg
 	})
 }
 
-func (c *Context) numberTextField(value *int, id WidgetID) error {
+func (c *Context) numberTextField(value *int, id widgetID) error {
 	if c.pointing.justPressed() && ebiten.IsKeyPressed(ebiten.KeyShift) && c.hover == id {
 		c.numberEdit = id
 		c.numberEditBuf = fmt.Sprintf("%d", *value)
@@ -228,7 +225,7 @@ func (c *Context) numberTextField(value *int, id WidgetID) error {
 	return nil
 }
 
-func (c *Context) numberTextFieldF(value *float64, id WidgetID) error {
+func (c *Context) numberTextFieldF(value *float64, id widgetID) error {
 	if c.pointing.justPressed() && ebiten.IsKeyPressed(ebiten.KeyShift) && c.hover == id {
 		c.numberEdit = id
 		c.numberEditBuf = fmt.Sprintf(realFmt, *value)

@@ -3,6 +3,8 @@
 
 package debugui
 
+type WidgetID = widgetID
+
 const EmptyWidgetID = emptyWidgetID
 
 func (c *Context) IDFromCaller() WidgetID {

@@ -21,8 +21,8 @@ type container struct {
 	// See the implementation of appendCommand which is the only place to append commands.
 	commandList []*command
 
-	toggledIDs          map[WidgetID]struct{}
-	textInputTextFields map[WidgetID]*textinput.Field
+	toggledIDs          map[widgetID]struct{}
+	textInputTextFields map[widgetID]*textinput.Field
 
 	used bool
 }
@@ -43,7 +43,7 @@ type ContainerLayout struct {
 	ScrollOffset image.Point
 }
 
-func (c *Context) container(id WidgetID, opt option) *container {
+func (c *Context) container(id widgetID, opt option) *container {
 	if container, ok := c.idToContainer[id]; ok {
 		container.used = true
 		return container
@@ -54,7 +54,7 @@ func (c *Context) container(id WidgetID, opt option) *container {
 	}
 
 	if c.idToContainer == nil {
-		c.idToContainer = map[WidgetID]*container{}
+		c.idToContainer = map[widgetID]*container{}
 	}
 	cnt := &container{
 		open: true,
@@ -86,7 +86,7 @@ func (c *Context) Window(title string, rect image.Rectangle, f func(layout Conta
 	})
 }
 
-func (c *Context) window(title string, bounds image.Rectangle, opt option, id WidgetID, f func(layout ContainerLayout)) error {
+func (c *Context) window(title string, bounds image.Rectangle, opt option, id widgetID, f func(layout ContainerLayout)) error {
 	// A window is not a widget in the current implementation, but a window is a widget in the concept.
 	c.currentID = id
 	var err error
@@ -96,7 +96,7 @@ func (c *Context) window(title string, bounds image.Rectangle, opt option, id Wi
 	return err
 }
 
-func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id WidgetID, f func(layout ContainerLayout)) (err error) {
+func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id widgetID, f func(layout ContainerLayout)) (err error) {
 	cnt := c.container(id, opt)
 	if cnt == nil || !cnt.open {
 		return nil
@@ -242,12 +242,12 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 }
 
 // PopupID is the ID of a popup window.
-type PopupID WidgetID
+type PopupID widgetID
 
 // OpenPopup opens a popup window at the current pointing position.
 func (c *Context) OpenPopup(popupID PopupID) {
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		cnt := c.container(WidgetID(popupID), 0)
+		cnt := c.container(widgetID(popupID), 0)
 		// Position at pointing cursor, open and bring-to-front.
 		pt := c.pointingPosition()
 		cnt.layout.Bounds = image.Rectangle{
@@ -263,7 +263,7 @@ func (c *Context) OpenPopup(popupID PopupID) {
 // ClosePopup closes a popup window.
 func (c *Context) ClosePopup(popupID PopupID) {
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		cnt := c.container(WidgetID(popupID), 0)
+		cnt := c.container(widgetID(popupID), 0)
 		cnt.open = false
 		return nil, nil
 	})
@@ -313,7 +313,7 @@ func (c *Context) SetScroll(scroll image.Point) {
 	c.currentContainer().layout.ScrollOffset = scroll
 }
 
-func (c *container) textInputTextField(id WidgetID, createIfNeeded bool) *textinput.Field {
+func (c *container) textInputTextField(id widgetID, createIfNeeded bool) *textinput.Field {
 	if id == emptyWidgetID {
 		return nil
 	}
@@ -322,25 +322,25 @@ func (c *container) textInputTextField(id WidgetID, createIfNeeded bool) *textin
 			return nil
 		}
 		if c.textInputTextFields == nil {
-			c.textInputTextFields = make(map[WidgetID]*textinput.Field)
+			c.textInputTextFields = make(map[widgetID]*textinput.Field)
 		}
 		c.textInputTextFields[id] = &textinput.Field{}
 	}
 	return c.textInputTextFields[id]
 }
 
-func (c *container) toggled(id WidgetID) bool {
+func (c *container) toggled(id widgetID) bool {
 	_, ok := c.toggledIDs[id]
 	return ok
 }
 
-func (c *container) toggle(id WidgetID) {
+func (c *container) toggle(id widgetID) {
 	if _, toggled := c.toggledIDs[id]; toggled {
 		delete(c.toggledIDs, id)
 		return
 	}
 	if c.toggledIDs == nil {
-		c.toggledIDs = map[WidgetID]struct{}{}
+		c.toggledIDs = map[widgetID]struct{}{}
 	}
 	c.toggledIDs[id] = struct{}{}
 }

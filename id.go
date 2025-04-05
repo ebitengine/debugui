@@ -24,15 +24,15 @@ func caller() uintptr {
 // IDScope is useful when you want to create multiple widgets at the same position e.g. in a for loop.
 func (c *Context) IDScope(name string, f func()) {
 	pc := caller()
-	c.idStack = append(c.idStack, WidgetID(fmt.Sprintf("caller:%d", pc)))
-	c.idStack = append(c.idStack, WidgetID(fmt.Sprintf("string:%q", name)))
+	c.idStack = append(c.idStack, widgetID(fmt.Sprintf("caller:%d", pc)))
+	c.idStack = append(c.idStack, widgetID(fmt.Sprintf("string:%q", name)))
 	defer func() {
 		c.idStack = slices.Delete(c.idStack, len(c.idStack)-2, len(c.idStack))
 	}()
 	f()
 }
 
-func (c *Context) idScopeFromID(id WidgetID, f func()) {
+func (c *Context) idScopeFromID(id widgetID, f func()) {
 	c.idStack = append(c.idStack, id)
 	defer func() {
 		c.idStack = slices.Delete(c.idStack, len(c.idStack)-1, len(c.idStack))
@@ -40,8 +40,8 @@ func (c *Context) idScopeFromID(id WidgetID, f func()) {
 	f()
 }
 
-func (c *Context) idScopeToWidgetID() WidgetID {
-	var newID WidgetID
+func (c *Context) idScopeToWidgetID() widgetID {
+	var newID widgetID
 	for _, id := range c.idStack {
 		if len(newID) > 0 {
 			newID += ":"
@@ -51,21 +51,21 @@ func (c *Context) idScopeToWidgetID() WidgetID {
 	return newID
 }
 
-func (c *Context) idFromString(str string) WidgetID {
+func (c *Context) idFromString(str string) widgetID {
 	newID := c.idScopeToWidgetID()
 	if len(newID) > 0 {
 		newID += ":"
 	}
-	newID += WidgetID(fmt.Sprintf("string:%q", str))
+	newID += widgetID(fmt.Sprintf("string:%q", str))
 	return newID
 }
 
 // idFromCaller returns a hash value based on the caller's file and line number.
-func (c *Context) idFromCaller(callerPC uintptr) WidgetID {
+func (c *Context) idFromCaller(callerPC uintptr) widgetID {
 	newID := c.idScopeToWidgetID()
 	if len(newID) > 0 {
 		newID += ":"
 	}
-	newID += WidgetID(fmt.Sprintf("caller:%d", callerPC))
+	newID += widgetID(fmt.Sprintf("caller:%d", callerPC))
 	return newID
 }

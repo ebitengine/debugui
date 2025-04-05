@@ -7,12 +7,12 @@ import (
 	"image"
 )
 
-// WidgetID is a unique identifier for a widget.
+// widgetID is a unique identifier for a widget.
 //
-// Do not rely on the string value of WidgetID, as it is not guaranteed to be stable across different runs of the program.
-type WidgetID string
+// Do not rely on the string value of widgetID, as it is not guaranteed to be stable across different runs of the program.
+type widgetID string
 
-const emptyWidgetID WidgetID = ""
+const emptyWidgetID widgetID = ""
 
 type option int
 
@@ -54,7 +54,7 @@ func (c *Context) pointingPosition() image.Point {
 	return p
 }
 
-func (c *Context) handleInputForWidget(id WidgetID, bounds image.Rectangle, opt option) (wasFocused bool) {
+func (c *Context) handleInputForWidget(id widgetID, bounds image.Rectangle, opt option) (wasFocused bool) {
 	if id == emptyWidgetID {
 		return false
 	}
@@ -93,7 +93,7 @@ func (c *Context) handleInputForWidget(id WidgetID, bounds image.Rectangle, opt 
 	return
 }
 
-func (c *Context) widget(id WidgetID, opt option, layout func(bounds image.Rectangle), handleInput func(bounds image.Rectangle, wasFocused bool) EventHandler, draw func(bounds image.Rectangle)) (EventHandler, error) {
+func (c *Context) widget(id widgetID, opt option, layout func(bounds image.Rectangle), handleInput func(bounds image.Rectangle, wasFocused bool) EventHandler, draw func(bounds image.Rectangle)) (EventHandler, error) {
 	c.currentID = id
 	bounds, err := c.layoutNext()
 	if err != nil {
@@ -130,7 +130,7 @@ func (c *Context) widget(id WidgetID, opt option, layout func(bounds image.Recta
 	return e, nil
 }
 
-func (c *Context) widgetWithBounds(id WidgetID, opt option, bounds image.Rectangle, handleInput func(bounds image.Rectangle, wasFocused bool) EventHandler, draw func(bounds image.Rectangle)) EventHandler {
+func (c *Context) widgetWithBounds(id widgetID, opt option, bounds image.Rectangle, handleInput func(bounds image.Rectangle, wasFocused bool) EventHandler, draw func(bounds image.Rectangle)) EventHandler {
 	c.currentID = id
 
 	wasFocused := c.handleInputForWidget(id, bounds, opt)
@@ -192,12 +192,7 @@ func (c *Context) isCapturingInput() bool {
 	return c.focus != emptyWidgetID
 }
 
-// CurrentWidgetID returns the ID of the current widget being processed.
-func (c *Context) CurrentWidgetID() WidgetID {
-	return c.currentID
-}
-
-func (c *Context) setFocus(id WidgetID) {
+func (c *Context) setFocus(id widgetID) {
 	c.focus = id
 	c.keepFocus = true
 }

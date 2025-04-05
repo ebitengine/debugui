@@ -20,20 +20,20 @@ type Context struct {
 	pointing pointing
 
 	scaleMinus1   int
-	hover         WidgetID
-	focus         WidgetID
-	currentID     WidgetID
+	hover         widgetID
+	focus         widgetID
+	currentID     widgetID
 	keepFocus     bool
 	scrollTarget  *container
 	numberEditBuf string
-	numberEdit    WidgetID
+	numberEdit    widgetID
 
-	idStack []WidgetID
+	idStack []widgetID
 
 	// idToContainer maps widget IDs to containers.
 	//
 	// Unused containers are removed from this map at the end of Update.
-	idToContainer map[WidgetID]*container
+	idToContainer map[widgetID]*container
 
 	// rootContainers is a list of root containers.
 	// rootContainers contains only root containers. For example, a panel is not contained.
@@ -149,7 +149,7 @@ func (c *Context) endUpdate() error {
 	c.rootContainers = slices.DeleteFunc(c.rootContainers, func(cnt *container) bool {
 		return !cnt.used
 	})
-	maps.DeleteFunc(c.idToContainer, func(id WidgetID, cnt *container) bool {
+	maps.DeleteFunc(c.idToContainer, func(id widgetID, cnt *container) bool {
 		return !cnt.used
 	})
 

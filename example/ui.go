@@ -176,25 +176,22 @@ func (g *Game) logWindow(ctx *debugui.Context) {
 			}
 		})
 		ctx.GridCell(func(bounds image.Rectangle) {
-			submit := func(byEnter bool) {
+			submit := func() {
 				if g.logSubmitBuf == "" {
 					return
 				}
 				g.writeLog(g.logSubmitBuf)
 				g.logSubmitBuf = ""
-				if byEnter {
-					textFieldID := ctx.CurrentWidgetID()
-					ctx.SetTextFieldValue(textFieldID, g.logSubmitBuf)
-				}
 			}
 			ctx.SetGridLayout([]int{-3, -1}, nil)
 			ctx.TextField(&g.logSubmitBuf).On(func() {
 				if ebiten.IsKeyPressed(ebiten.KeyEnter) {
-					submit(true)
+					submit()
+					ctx.SetTextFieldValue(g.logSubmitBuf)
 				}
 			})
 			ctx.Button("Submit").On(func() {
-				submit(false)
+				submit()
 			})
 		})
 	})
