@@ -47,7 +47,7 @@ var defaultStyle style = style{
 	thumbSize:     8,
 	colors: [...]color.RGBA{
 		colorText:               {230, 230, 230, 255},
-		colorBorder:             {25, 25, 25, 255},
+		colorBorder:             {60, 60, 60, 255},
 		colorWindowBG:           {45, 45, 45, 230},
 		colorTitleBG:            {30, 30, 30, 255},
 		colorTitleBGTransparent: {20, 20, 20, 204},

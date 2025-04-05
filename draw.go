@@ -211,10 +211,9 @@ func (c *Context) DrawOnlyWidget(f func(screen *ebiten.Image)) {
 
 func (c *Context) drawFrame(rect image.Rectangle, colorid int) {
 	c.drawRect(rect, c.style().colors[colorid])
-	if colorid == colorScrollBase || colorid == colorScrollThumb || colorid == colorTitleBG {
+	if colorid == colorScrollBase || colorid == colorTitleBG {
 		return
 	}
-	// draw border
 	if c.style().colors[colorBorder].A != 0 {
 		c.drawBox(rect.Inset(-1), c.style().colors[colorBorder])
 	}
