@@ -273,7 +273,9 @@ func (c *Context) ClosePopup(popupID PopupID) {
 	})
 }
 
-// Popup creates a popup window with the content defined by the provided function.
+// Popup creates a popup window with the content defined by the provided function,
+// and returns the PopupID of the popup window.
+//
 // By default, the popup window is hidden.
 // To show the popup window, call OpenPopup with the PopupID returned by this function.
 func (c *Context) Popup(f func(layout ContainerLayout, popupID PopupID)) PopupID {
@@ -313,6 +315,7 @@ func (c *Context) popContainer() {
 	c.containerStack = c.containerStack[:len(c.containerStack)-1]
 }
 
+// SetScroll sets the scroll offset of the current container.
 func (c *Context) SetScroll(scroll image.Point) {
 	c.currentContainer().layout.ScrollOffset = scroll
 }
