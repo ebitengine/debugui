@@ -16,11 +16,11 @@ type DebugUI struct {
 type InputCapturingState int
 
 const (
-	// InputCapturingStateNone indicates that a pointing device is hovering over a widget.
-	InputCapturingStateHovering InputCapturingState = 1 << iota
+	// InputCapturingStateHover indicates that a pointing device is hovering over a widget.
+	InputCapturingStateHover InputCapturingState = 1 << iota
 
-	// InputCapturingStateFocusing indicates that a widget like a text field is focused.
-	InputCapturingStateFocusing
+	// InputCapturingStateFocus indicates that a widget like a text field is focused.
+	InputCapturingStateFocus
 )
 
 // Update updates the debug UI.

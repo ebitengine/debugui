@@ -97,13 +97,13 @@ func (c *Context) update(f func(ctx *Context) error) (inputCapturingState InputC
 	pt := c.pointingPosition()
 	for _, cnt := range c.rootContainers {
 		if pt.In(cnt.layout.Bounds) {
-			inputCapturingState |= InputCapturingStateHovering
+			inputCapturingState |= InputCapturingStateHover
 		}
 	}
 
 	// Check whether there is a focused widget like a text field.
 	if c.focus != emptyWidgetID {
-		inputCapturingState |= InputCapturingStateFocusing
+		inputCapturingState |= InputCapturingStateFocus
 	}
 	return inputCapturingState, nil
 }

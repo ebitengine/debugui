@@ -105,10 +105,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	screen.DrawImage(g.gopherImage, op)
 
 	var msgs []string
-	if g.inputCapturingState&debugui.InputCapturingStateHovering != 0 {
+	if g.inputCapturingState&debugui.InputCapturingStateHover != 0 {
 		msgs = append(msgs, "Hovering")
 	}
-	if g.inputCapturingState&debugui.InputCapturingStateFocusing != 0 {
+	if g.inputCapturingState&debugui.InputCapturingStateFocus != 0 {
 		msgs = append(msgs, "Focusing")
 	}
 	ebitenutil.DebugPrint(screen, fmt.Sprintf("Input Capturing State: %s", strings.Join(msgs, ", ")))
