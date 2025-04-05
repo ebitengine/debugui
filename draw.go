@@ -28,8 +28,12 @@ var (
 
 var fontFace = text.NewGoXFace(bitmapfont.Face)
 
-func DrawText(dst *ebiten.Image, str string, op *text.DrawOptions) {
-	text.Draw(dst, str, fontFace, op)
+// DrawText draws the text on the destination image with the given options,
+// in the same way as debugui's widget text drawing.
+//
+// Note that you have to specify the scale at the options when the context scale is not 1.
+func DrawText(dst *ebiten.Image, str string, options *text.DrawOptions) {
+	text.Draw(dst, str, fontFace, options)
 }
 
 func textWidth(str string) int {

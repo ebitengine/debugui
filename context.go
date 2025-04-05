@@ -16,6 +16,7 @@ func clamp[T int | float64](x, a, b T) T {
 	return min(b, max(a, x))
 }
 
+// Context is the main context for the debug UI.
 type Context struct {
 	pointing pointing
 

@@ -75,6 +75,10 @@ func (c *Context) currentRootContainer() *container {
 	return cnt
 }
 
+// Window creates a new window with the contents defined by the function f.
+//
+// title is the title of the window.
+// rect is the initial size and position of the window.
 func (c *Context) Window(title string, rect image.Rectangle, f func(layout ContainerLayout)) {
 	pc := caller()
 	id := c.idFromCaller(pc)
