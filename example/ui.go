@@ -39,7 +39,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 				} else {
 					ctx.SetScale(1)
 				}
-				g.resetPosition()
+				g.needResetPosition = true
 			})
 		})
 		ctx.Header("Test Buttons", true, func() {

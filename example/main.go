@@ -24,12 +24,15 @@ import (
 var gophersJPG []byte
 
 type Game struct {
-	gopherImage *ebiten.Image
-	x           int
-	y           int
-	vx          int
-	vy          int
-	hiRes       bool
+	gopherImage       *ebiten.Image
+	x                 int
+	y                 int
+	vx                int
+	vy                int
+	hiRes             bool
+	needResetPosition bool
+	screenWidth       int
+	screenHeight      int
 
 	debugUI             debugui.DebugUI
 	inputCapturingState debugui.InputCapturingState
@@ -52,26 +55,34 @@ func NewGame() (*Game, error) {
 	}
 
 	g := &Game{
-		gopherImage: ebiten.NewImageFromImage(img),
-		vx:          2,
-		vy:          2,
-		bg:          [3]int{90, 95, 100},
-		checks:      [3]bool{true, false, true},
+		gopherImage:       ebiten.NewImageFromImage(img),
+		vx:                2,
+		vy:                2,
+		bg:                [3]int{90, 95, 100},
+		checks:            [3]bool{true, false, true},
+		needResetPosition: true,
 	}
-	g.resetPosition()
 
 	return g, nil
 }
 
 func (g *Game) resetPosition() {
-	sW, sH := g.screenSize()
+	sW, sH := g.screenWidth, g.screenHeight
+	if sW == 0 || sH == 0 {
+		return
+	}
 	imgW, imgH := g.gopherImage.Bounds().Dx(), g.gopherImage.Bounds().Dy()
 	g.x = rand.IntN(sW - imgW)
 	g.y = rand.IntN(sH - imgH)
 }
 
 func (g *Game) Update() error {
-	sW, sH := g.screenSize()
+	if g.needResetPosition {
+		g.resetPosition()
+		g.needResetPosition = false
+	}
+
+	sW, sH := g.screenWidth, g.screenHeight
 	imgW, imgH := g.gopherImage.Bounds().Dx(), g.gopherImage.Bounds().Dy()
 	g.x += g.vx
 	g.y += g.vy
@@ -117,20 +128,23 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return g.screenSize()
-}
-
-func (g *Game) screenSize() (int, int) {
 	scale := 1
 	if g.hiRes {
 		scale = 2
 	}
-	return 1280 * scale, 960 * scale
+	sw, sh := outsideWidth*scale, outsideHeight*scale
+	if sw != g.screenWidth || sh != g.screenHeight {
+		g.screenWidth = sw
+		g.screenHeight = sh
+		g.needResetPosition = true
+	}
+	return sw, sh
 }
 
 func main() {
 	ebiten.SetWindowTitle("Ebitengine DebugUI Demo")
 	ebiten.SetWindowSize(1280, 960)
+	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	g, err := NewGame()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
