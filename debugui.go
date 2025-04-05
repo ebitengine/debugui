@@ -12,18 +12,29 @@ type DebugUI struct {
 	ctx Context
 }
 
+// InputCapturingState is a bit mask that indicates the input capturing state of the debug UI.
+type InputCapturingState int
+
+const (
+	// InputCapturingStateNone indicates that a pointing device is hovering over a widget.
+	InputCapturingStateHovering InputCapturingState = 1 << iota
+
+	// InputCapturingStateFocusing indicates that a widget like a text field is focused.
+	InputCapturingStateFocusing
+)
+
 // Update updates the debug UI.
 //
 // Update returns true if the debug UI is capturing input, e.g. when a widget has focus.
 // Otherwise, Update returns false.
 //
 // Update should be called once in the game's Update function.
-func (d *DebugUI) Update(f func(ctx *Context) error) (bool, error) {
-	captured, err := d.ctx.update(f)
+func (d *DebugUI) Update(f func(ctx *Context) error) (InputCapturingState, error) {
+	inputCapturingState, err := d.ctx.update(f)
 	if err != nil {
-		return false, err
+		return 0, err
 	}
-	return captured, nil
+	return inputCapturingState, nil
 }
 
 // Draw draws the debug UI.

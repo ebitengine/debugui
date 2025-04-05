@@ -72,9 +72,9 @@ func (c *Context) wrapEventHandlerAndError(f func() (EventHandler, error)) Event
 	return e
 }
 
-func (c *Context) update(f func(ctx *Context) error) (captured bool, err error) {
+func (c *Context) update(f func(ctx *Context) error) (inputCapturingState InputCapturingState, err error) {
 	if c.err != nil {
-		return false, c.err
+		return 0, c.err
 	}
 
 	c.pointing.update()
@@ -87,12 +87,25 @@ func (c *Context) update(f func(ctx *Context) error) (captured bool, err error) 
 	}()
 
 	if err := f(c); err != nil {
-		return false, err
+		return 0, err
 	}
 	if c.err != nil {
-		return false, c.err
+		return 0, c.err
 	}
-	return c.isCapturingInput(), nil
+
+	// Check whether the cursor is on any of the root containers.
+	pt := c.pointingPosition()
+	for _, cnt := range c.rootContainers {
+		if pt.In(cnt.layout.Bounds) {
+			inputCapturingState |= InputCapturingStateHovering
+		}
+	}
+
+	// Check whether there is a focused widget like a text field.
+	if c.focus != emptyWidgetID {
+		inputCapturingState |= InputCapturingStateFocusing
+	}
+	return inputCapturingState, nil
 }
 
 func (c *Context) beginUpdate() {

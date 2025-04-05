@@ -175,23 +175,6 @@ func (c *Context) Checkbox(state *bool, label string) EventHandler {
 	})
 }
 
-func (c *Context) isCapturingInput() bool {
-	if c.err != nil {
-		return false
-	}
-
-	// Check whether the cursor is on any of the root containers.
-	pt := c.pointingPosition()
-	for _, cnt := range c.rootContainers {
-		if pt.In(cnt.layout.Bounds) {
-			return true
-		}
-	}
-
-	// Check whether there is a focused widget like a text field.
-	return c.focus != emptyWidgetID
-}
-
 func (c *Context) setFocus(id widgetID) {
 	c.focus = id
 	c.keepFocus = true

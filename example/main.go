@@ -12,6 +12,7 @@ import (
 	_ "image/jpeg"
 	"math/rand/v2"
 	"os"
+	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -30,8 +31,8 @@ type Game struct {
 	vy          int
 	hiRes       bool
 
-	debugUI       debugui.DebugUI
-	inputCaptured bool
+	debugUI             debugui.DebugUI
+	inputCapturingState debugui.InputCapturingState
 
 	logBuf       string
 	logSubmitBuf string
@@ -93,7 +94,7 @@ func (g *Game) Update() error {
 	if err != nil {
 		return err
 	}
-	g.inputCaptured = inputCaptured
+	g.inputCapturingState = inputCaptured
 	return nil
 }
 
@@ -103,9 +104,14 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	op.GeoM.Translate(float64(g.x), float64(g.y))
 	screen.DrawImage(g.gopherImage, op)
 
-	if g.inputCaptured {
-		ebitenutil.DebugPrint(screen, "Input captured by DebugUI")
+	var msgs []string
+	if g.inputCapturingState&debugui.InputCapturingStateHovering != 0 {
+		msgs = append(msgs, "Hovering")
 	}
+	if g.inputCapturingState&debugui.InputCapturingStateFocusing != 0 {
+		msgs = append(msgs, "Focusing")
+	}
+	ebitenutil.DebugPrint(screen, fmt.Sprintf("Input Capturing State: %s", strings.Join(msgs, ", ")))
 
 	g.debugUI.Draw(screen)
 }
