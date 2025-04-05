@@ -4,6 +4,8 @@ DebugUI is a UI toolkit for Ebitengine applications, primarily intended for debu
 
 **The project is currently under development. The API is subject to frequent changes. Please do not use it in production.**
 
+![Example](./example.png)
+
 DebugUI is based on [Microui](https://github.com/rxi/microui). The original Microui was developed by [@rxi](https://github.com/rxi/microui). The original Go port was developed by [@zeozeozeo](https://github.com/zeozeozeo) and [@Zyko0](https://github.com/Zyko0).
 
 ## License
