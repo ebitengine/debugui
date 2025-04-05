@@ -3,6 +3,8 @@
 
 package debugui
 
+// Panel creates a new panel with the contents defined by the function f.
+// Panel can have scroll bars, and the contents of the panel can be scrolled.
 func (c *Context) Panel(f func(layout ContainerLayout)) {
 	pc := caller()
 	id := c.idFromCaller(pc)
