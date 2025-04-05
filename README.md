@@ -2,7 +2,7 @@
 
 DebugUI is a UI toolkit for Ebitengine applications, primarily intended for debugging purposes.
 
-**The project is currently under development. The API is subject to frequent changes. Please do not use it in production.**
+**The project is currently under development. The API is subject to frequent changes.**
 
 ![Example](./example.png)
 
