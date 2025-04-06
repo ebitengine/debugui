@@ -79,34 +79,34 @@ func (c *Context) currentRootContainer() *container {
 //
 // title is the title of the window.
 // rect is the initial size and position of the window.
-func (c *Context) Window(title string, rect image.Rectangle, f func(layout ContainerLayout)) {
+func (c *Context) Window(title string, initialBounds image.Rectangle, f func(layout ContainerLayout)) {
 	pc := caller()
 	id := c.idFromCaller(pc)
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		if err := c.window(title, rect, 0, id, f); err != nil {
+		if err := c.window(title, initialBounds, 0, id, f); err != nil {
 			return nil, err
 		}
 		return nil, nil
 	})
 }
 
-func (c *Context) window(title string, bounds image.Rectangle, opt option, id widgetID, f func(layout ContainerLayout)) error {
+func (c *Context) window(title string, initialBounds image.Rectangle, opt option, id widgetID, f func(layout ContainerLayout)) error {
 	// A window is not a widget in the current implementation, but a window is a widget in the concept.
 	c.currentID = id
 	var err error
 	c.idScopeFromID(id, func() {
-		err = c.doWindow(title, bounds, opt, id, f)
+		err = c.doWindow(title, initialBounds, opt, id, f)
 	})
 	return err
 }
 
-func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id widgetID, f func(layout ContainerLayout)) (err error) {
+func (c *Context) doWindow(title string, initialBounds image.Rectangle, opt option, id widgetID, f func(layout ContainerLayout)) (err error) {
 	cnt := c.container(id, opt)
 	if cnt == nil || !cnt.open {
 		return nil
 	}
 	if cnt.layout.Bounds.Dx() == 0 {
-		cnt.layout.Bounds = bounds
+		cnt.layout.Bounds = initialBounds
 	}
 
 	c.pushContainer(cnt, true)
@@ -123,7 +123,7 @@ func (c *Context) doWindow(title string, bounds image.Rectangle, opt option, id 
 	defer c.popClipRect()
 
 	body := cnt.layout.Bounds
-	bounds = body
+	bounds := body
 
 	// draw frame
 	collapsed := cnt.collapsed
