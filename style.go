@@ -41,7 +41,7 @@ var defaultStyle style = style{
 	defaultWidth:  60,
 	padding:       5,
 	spacing:       4,
-	indent:        24,
+	indent:        lineHeight(),
 	titleHeight:   24,
 	scrollbarSize: 12,
 	thumbSize:     8,
