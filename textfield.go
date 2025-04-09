@@ -157,21 +157,40 @@ func (c *Context) numberField(value *int, step int, id widgetID, opt option) (Ev
 		return nil, nil
 	}
 
-	// handle normal mode
-	return c.widget(id, opt, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
-		var e EventHandler
-		if c.focus == id && c.pointing.pressed() {
-			*value += (c.pointingDelta().X) * step
-		}
-		if *value != last {
+	var e EventHandler
+	var err error
+	c.GridCell(func(bounds image.Rectangle) {
+		c.SetGridLayout([]int{-1, c.style().thumbSize, c.style().thumbSize}, nil)
+		// handle normal mode
+		e, err = c.widget(id, opt, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
+			var e EventHandler
+			if c.focus == id && c.pointing.pressed() {
+				*value += (c.pointingDelta().X) * step
+			}
+			if *value != last {
+				e = &eventHandler{}
+			}
+			return e
+		}, func(bounds image.Rectangle) {
+			c.drawWidgetFrame(id, bounds, colorBase, opt)
+			text := fmt.Sprintf("%d", *value)
+			c.drawWidgetText(text, bounds, colorText, opt)
+		})
+		c.Button("-").On(func() {
+			*value -= step
 			e = &eventHandler{}
-		}
-		return e
-	}, func(bounds image.Rectangle) {
-		c.drawWidgetFrame(id, bounds, colorBase, opt)
-		text := fmt.Sprintf("%d", *value)
-		c.drawWidgetText(text, bounds, colorText, opt)
+		})
+		c.Button("+").On(func() {
+			*value += step
+			e = &eventHandler{}
+		})
 	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return e, nil
 }
 
 func (c *Context) numberFieldF(value *float64, step float64, digits int, id widgetID, opt option) (EventHandler, error) {
@@ -184,21 +203,38 @@ func (c *Context) numberFieldF(value *float64, step float64, digits int, id widg
 		return nil, nil
 	}
 
-	// handle normal mode
-	return c.widget(id, opt, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
-		var e EventHandler
-		if c.focus == id && c.pointing.pressed() {
-			*value += float64(c.pointingDelta().X) * step
-		}
-		if *value != last {
+	var e EventHandler
+	var err error
+	c.GridCell(func(bounds image.Rectangle) {
+		c.SetGridLayout([]int{-1, c.style().thumbSize, c.style().thumbSize}, nil)
+		// handle normal mode
+		e, err = c.widget(id, opt, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
+			var e EventHandler
+			if c.focus == id && c.pointing.pressed() {
+				*value += float64(c.pointingDelta().X) * step
+			}
+			if *value != last {
+				e = &eventHandler{}
+			}
+			return e
+		}, func(bounds image.Rectangle) {
+			c.drawWidgetFrame(id, bounds, colorBase, opt)
+			text := formatNumber(*value, digits)
+			c.drawWidgetText(text, bounds, colorText, opt)
+		})
+		c.Button("-").On(func() {
+			*value -= step
 			e = &eventHandler{}
-		}
-		return e
-	}, func(bounds image.Rectangle) {
-		c.drawWidgetFrame(id, bounds, colorBase, opt)
-		text := formatNumber(*value, digits)
-		c.drawWidgetText(text, bounds, colorText, opt)
+		})
+		c.Button("+").On(func() {
+			*value += step
+			e = &eventHandler{}
+		})
 	})
+	if err != nil {
+		return nil, err
+	}
+	return e, nil
 }
 
 func (c *Context) numberTextField(value *int, id widgetID) error {
