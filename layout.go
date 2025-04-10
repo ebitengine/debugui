@@ -20,14 +20,14 @@ type layout struct {
 }
 
 func (l *layout) widthInPixels(style *style) int {
-	return l.sizeInPixels(l.widths, l.itemIndex%len(l.widths), style.defaultWidth+style.padding*2, l.body.Dx()-l.indent, style)
+	return l.sizeInPixels(l.widths, l.itemIndex%len(l.widths), 8, style.defaultWidth+style.padding*2, l.body.Dx()-l.indent, style)
 }
 
 func (l *layout) heightInPixels(style *style) int {
-	return l.sizeInPixels(l.heights, l.itemIndex/len(l.widths), style.defaultHeight, l.body.Dy(), style)
+	return l.sizeInPixels(l.heights, l.itemIndex/len(l.widths), 6, style.defaultHeight, l.body.Dy(), style)
 }
 
-func (l *layout) sizeInPixels(sizes []int, index int, defaultSize int, entireSize int, style *style) int {
+func (l *layout) sizeInPixels(sizes []int, index int, minSize, defaultSize int, entireSize int, style *style) int {
 	s := sizes[index]
 	if s > 0 {
 		return s
@@ -49,7 +49,7 @@ func (l *layout) sizeInPixels(sizes []int, index int, defaultSize int, entireSiz
 			denom += -s
 		}
 	}
-	return max(8, int(float64(remain)*-float64(s)/float64(denom)))
+	return max(minSize, int(float64(remain)*float64(-s)/float64(denom)))
 }
 
 func (c *Context) pushLayout(body image.Rectangle, scroll image.Point, autoResize bool) error {

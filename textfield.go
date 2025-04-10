@@ -177,7 +177,7 @@ func (c *Context) numberField(value *int, step int, id widgetID, opt option) (Ev
 			c.drawWidgetText(text, bounds, colorText, opt)
 		})
 		c.GridCell(func(bounds image.Rectangle) {
-			c.SetGridLayout(nil, []int{(c.style().defaultHeight - c.style().spacing) / 2})
+			c.SetGridLayout(nil, []int{-1, -1})
 			c.iconButton(iconUp).On(func() {
 				*value += step
 				e = &eventHandler{}
@@ -226,7 +226,7 @@ func (c *Context) numberFieldF(value *float64, step float64, digits int, id widg
 			c.drawWidgetText(text, bounds, colorText, opt)
 		})
 		c.GridCell(func(bounds image.Rectangle) {
-			c.SetGridLayout(nil, []int{(c.style().defaultHeight - c.style().spacing) / 2})
+			c.SetGridLayout(nil, []int{-1, -1})
 			c.iconButton(iconUp).On(func() {
 				*value += step
 				e = &eventHandler{}
