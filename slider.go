@@ -133,7 +133,7 @@ func (c *Context) numberTextField(value *int, id widgetID) error {
 		c.numberEditBuf = fmt.Sprintf("%d", *value)
 	}
 	if c.numberEdit == id {
-		e, err := c.textFieldRaw(&c.numberEditBuf, id, 0)
+		e, err := c.textFieldRaw(&c.numberEditBuf, id, optionAlignRight)
 		if err != nil {
 			return err
 		}
@@ -157,7 +157,7 @@ func (c *Context) numberTextFieldF(value *float64, id widgetID) error {
 		c.numberEditBuf = fmt.Sprintf(realFmt, *value)
 	}
 	if c.numberEdit == id {
-		e, err := c.textFieldRaw(&c.numberEditBuf, id, 0)
+		e, err := c.textFieldRaw(&c.numberEditBuf, id, optionAlignRight)
 		if err != nil {
 			return err
 		}
