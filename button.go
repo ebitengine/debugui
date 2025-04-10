@@ -43,7 +43,7 @@ func (c *Context) spinButtons() (up, down EventHandler) {
 		upID := c.idFromString("up")
 		downID := c.idFromString("down")
 		c.GridCell(func(bounds image.Rectangle) {
-			c.setGridLayout(nil, []int{-1, -1})
+			c.SetGridLayout(nil, []int{-1, -1})
 			up = c.wrapEventHandlerAndError(func() (EventHandler, error) {
 				var e EventHandler
 				var err error
