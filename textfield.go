@@ -150,32 +150,31 @@ func (c *Context) NumberFieldF(value *float64, step float64, digits int) EventHa
 func (c *Context) numberField(value *int, step int, id widgetID, opt option) (EventHandler, error) {
 	last := *value
 
-	if err := c.numberTextField(value, id); err != nil {
-		return nil, err
-	}
-	if c.numberEdit == id {
-		return nil, nil
-	}
-
 	var e EventHandler
 	var err error
 	c.GridCell(func(bounds image.Rectangle) {
 		c.SetGridLayout([]int{-1, lineHeight()}, nil)
-		// handle normal mode
-		e, err = c.widget(id, opt, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
-			var e EventHandler
-			if c.focus == id && c.pointing.pressed() {
-				*value += (c.pointingDelta().X) * step
-			}
-			if *value != last {
-				e = &eventHandler{}
-			}
-			return e
-		}, func(bounds image.Rectangle) {
-			c.drawWidgetFrame(id, bounds, colorBase, opt)
-			text := fmt.Sprintf("%d", *value)
-			c.drawWidgetText(text, bounds, colorText, opt)
-		})
+
+		buf := fmt.Sprintf("%d", *value)
+		e1, err1 := c.textFieldRaw(&buf, id, opt)
+		if err1 != nil {
+			err = err1
+			return
+		}
+		if e1 != nil {
+			e1.On(func() {
+				c.setFocus(emptyWidgetID)
+				v, err := strconv.ParseInt(buf, 10, 64)
+				if err != nil {
+					v = 0
+				}
+				*value = int(v)
+				if *value != last {
+					e = &eventHandler{}
+				}
+			})
+		}
+
 		c.GridCell(func(bounds image.Rectangle) {
 			c.SetGridLayout(nil, []int{-1, -1})
 			c.iconButton(iconUp).On(func() {
@@ -199,32 +198,31 @@ func (c *Context) numberField(value *int, step int, id widgetID, opt option) (Ev
 func (c *Context) numberFieldF(value *float64, step float64, digits int, id widgetID, opt option) (EventHandler, error) {
 	last := *value
 
-	if err := c.numberTextFieldF(value, id); err != nil {
-		return nil, err
-	}
-	if c.numberEdit == id {
-		return nil, nil
-	}
-
 	var e EventHandler
 	var err error
 	c.GridCell(func(bounds image.Rectangle) {
 		c.SetGridLayout([]int{-1, lineHeight()}, nil)
-		// handle normal mode
-		e, err = c.widget(id, opt, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
-			var e EventHandler
-			if c.focus == id && c.pointing.pressed() {
-				*value += float64(c.pointingDelta().X) * step
-			}
-			if *value != last {
-				e = &eventHandler{}
-			}
-			return e
-		}, func(bounds image.Rectangle) {
-			c.drawWidgetFrame(id, bounds, colorBase, opt)
-			text := formatNumber(*value, digits)
-			c.drawWidgetText(text, bounds, colorText, opt)
-		})
+
+		buf := formatNumber(*value, digits)
+		e1, err1 := c.textFieldRaw(&buf, id, opt)
+		if err1 != nil {
+			err = err1
+			return
+		}
+		if e1 != nil {
+			e1.On(func() {
+				c.setFocus(emptyWidgetID)
+				nval, err := strconv.ParseFloat(buf, 64)
+				if err != nil {
+					nval = 0
+				}
+				*value = float64(nval)
+				if *value != last {
+					e = &eventHandler{}
+				}
+			})
+		}
+
 		c.GridCell(func(bounds image.Rectangle) {
 			c.SetGridLayout(nil, []int{-1, -1})
 			c.iconButton(iconUp).On(func() {
@@ -241,54 +239,6 @@ func (c *Context) numberFieldF(value *float64, step float64, digits int, id widg
 		return nil, err
 	}
 	return e, nil
-}
-
-func (c *Context) numberTextField(value *int, id widgetID) error {
-	if c.pointing.justPressed() && ebiten.IsKeyPressed(ebiten.KeyShift) && c.hover == id {
-		c.numberEdit = id
-		c.numberEditBuf = fmt.Sprintf("%d", *value)
-	}
-	if c.numberEdit == id {
-		e, err := c.textFieldRaw(&c.numberEditBuf, id, 0)
-		if err != nil {
-			return err
-		}
-		if e != nil {
-			e.On(func() {
-				nval, err := strconv.ParseInt(c.numberEditBuf, 10, 64)
-				if err != nil {
-					nval = 0
-				}
-				*value = int(nval)
-				c.numberEdit = emptyWidgetID
-			})
-		}
-	}
-	return nil
-}
-
-func (c *Context) numberTextFieldF(value *float64, id widgetID) error {
-	if c.pointing.justPressed() && ebiten.IsKeyPressed(ebiten.KeyShift) && c.hover == id {
-		c.numberEdit = id
-		c.numberEditBuf = fmt.Sprintf(realFmt, *value)
-	}
-	if c.numberEdit == id {
-		e, err := c.textFieldRaw(&c.numberEditBuf, id, 0)
-		if err != nil {
-			return err
-		}
-		if e != nil {
-			e.On(func() {
-				nval, err := strconv.ParseFloat(c.numberEditBuf, 64)
-				if err != nil {
-					nval = 0
-				}
-				*value = float64(nval)
-				c.numberEdit = emptyWidgetID
-			})
-		}
-	}
-	return nil
 }
 
 func formatNumber(v float64, digits int) string {

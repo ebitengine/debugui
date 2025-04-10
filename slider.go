@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"image"
 	"math"
+	"strconv"
+
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 // Slider cretes a slider widget with the given int value, range, and step.
@@ -122,4 +125,52 @@ func (c *Context) sliderF(value *float64, low, high, step float64, digits int, i
 		text := formatNumber(v, digits)
 		c.drawWidgetText(text, bounds, colorText, opt)
 	})
+}
+
+func (c *Context) numberTextField(value *int, id widgetID) error {
+	if c.pointing.justPressed() && ebiten.IsKeyPressed(ebiten.KeyShift) && c.hover == id {
+		c.numberEdit = id
+		c.numberEditBuf = fmt.Sprintf("%d", *value)
+	}
+	if c.numberEdit == id {
+		e, err := c.textFieldRaw(&c.numberEditBuf, id, 0)
+		if err != nil {
+			return err
+		}
+		if e != nil {
+			e.On(func() {
+				nval, err := strconv.ParseInt(c.numberEditBuf, 10, 64)
+				if err != nil {
+					nval = 0
+				}
+				*value = int(nval)
+				c.numberEdit = emptyWidgetID
+			})
+		}
+	}
+	return nil
+}
+
+func (c *Context) numberTextFieldF(value *float64, id widgetID) error {
+	if c.pointing.justPressed() && ebiten.IsKeyPressed(ebiten.KeyShift) && c.hover == id {
+		c.numberEdit = id
+		c.numberEditBuf = fmt.Sprintf(realFmt, *value)
+	}
+	if c.numberEdit == id {
+		e, err := c.textFieldRaw(&c.numberEditBuf, id, 0)
+		if err != nil {
+			return err
+		}
+		if e != nil {
+			e.On(func() {
+				nval, err := strconv.ParseFloat(c.numberEditBuf, 64)
+				if err != nil {
+					nval = 0
+				}
+				*value = float64(nval)
+				c.numberEdit = emptyWidgetID
+			})
+		}
+	}
+	return nil
 }
