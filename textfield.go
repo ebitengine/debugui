@@ -83,6 +83,12 @@ func (c *Context) textFieldRaw(buf *string, id widgetID, opt option) (EventHandl
 			texth := lineHeight()
 			ofx := bounds.Dx() - c.style().padding - textw - 1
 			textx := bounds.Min.X + min(ofx, c.style().padding)
+			switch {
+			case opt&optionAlignCenter != 0:
+				textx = bounds.Min.X + (bounds.Dx()-textw)/2
+			case opt&optionAlignRight != 0:
+				textx = bounds.Min.X + bounds.Dx() - textw - c.style().padding
+			}
 			texty := bounds.Min.Y + (bounds.Dy()-texth)/2
 			c.pushClipRect(bounds)
 			c.drawText(f.TextForRendering(), image.Pt(textx, texty), color)
