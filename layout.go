@@ -24,7 +24,7 @@ func (l *layout) widthInPixels(style *style) int {
 }
 
 func (l *layout) heightInPixels(style *style) int {
-	return l.sizeInPixels(l.heights, l.itemIndex/len(l.widths), 18, l.body.Dy(), style)
+	return l.sizeInPixels(l.heights, l.itemIndex/len(l.widths), style.defaultHeight, l.body.Dy(), style)
 }
 
 func (l *layout) sizeInPixels(sizes []int, index int, defaultSize int, entireSize int, style *style) int {

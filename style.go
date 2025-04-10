@@ -9,6 +9,7 @@ import (
 
 type style struct {
 	defaultWidth  int
+	defaultHeight int
 	padding       int
 	spacing       int
 	indent        int
@@ -39,6 +40,7 @@ const (
 
 var defaultStyle style = style{
 	defaultWidth:  60,
+	defaultHeight: 18,
 	padding:       5,
 	spacing:       4,
 	indent:        lineHeight(),
