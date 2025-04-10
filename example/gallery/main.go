@@ -144,7 +144,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 
 func main() {
 	ebiten.SetWindowTitle("Ebitengine DebugUI Demo")
-	ebiten.SetWindowSize(1280, 960)
+	ebiten.SetWindowSize(960, 640)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	g, err := NewGame()
 	if err != nil {
