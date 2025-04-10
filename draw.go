@@ -51,6 +51,8 @@ const (
 	iconCheck
 	iconCollapsed
 	iconExpanded
+	iconDown
+	iconUp
 )
 
 var (
@@ -80,6 +82,10 @@ func iconImage(icon icon) *ebiten.Image {
 		name = "collapsed.png"
 	case iconExpanded:
 		name = "expanded.png"
+	case iconDown:
+		name = "down.png"
+	case iconUp:
+		name = "up.png"
 	default:
 		return nil
 	}

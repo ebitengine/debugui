@@ -160,7 +160,7 @@ func (c *Context) numberField(value *int, step int, id widgetID, opt option) (Ev
 	var e EventHandler
 	var err error
 	c.GridCell(func(bounds image.Rectangle) {
-		c.SetGridLayout([]int{-1, c.style().thumbSize, c.style().thumbSize}, nil)
+		c.SetGridLayout([]int{-1, lineHeight()}, nil)
 		// handle normal mode
 		e, err = c.widget(id, opt, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
 			var e EventHandler
@@ -176,13 +176,16 @@ func (c *Context) numberField(value *int, step int, id widgetID, opt option) (Ev
 			text := fmt.Sprintf("%d", *value)
 			c.drawWidgetText(text, bounds, colorText, opt)
 		})
-		c.Button("-").On(func() {
-			*value -= step
-			e = &eventHandler{}
-		})
-		c.Button("+").On(func() {
-			*value += step
-			e = &eventHandler{}
+		c.GridCell(func(bounds image.Rectangle) {
+			c.SetGridLayout(nil, []int{(c.style().defaultHeight - c.style().spacing) / 2})
+			c.iconButton(iconUp).On(func() {
+				*value += step
+				e = &eventHandler{}
+			})
+			c.iconButton(iconDown).On(func() {
+				*value -= step
+				e = &eventHandler{}
+			})
 		})
 	})
 
@@ -206,7 +209,7 @@ func (c *Context) numberFieldF(value *float64, step float64, digits int, id widg
 	var e EventHandler
 	var err error
 	c.GridCell(func(bounds image.Rectangle) {
-		c.SetGridLayout([]int{-1, c.style().thumbSize, c.style().thumbSize}, nil)
+		c.SetGridLayout([]int{-1, lineHeight()}, nil)
 		// handle normal mode
 		e, err = c.widget(id, opt, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
 			var e EventHandler
@@ -222,13 +225,16 @@ func (c *Context) numberFieldF(value *float64, step float64, digits int, id widg
 			text := formatNumber(*value, digits)
 			c.drawWidgetText(text, bounds, colorText, opt)
 		})
-		c.Button("-").On(func() {
-			*value -= step
-			e = &eventHandler{}
-		})
-		c.Button("+").On(func() {
-			*value += step
-			e = &eventHandler{}
+		c.GridCell(func(bounds image.Rectangle) {
+			c.SetGridLayout(nil, []int{(c.style().defaultHeight - c.style().spacing) / 2})
+			c.iconButton(iconUp).On(func() {
+				*value += step
+				e = &eventHandler{}
+			})
+			c.iconButton(iconDown).On(func() {
+				*value -= step
+				e = &eventHandler{}
+			})
 		})
 	})
 	if err != nil {
