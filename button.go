@@ -5,7 +5,7 @@ package debugui
 
 import "image"
 
-// Button creates a button widget with the given label.
+// Button creates a button widget with the given text.
 //
 // Button returns an EventHandler to handle click events.
 // A returned EventHandler is never nil.
@@ -13,15 +13,15 @@ import "image"
 // A Button widget is uniquely determined by its call location.
 // Function calls made in different locations will create different widgets.
 // If you want to generate different widgets with the same function call in a loop (such as a for loop), use [IDScope].
-func (c *Context) Button(label string) EventHandler {
+func (c *Context) Button(text string) EventHandler {
 	pc := caller()
 	id := c.idFromCaller(pc)
 	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		return c.button(label, optionAlignCenter, id)
+		return c.button(text, optionAlignCenter, id)
 	})
 }
 
-func (c *Context) button(label string, opt option, id widgetID) (EventHandler, error) {
+func (c *Context) button(text string, opt option, id widgetID) (EventHandler, error) {
 	return c.widget(id, opt, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
 		var e EventHandler
 		if c.pointing.justPressed() && c.focus == id {
@@ -30,8 +30,8 @@ func (c *Context) button(label string, opt option, id widgetID) (EventHandler, e
 		return e
 	}, func(bounds image.Rectangle) {
 		c.drawWidgetFrame(id, bounds, colorButton, opt)
-		if len(label) > 0 {
-			c.drawWidgetText(label, bounds, colorText, opt)
+		if len(text) > 0 {
+			c.drawWidgetText(text, bounds, colorText, opt)
 		}
 	})
 }
