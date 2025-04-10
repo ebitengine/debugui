@@ -124,7 +124,7 @@ func (c *Context) NumberField(value *int, step int) EventHandler {
 	pc := caller()
 	id := c.idFromCaller(pc)
 	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		return c.numberField(value, step, id, optionAlignCenter)
+		return c.numberField(value, step, id, optionAlignRight)
 	})
 }
 
@@ -143,7 +143,7 @@ func (c *Context) NumberFieldF(value *float64, step float64, digits int) EventHa
 	pc := caller()
 	id := c.idFromCaller(pc)
 	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		return c.numberFieldF(value, step, digits, id, optionAlignCenter)
+		return c.numberFieldF(value, step, digits, id, optionAlignRight)
 	})
 }
 
