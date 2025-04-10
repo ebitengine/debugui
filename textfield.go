@@ -112,7 +112,7 @@ func (c *Context) textField(buf *string, id widgetID, opt option) (EventHandler,
 
 // NumberField creates a number field to modify the value of a int value.
 //
-// step is the amount to increment or decrement the value when the user drags the thumb.
+// step is the amount to increment or decrement the value when the user drags the mouse cursor.
 //
 // NumberField returns an EventHandler to handle value change events.
 // A returned EventHandler is never nil.
@@ -130,7 +130,7 @@ func (c *Context) NumberField(value *int, step int) EventHandler {
 
 // NumberFieldF creates a number field to modify the value of a float64 value.
 //
-// step is the amount to increment or decrement the value when the user drags the thumb.
+// step is the amount to increment or decrement the value when the user drags the mouse cursor.
 // digits is the number of decimal places to display.
 //
 // NumberFieldF returns an EventHandler to handle value change events.
