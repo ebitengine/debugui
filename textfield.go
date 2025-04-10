@@ -184,11 +184,12 @@ func (c *Context) numberField(value *int, step int, id widgetID, opt option) (Ev
 		c.GridCell(func(bounds image.Rectangle) {
 			c.idScopeFromID(id, func() {
 				c.SetGridLayout(nil, []int{-1, -1})
-				c.iconButton(iconUp).On(func() {
+				up, down := c.spinButtons()
+				up.On(func() {
 					*value += step
 					e = &eventHandler{}
 				})
-				c.iconButton(iconDown).On(func() {
+				down.On(func() {
 					*value -= step
 					e = &eventHandler{}
 				})
@@ -234,11 +235,12 @@ func (c *Context) numberFieldF(value *float64, step float64, digits int, id widg
 		c.GridCell(func(bounds image.Rectangle) {
 			c.idScopeFromID(id, func() {
 				c.SetGridLayout(nil, []int{-1, -1})
-				c.iconButton(iconUp).On(func() {
+				up, down := c.spinButtons()
+				up.On(func() {
 					*value += step
 					e = &eventHandler{}
 				})
-				c.iconButton(iconDown).On(func() {
+				down.On(func() {
 					*value -= step
 					e = &eventHandler{}
 				})

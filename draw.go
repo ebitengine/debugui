@@ -47,8 +47,7 @@ func lineHeight() int {
 type icon int
 
 const (
-	iconNone icon = iota
-	iconCheck
+	iconCheck icon = iota + 1
 	iconCollapsed
 	iconExpanded
 	iconDown
@@ -63,10 +62,6 @@ var (
 )
 
 func iconImage(icon icon) *ebiten.Image {
-	if icon == iconNone {
-		return nil
-	}
-
 	iconM.Lock()
 	defer iconM.Unlock()
 

@@ -16,6 +16,7 @@ type pointing struct {
 	touchIDs            []ebiten.TouchID
 	hasPrimaryTouchID   bool
 	primaryTouchID      ebiten.TouchID
+	duration            int
 }
 
 func (p *pointing) update() {
@@ -28,6 +29,12 @@ func (p *pointing) update() {
 	} else if !p.hasPrimaryTouchID {
 		p.hasPrimaryTouchID = true
 		p.primaryTouchID = p.touchIDs[0]
+	}
+
+	if p.pressed() {
+		p.duration++
+	} else {
+		p.duration = 0
 	}
 }
 
@@ -57,4 +64,15 @@ func (p *pointing) justPressed() bool {
 		return slices.Contains(p.justPressedTouchIDs, p.primaryTouchID)
 	}
 	return inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft)
+}
+
+func (p *pointing) repeated() bool {
+	if p.duration == 1 {
+		return true
+	}
+	delay := ebiten.TPS() * 24 / 60
+	if p.duration < delay {
+		return false
+	}
+	return (p.duration-delay)%4 == 0
 }
