@@ -76,7 +76,7 @@ func (c *Context) spinButton(up bool, opt option, upID, downID widgetID) (EventH
 	}
 	return c.widget(id, opt, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
 		var e EventHandler
-		if c.pointing.repeated() && (c.focus == upID || c.focus == downID) && c.pointing.position().In(bounds) {
+		if c.pointing.repeated() && (c.focus == upID || c.focus == downID) && c.pointingPosition().In(bounds) {
 			e = &eventHandler{}
 		}
 		return e
