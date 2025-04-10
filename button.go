@@ -17,11 +17,19 @@ func (c *Context) Button(text string) EventHandler {
 	pc := caller()
 	id := c.idFromCaller(pc)
 	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		return c.button(text, optionAlignCenter, id)
+		return c.button(text, iconNone, optionAlignCenter, id)
 	})
 }
 
-func (c *Context) button(text string, opt option, id widgetID) (EventHandler, error) {
+func (c *Context) iconButton(icon icon) EventHandler {
+	pc := caller()
+	id := c.idFromCaller(pc)
+	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
+		return c.button("", icon, optionAlignCenter, id)
+	})
+}
+
+func (c *Context) button(text string, icon icon, opt option, id widgetID) (EventHandler, error) {
 	return c.widget(id, opt, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
 		var e EventHandler
 		if c.pointing.justPressed() && c.focus == id {
@@ -32,6 +40,9 @@ func (c *Context) button(text string, opt option, id widgetID) (EventHandler, er
 		c.drawWidgetFrame(id, bounds, colorButton, opt)
 		if len(text) > 0 {
 			c.drawWidgetText(text, bounds, colorText, opt)
+		}
+		if icon != iconNone {
+			c.drawIcon(icon, bounds, c.style().colors[colorText])
 		}
 	})
 }
