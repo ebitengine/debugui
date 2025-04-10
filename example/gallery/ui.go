@@ -150,9 +150,11 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 			})
 		})
 		ctx.Header("Number", true, func() {
-			ctx.NumberField(&g.num1, 1)
+			ctx.NumberField(&g.num1_1, 1)
+			ctx.NumberField(&g.num1_2, 1)
 			ctx.Slider(&g.num2, 0, 1000, 10)
-			ctx.NumberFieldF(&g.num3, 0.1, 2)
+			ctx.NumberFieldF(&g.num3_1, 0.1, 2)
+			ctx.NumberFieldF(&g.num3_2, 0.1, 2)
 			ctx.SliderF(&g.num4, 0, 10, 0.1, 2)
 		})
 		ctx.Header("Licenses", false, func() {

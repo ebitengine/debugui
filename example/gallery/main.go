@@ -41,9 +41,11 @@ type Game struct {
 	logUpdated   bool
 	bg           [3]int
 	checks       [3]bool
-	num1         int
+	num1_1       int
+	num1_2       int
 	num2         int
-	num3         float64
+	num3_1       float64
+	num3_2       float64
 	num4         float64
 }
 
