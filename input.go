@@ -67,12 +67,20 @@ func (p *pointing) justPressed() bool {
 }
 
 func (p *pointing) repeated() bool {
-	if p.duration == 1 {
+	return repeated(p.duration)
+}
+
+func keyRepeated(key ebiten.Key) bool {
+	return repeated(inpututil.KeyPressDuration(key))
+}
+
+func repeated(duration int) bool {
+	if duration == 1 {
 		return true
 	}
 	delay := ebiten.TPS() * 24 / 60
-	if p.duration < delay {
+	if duration < delay {
 		return false
 	}
-	return (p.duration-delay)%4 == 0
+	return (duration-delay)%4 == 0
 }
