@@ -30,8 +30,7 @@ func lines(text string, width int) iter.Seq[string] {
 				if line == "" {
 					line += word + cluster
 				} else {
-					l := removeSpaceAtLineTail(line + word + cluster)
-					if textWidth(l) > width {
+					if l := removeSpaceAtLineTail(line + word + cluster); textWidth(l) > width {
 						if !yield(removeSpaceAtLineTail(line)) {
 							return
 						}
