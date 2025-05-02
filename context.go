@@ -100,7 +100,7 @@ func (c *Context) update(f func(ctx *Context) error) (inputCapturingState InputC
 		if cnt.collapsed {
 			bounds.Max.Y -= cnt.layout.BodyBounds.Dy()
 		}
-		if pt.In(cnt.layout.Bounds) {
+		if pt.In(bounds) {
 			inputCapturingState |= InputCapturingStateHover
 		}
 	}
