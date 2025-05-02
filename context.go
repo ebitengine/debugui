@@ -98,7 +98,7 @@ func (c *Context) update(f func(ctx *Context) error) (inputCapturingState InputC
 	for _, cnt := range c.rootContainers {
 		bounds := cnt.layout.Bounds
 		if cnt.collapsed {
-			bounds.Max.Y -= cnt.layout.BodyBounds.Dy()
+			bounds.Max.Y = cnt.layout.BodyBounds.Min.Y
 		}
 		if pt.In(bounds) {
 			inputCapturingState |= InputCapturingStateHover
