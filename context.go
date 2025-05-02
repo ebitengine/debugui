@@ -94,10 +94,23 @@ func (c *Context) update(f func(ctx *Context) error) (inputCapturingState InputC
 	}
 
 	// Check whether the cursor is on any of the root containers.
+	var collapsedBounds image.Rectangle
 	pt := c.pointingPosition()
 	for _, cnt := range c.rootContainers {
-		if pt.In(cnt.layout.Bounds) {
-			inputCapturingState |= InputCapturingStateHover
+		if cnt.collapsed {
+			collapsedBounds = image.Rect(
+				cnt.layout.Bounds.Min.X,
+				cnt.layout.Bounds.Min.Y,
+				cnt.layout.Bounds.Max.X,
+				cnt.layout.Bounds.Max.Y-cnt.layout.BodyBounds.Dy(),
+			)
+			if pt.In(collapsedBounds) {
+				inputCapturingState |= InputCapturingStateHover
+			}
+		} else {
+			if pt.In(cnt.layout.Bounds) {
+				inputCapturingState |= InputCapturingStateHover
+			}
 		}
 	}
 
