@@ -11,7 +11,7 @@ import (
 	"image/color"
 	"sync"
 
-	"github.com/hajimehoshi/bitmapfont/v3"
+	"github.com/hajimehoshi/bitmapfont/v4"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
