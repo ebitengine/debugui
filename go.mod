@@ -3,7 +3,7 @@ module github.com/ebitengine/debugui
 go 1.23.0
 
 require (
-	github.com/hajimehoshi/bitmapfont/v4 v4.0.0-alpha.0.20250510112654-2427544c2ac7
+	github.com/hajimehoshi/bitmapfont/v4 v4.0.0
 	github.com/hajimehoshi/ebiten/v2 v2.8.7
 	github.com/kisielk/errcheck v1.9.0
 	github.com/rivo/uniseg v0.4.7
