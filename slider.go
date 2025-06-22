@@ -50,7 +50,7 @@ func (c *Context) SliderF(value *float64, low, high float64, step float64, digit
 }
 
 func (c *Context) slider(value *int, low, high, step int, id widgetID, opt option) (EventHandler, error) {
-	if low >= high {
+	if low > high {
 		return nil, fmt.Errorf("debugui: slider low (%d) must be less than or equal to high (%d)", low, high)
 	}
 
@@ -93,7 +93,7 @@ func (c *Context) slider(value *int, low, high, step int, id widgetID, opt optio
 }
 
 func (c *Context) sliderF(value *float64, low, high, step float64, digits int, id widgetID, opt option) (EventHandler, error) {
-	if low >= high {
+	if low > high {
 		return nil, fmt.Errorf("debugui: slider low (%f) must be less than or equal to high (%f)", low, high)
 	}
 
