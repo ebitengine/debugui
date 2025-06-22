@@ -14,7 +14,7 @@ import (
 
 // Slider cretes a slider widget with the given int value, range, and step.
 //
-// lo and hi specify the range of the slider.
+// low and high specify the range of the slider.
 //
 // Slider returns an EventHandler to handle value change events.
 // A returned EventHandler is never nil.
@@ -22,17 +22,17 @@ import (
 // A Slider widget is uniquely determined by its call location.
 // Function calls made in different locations will create different widgets.
 // If you want to generate different widgets with the same function call in a loop (such as a for loop), use [IDScope].
-func (c *Context) Slider(value *int, lo, hi int, step int) EventHandler {
+func (c *Context) Slider(value *int, low, high int, step int) EventHandler {
 	pc := caller()
 	id := c.idFromCaller(pc)
 	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		return c.slider(value, lo, hi, step, id, optionAlignCenter)
+		return c.slider(value, low, high, step, id, optionAlignCenter)
 	})
 }
 
 // SliderF cretes a slider widget with the given float64 value, range, step, and number of digits.
 //
-// lo and hi specify the range of the slider.
+// low and high specify the range of the slider.
 // digits specifies the number of digits to display after the decimal point.
 //
 // SliderF returns an EventHandler to handle value change events.
@@ -41,15 +41,19 @@ func (c *Context) Slider(value *int, lo, hi int, step int) EventHandler {
 // A SliderF widget is uniquely determined by its call location.
 // Function calls made in different locations will create different widgets.
 // If you want to generate different widgets with the same function call in a loop (such as a for loop), use [IDScope].
-func (c *Context) SliderF(value *float64, lo, hi float64, step float64, digits int) EventHandler {
+func (c *Context) SliderF(value *float64, low, high float64, step float64, digits int) EventHandler {
 	pc := caller()
 	id := c.idFromCaller(pc)
 	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		return c.sliderF(value, lo, hi, step, digits, id, optionAlignCenter)
+		return c.sliderF(value, low, high, step, digits, id, optionAlignCenter)
 	})
 }
 
 func (c *Context) slider(value *int, low, high, step int, id widgetID, opt option) (EventHandler, error) {
+	if low > high {
+		return nil, fmt.Errorf("debugui: slider low (%d) must be less than or equal to high (%d)", low, high)
+	}
+
 	last := *value
 	v := last
 
@@ -89,6 +93,10 @@ func (c *Context) slider(value *int, low, high, step int, id widgetID, opt optio
 }
 
 func (c *Context) sliderF(value *float64, low, high, step float64, digits int, id widgetID, opt option) (EventHandler, error) {
+	if low > high {
+		return nil, fmt.Errorf("debugui: slider low (%f) must be less than or equal to high (%f)", low, high)
+	}
+
 	last := *value
 	v := last
 
