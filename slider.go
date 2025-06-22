@@ -84,7 +84,10 @@ func (c *Context) slider(value *int, low, high, step int, id widgetID, opt optio
 	}, func(bounds image.Rectangle) {
 		c.drawWidgetFrame(id, bounds, colorBase, opt)
 		w := c.style().thumbSize
-		x := int((v - low) * (bounds.Dx() - w) / (high - low))
+		var x int
+		if low < high {
+			x = int((v - low) * (bounds.Dx() - w) / (high - low))
+		}
 		thumb := image.Rect(bounds.Min.X+x, bounds.Min.Y, bounds.Min.X+x+w, bounds.Max.Y)
 		c.drawWidgetFrame(id, thumb, colorButton, opt)
 		text := fmt.Sprintf("%d", v)
@@ -127,7 +130,10 @@ func (c *Context) sliderF(value *float64, low, high, step float64, digits int, i
 	}, func(bounds image.Rectangle) {
 		c.drawWidgetFrame(id, bounds, colorBase, opt)
 		w := c.style().thumbSize
-		x := int((v - low) * float64(bounds.Dx()-w) / (high - low))
+		var x int
+		if low < high {
+			x = int((v - low) * float64(bounds.Dx()-w) / (high - low))
+		}
 		thumb := image.Rect(bounds.Min.X+x, bounds.Min.Y, bounds.Min.X+x+w, bounds.Max.Y)
 		c.drawWidgetFrame(id, thumb, colorButton, opt)
 		text := formatNumber(v, digits)
