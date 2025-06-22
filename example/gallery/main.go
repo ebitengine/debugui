@@ -47,6 +47,7 @@ type Game struct {
 	num3_1       float64
 	num3_2       float64
 	num4         float64
+	num5         int
 }
 
 func NewGame() (*Game, error) {

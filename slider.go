@@ -69,7 +69,7 @@ func (c *Context) slider(value *int, low, high, step int, id widgetID, opt optio
 		var e EventHandler
 		if c.focus == id && c.pointing.pressed() {
 			if w := bounds.Dx() - defaultStyle.thumbSize; w > 0 {
-				v = low + (c.pointingPosition().X-bounds.Min.X)*(high-low)/w
+				v = low + (c.pointingPosition().X-bounds.Min.X-defaultStyle.thumbSize/2)*(high-low+step)/w
 			}
 			if step != 0 {
 				v = v / step * step
@@ -112,7 +112,7 @@ func (c *Context) sliderF(value *float64, low, high, step float64, digits int, i
 		var e EventHandler
 		if c.focus == id && c.pointing.pressed() {
 			if w := float64(bounds.Dx() - defaultStyle.thumbSize); w > 0 {
-				v = low + float64(c.pointingPosition().X-bounds.Min.X)*(high-low)/w
+				v = low + float64(c.pointingPosition().X-bounds.Min.X-defaultStyle.thumbSize/2)*(high-low+step)/w
 			}
 			if step != 0 {
 				v = math.Round(v/step) * step
