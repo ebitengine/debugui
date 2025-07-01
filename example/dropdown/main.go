@@ -73,7 +73,10 @@ func (g *Game) Update() error {
 				ctx.Dropdown(&g.selectedQuality, g.qualityOptions).On(func() {
 					g.addLog(fmt.Sprintf("Quality: %s", g.qualityOptions[g.selectedQuality]))
 				})
-
+				ctx.Text("Reset Quality:")
+				ctx.Button("Reset").On(func() { // used to debug the dropdown above, clicking low also clicks on this
+					g.selectedQuality = 2 // Reset to High
+				})
 				// Name dropdown
 				ctx.Text("Name:")
 				ctx.Dropdown(&g.selectedName, g.nameOptions).On(func() {

@@ -23,16 +23,10 @@ func (c *Context) Dropdown(selectedIndex *int, options []string) EventHandler {
 }
 
 func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (EventHandler, error) {
-	if selectedIndex == nil {
-		// Return null handler if selectedIndex pointer is nil to prevent panics
+	if selectedIndex == nil || len(options) == 0 {
+		// If no options or selectedIndex is nil, return a null event handler
 		return &nullEventHandler{}, nil
 	}
-
-	if len(options) == 0 {
-		// Return null handler for empty options to prevent rendering issues
-		return &nullEventHandler{}, nil
-	}
-
 	// Clamp selectedIndex to valid range to prevent out-of-bounds access
 	if *selectedIndex < 0 || *selectedIndex >= len(options) {
 		*selectedIndex = 0
@@ -42,19 +36,21 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 	dropdownID := DropdownID(c.idFromString("dropdown:" + string(id)))
 
 	// Ensure dropdown container always exists (create it if needed)
+
 	dropdownContainer := c.container(widgetID(dropdownID), 0)
 
 	// Start with the dropdown closed
+
 	if dropdownContainer.layout.Bounds.Empty() {
 		dropdownContainer.open = false
 	}
 
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		windowOptions := optionDropdown | optionNoResize | optionNoTitle | optionClosed // optionClosed doest seem to work like i expected, but we handle closing manually
+		windowOptions := optionDropdown | optionNoResize | optionNoTitle
 
 		if err := c.window("", image.Rectangle{}, windowOptions, widgetID(dropdownID), func(layout ContainerLayout) {
 			// Ensure dropdown container reference is fresh for each render
-			if cnt, exists := c.getDropdownContainer(dropdownID); exists {
+			if cnt := c.container(widgetID(dropdownID), 0); cnt != nil {
 				if cnt.open {
 					c.bringToFront(cnt)
 				}
@@ -105,8 +101,8 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 					// Handle option selection: update index and close dropdown
 					if wasPressed {
 						*selectedIndex = i
-						if cnt, exists := c.getDropdownContainer(dropdownID); exists {
-							cnt.open = false
+						if cnt := c.container(widgetID(dropdownID), 0); cnt != nil {
+							cnt.open = false // Close the dropdown when an option is selected
 						}
 					}
 				})
@@ -121,17 +117,9 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 	return c.widget(id, optionAlignCenter, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
 		var e EventHandler
 
-		// Ensure dropdown is always brought to front when hovering over it while open
-		dropdownContainer, exists := c.getDropdownContainer(dropdownID)
-		if exists && dropdownContainer.open {
-			clickPos := c.pointingPosition()
-			if clickPos.In(dropdownContainer.layout.Bounds) {
-				c.bringToFront(dropdownContainer)
-			}
-		}
-
+		dropdownContainer := c.container(widgetID(dropdownID), 0)
 		// Manual "click outside to close" and dropdown toggle, trying to do this in the container.go had lots of issues
-		if exists && dropdownContainer.open && c.pointing.justPressed() {
+		if dropdownContainer.open && c.pointing.justPressed() {
 			clickPos := c.pointingPosition()
 			clickInButton := clickPos.In(bounds)
 			clickInDropdown := clickPos.In(dropdownContainer.layout.Bounds)
@@ -144,7 +132,6 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 		// Toggle dropdown when button is clicked
 		if c.pointing.justPressed() && c.focus == id {
 			// Check if dropdown container exists and its state
-			dropdownContainer, _ := c.getDropdownContainer(dropdownID)
 
 			isOpen := dropdownContainer.open
 
@@ -169,8 +156,6 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 						Max: dropdownPos.Add(image.Pt(buttonWidth, estimatedHeight)),
 					}
 				}
-
-				c.bringToFront(dropdownContainer)
 			}
 		}
 
@@ -191,20 +176,11 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 		c.drawWidgetText(options[*selectedIndex], textBounds, colorText, optionAlignCenter)
 
 		// Draw dropdown arrow indicator (up/down based on current state)
-		dropdownContainer, exists := c.getDropdownContainer(dropdownID)
-		isOpen := exists && dropdownContainer.open
-
 		arrowBounds := image.Rect(bounds.Max.X-arrowWidth, bounds.Min.Y, bounds.Max.X, bounds.Max.Y)
 		icon := iconDown
-		if isOpen {
+		if c.container(widgetID(dropdownID), 0).open {
 			icon = iconUp
 		}
 		c.drawIcon(icon, arrowBounds, c.style().colors[colorText])
 	})
-}
-
-// getDropdownContainer retrieves the dropdown container by its ID and a bool to indicate if it exists.
-func (c *Context) getDropdownContainer(dropdownID DropdownID) (*container, bool) {
-	container, exists := c.idToContainer[widgetID(dropdownID)]
-	return container, exists
 }
