@@ -24,6 +24,9 @@ type container struct {
 	toggledIDs          map[widgetID]struct{}
 	textInputTextFields map[widgetID]*textinput.Field
 
+	// closeDelay is used for delayed closing of dropdowns
+	closeDelay int
+
 	used bool
 }
 

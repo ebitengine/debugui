@@ -5,6 +5,8 @@ package debugui
 
 import (
 	"image"
+
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 // DropdownID is the ID of a dropdown menu container.
@@ -36,11 +38,17 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 	dropdownID := DropdownID(c.idFromString("dropdown:" + string(id)))
 
 	// Ensure dropdown container always exists (create it if needed)
-
 	dropdownContainer := c.container(widgetID(dropdownID), 0)
 
-	// Start with the dropdown closed
+	// Handle delayed closing of dropdown
+	if dropdownContainer.closeDelay > 0 {
+		dropdownContainer.closeDelay--
+		if dropdownContainer.closeDelay == 0 {
+			dropdownContainer.open = false
+		}
+	}
 
+	// Start with the dropdown closed
 	if dropdownContainer.layout.Bounds.Empty() {
 		dropdownContainer.open = false
 	}
@@ -98,11 +106,12 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 						return e, err
 					})
 
-					// Handle option selection: update index and close dropdown
+					// Handle option selection: update index and start close delay
 					if wasPressed {
 						*selectedIndex = i
 						if cnt := c.container(widgetID(dropdownID), 0); cnt != nil {
-							cnt.open = false // Close the dropdown when an option is selected
+							// Start the close delay timer (0.1 seconds at TPS rate)
+							cnt.closeDelay = ebiten.TPS() / 10
 						}
 					}
 				})
@@ -125,7 +134,10 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 			clickInDropdown := clickPos.In(dropdownContainer.layout.Bounds)
 
 			if !clickInButton && !clickInDropdown {
-				dropdownContainer.open = false
+				// Only close immediately if there's no close delay active
+				if dropdownContainer.closeDelay == 0 {
+					dropdownContainer.open = false
+				}
 			}
 		}
 
@@ -136,14 +148,16 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 			isOpen := dropdownContainer.open
 
 			if isOpen {
-				// Close the dropdown
+				// Close the dropdown immediately and cancel any pending delay
 				dropdownContainer.open = false
+				dropdownContainer.closeDelay = 0
 			} else {
 				// Store the current state before opening, made in some desperate attempts to avoid feedback loops
 				wasClosedBefore := !dropdownContainer.open
 
-				// Open the dropdown
+				// Open the dropdown and cancel any pending close delay
 				dropdownContainer.open = true
+				dropdownContainer.closeDelay = 0
 
 				// Position dropdown directly below button with proper width
 				if wasClosedBefore {
