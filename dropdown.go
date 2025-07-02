@@ -159,15 +159,18 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 				dropdownContainer.open = true
 				dropdownContainer.closeDelay = 0
 
-				// Position dropdown directly below button with proper width
 				if wasClosedBefore {
 					dropdownPos := image.Pt(bounds.Min.X, bounds.Max.Y)
 					buttonWidth := bounds.Dx()
-					optionHeight := c.style().defaultHeight + c.style().padding
-					estimatedHeight := len(options) * optionHeight
+					optionHeight := c.style().defaultHeight + c.style().padding + 1
+					totalHeight := len(options) * optionHeight
+
+					maxDropdownHeight := c.style().defaultHeight * 12 // around 10 items visible?
+					actualHeight := min(totalHeight, maxDropdownHeight)
+
 					dropdownContainer.layout.Bounds = image.Rectangle{
 						Min: dropdownPos,
-						Max: dropdownPos.Add(image.Pt(buttonWidth, estimatedHeight)),
+						Max: dropdownPos.Add(image.Pt(buttonWidth, actualHeight)),
 					}
 				}
 			}
