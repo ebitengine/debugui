@@ -225,7 +225,3 @@ func (g *Game) buttonWindows(ctx *debugui.Context) {
 		}
 	})
 }
-
-func (g *Game) dropdownWindows(ctx *debugui.Context) {
-
-}

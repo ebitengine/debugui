@@ -105,7 +105,6 @@ func (g *Game) Update() error {
 		g.testWindow(ctx)
 		g.logWindow(ctx)
 		g.buttonWindows(ctx)
-		g.dropdownWindows(ctx)
 		return nil
 	})
 	if err != nil {
