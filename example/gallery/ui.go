@@ -211,3 +211,19 @@ func (g *Game) buttonWindows(ctx *debugui.Context) {
 		}
 	})
 }
+
+func (g *Game) dropdownWindows(ctx *debugui.Context) {
+	g.dropdownOptions = []string{"Option 1", "Option 2", "Option 3", "Option 4", "Option 5"}
+	g.anotherDropdownOptions = []string{"Choice A", "Choice B", "Choice C", "Choice D", "Choice E"}
+	ctx.Window("Dropdown Windows", image.Rect(670, 40, 950, 290), func(layout debugui.ContainerLayout) {
+		ctx.Text("Select an option:")
+		ctx.Dropdown(&g.selectedOption, g.dropdownOptions).On(func() {
+			g.writeLog(fmt.Sprintf("Selected option: %s", g.dropdownOptions[g.selectedOption]))
+		})
+		ctx.Text("Another dropdown:")
+		ctx.Dropdown(&g.anotherSelectedOption, g.anotherDropdownOptions).On(func() {
+			g.writeLog(fmt.Sprintf("Selected another option: %s", g.anotherDropdownOptions[g.anotherSelectedOption]))
+		})
+	})
+
+}

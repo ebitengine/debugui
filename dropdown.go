@@ -9,9 +9,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-// DropdownID is the ID of a dropdown menu container.
-type DropdownID widgetID
-
 // Dropdown creates a dropdown menu widget that allows users to select from a list of options.
 // selectedIndex is a pointer to the currently selected option index (0-based).
 // options is a slice of strings representing the available choices.
@@ -35,15 +32,15 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 	}
 	last := *selectedIndex
 
-	dropdownID := DropdownID(c.idFromString("dropdown:" + string(id)))
+	dropdownID := c.idFromString("dropdown:" + string(id))
 
 	// Ensure dropdown container always exists (create it if needed)
-	dropdownContainer := c.container(widgetID(dropdownID), 0)
+	dropdownContainer := c.container(dropdownID, 0)
 
 	// Handle delayed closing of dropdown
-	if dropdownContainer.closeDelay > 0 {
-		dropdownContainer.closeDelay--
-		if dropdownContainer.closeDelay == 0 {
+	if dropdownContainer.dropdownCloseDelay > 0 {
+		dropdownContainer.dropdownCloseDelay--
+		if dropdownContainer.dropdownCloseDelay == 0 {
 			dropdownContainer.open = false
 		}
 	}
@@ -56,9 +53,9 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		windowOptions := optionDropdown | optionNoResize | optionNoTitle
 
-		if err := c.window("", image.Rectangle{}, windowOptions, widgetID(dropdownID), func(layout ContainerLayout) {
+		if err := c.window("", image.Rectangle{}, windowOptions, dropdownID, func(layout ContainerLayout) {
 			// Ensure dropdown container reference is fresh for each render
-			if cnt := c.container(widgetID(dropdownID), 0); cnt != nil {
+			if cnt := c.container(dropdownID, 0); cnt != nil {
 				if cnt.open {
 					c.bringToFront(cnt)
 				}
@@ -109,9 +106,9 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 					// Handle option selection: update index and start close delay
 					if wasPressed {
 						*selectedIndex = i
-						if cnt := c.container(widgetID(dropdownID), 0); cnt != nil {
+						if cnt := c.container(dropdownID, 0); cnt != nil {
 							// Start the close delay timer (0.1 seconds at TPS rate)
-							cnt.closeDelay = ebiten.TPS() / 10
+							cnt.dropdownCloseDelay = ebiten.TPS() / 10
 						}
 					}
 				})
@@ -126,7 +123,7 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 	return c.widget(id, optionAlignCenter, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
 		var e EventHandler
 
-		dropdownContainer := c.container(widgetID(dropdownID), 0)
+		dropdownContainer := c.container(dropdownID, 0)
 		// Manual "click outside to close" and dropdown toggle, trying to do this in the container.go had lots of issues
 		if dropdownContainer.open && c.pointing.justPressed() {
 			clickPos := c.pointingPosition()
@@ -135,7 +132,7 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 
 			if !clickInButton && !clickInDropdown {
 				// Only close immediately if there's no close delay active
-				if dropdownContainer.closeDelay == 0 {
+				if dropdownContainer.dropdownCloseDelay == 0 {
 					dropdownContainer.open = false
 				}
 			}
@@ -150,14 +147,14 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 			if isOpen {
 				// Close the dropdown immediately and cancel any pending delay
 				dropdownContainer.open = false
-				dropdownContainer.closeDelay = 0
+				dropdownContainer.dropdownCloseDelay = 0
 			} else {
 				// Store the current state before opening, made in some desperate attempts to avoid feedback loops
 				wasClosedBefore := !dropdownContainer.open
 
 				// Open the dropdown and cancel any pending close delay
 				dropdownContainer.open = true
-				dropdownContainer.closeDelay = 0
+				dropdownContainer.dropdownCloseDelay = 0
 
 				if wasClosedBefore {
 					dropdownPos := image.Pt(bounds.Min.X, bounds.Max.Y)
@@ -195,7 +192,7 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 		// Draw dropdown arrow indicator (up/down based on current state)
 		arrowBounds := image.Rect(bounds.Max.X-arrowWidth, bounds.Min.Y, bounds.Max.X, bounds.Max.Y)
 		icon := iconDown
-		if c.container(widgetID(dropdownID), 0).open {
+		if c.container(dropdownID, 0).open {
 			icon = iconUp
 		}
 		c.drawIcon(icon, arrowBounds, c.style().colors[colorText])

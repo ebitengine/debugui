@@ -48,6 +48,9 @@ type Game struct {
 	num3_2       float64
 	num4         float64
 	num5         int
+
+	selectedOption, anotherSelectedOption   int
+	dropdownOptions, anotherDropdownOptions []string
 }
 
 func NewGame() (*Game, error) {
@@ -102,6 +105,7 @@ func (g *Game) Update() error {
 		g.testWindow(ctx)
 		g.logWindow(ctx)
 		g.buttonWindows(ctx)
+		g.dropdownWindows(ctx)
 		return nil
 	})
 	if err != nil {
