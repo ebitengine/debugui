@@ -49,8 +49,8 @@ type Game struct {
 	num4         float64
 	num5         int
 
-	selectedOption, anotherSelectedOption   int
-	dropdownOptions, anotherDropdownOptions []string
+	selectedOption1, selectedOption2   int
+	dropdownOptions1, dropdownOptions2 []string
 }
 
 func NewGame() (*Game, error) {
