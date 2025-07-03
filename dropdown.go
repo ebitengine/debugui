@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // SPDX-FileCopyrightText: 2025 The Ebitengine Authors
 
 package debugui
@@ -23,10 +23,8 @@ func (c *Context) Dropdown(selectedIndex *int, options []string) EventHandler {
 
 func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (EventHandler, error) {
 	if selectedIndex == nil || len(options) == 0 {
-		// If no options or selectedIndex is nil, return a null event handler
 		return &nullEventHandler{}, nil
 	}
-	// Clamp selectedIndex to valid range to prevent out-of-bounds access
 	if *selectedIndex < 0 || *selectedIndex >= len(options) {
 		*selectedIndex = 0
 	}
@@ -34,7 +32,6 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 
 	dropdownID := c.idFromString("dropdown:" + string(id))
 
-	// Ensure dropdown container always exists (create it if needed)
 	dropdownContainer := c.container(dropdownID, 0)
 
 	// Handle delayed closing of dropdown
@@ -45,7 +42,6 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 		}
 	}
 
-	// Start with the dropdown closed
 	if dropdownContainer.layout.Bounds.Empty() {
 		dropdownContainer.open = false
 	}
@@ -54,22 +50,17 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 		windowOptions := optionDropdown | optionNoResize | optionNoTitle
 
 		if err := c.window("", image.Rectangle{}, windowOptions, dropdownID, func(layout ContainerLayout) {
-			// Ensure dropdown container reference is fresh for each render
 			if cnt := c.container(dropdownID, 0); cnt != nil {
 				if cnt.open {
 					c.bringToFront(cnt)
 				}
 			}
-
-			// full width dropdown
 			c.SetGridLayout([]int{-1}, nil)
 
-			// Render each dropdown option as a clickable button
 			for i, option := range options {
 				c.IDScope(option, func() {
 					isSelected := i == *selectedIndex
 
-					// Highlight the currently selected option
 					var buttonColor int
 					if isSelected {
 						buttonColor = colorButtonFocus
@@ -77,7 +68,6 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 						buttonColor = colorButton
 					}
 
-					// Create clickable button widget for this option
 					pc := caller()
 					buttonID := c.idFromCaller(pc)
 					var wasPressed bool
@@ -87,14 +77,12 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 							var e EventHandler
 
 							if c.pointing.justPressed() && c.focus == buttonID {
-								// Handle option selection
 								wasPressed = true
 								e = &eventHandler{}
 							}
 
 							return e
 						}, func(bounds image.Rectangle) {
-							// Draw the option button with appropriate styling
 							c.drawWidgetFrame(buttonID, bounds, buttonColor, optionAlignCenter)
 							if len(option) > 0 {
 								c.drawWidgetText(option, bounds, colorText, optionAlignCenter)
@@ -119,7 +107,6 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 		return nil, nil
 	})
 
-	// Create the main dropdown button that toggles the menu
 	return c.widget(id, optionAlignCenter, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
 		var e EventHandler
 
@@ -138,18 +125,12 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 			}
 		}
 
-		// Toggle dropdown when button is clicked
 		if c.pointing.justPressed() && c.focus == id {
-			// Check if dropdown container exists and its state
-
-			isOpen := dropdownContainer.open
-
-			if isOpen {
+			if dropdownContainer.open {
 				// Close the dropdown immediately and cancel any pending delay
 				dropdownContainer.open = false
 				dropdownContainer.dropdownCloseDelay = 0
 			} else {
-				// Store the current state before opening, made in some desperate attempts to avoid feedback loops
 				wasClosedBefore := !dropdownContainer.open
 
 				// Open the dropdown and cancel any pending close delay
@@ -172,24 +153,19 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 				}
 			}
 		}
-
-		// Generate event if user changed selection
 		if last != *selectedIndex {
 			e = &eventHandler{}
 		}
 
 		return e
 	}, func(bounds image.Rectangle) {
-		// Draw the dropdown button appearance
 		c.drawWidgetFrame(id, bounds, colorButton, optionAlignCenter)
 
-		// Show currently selected text (reserve space for arrow - use widget height for square arrow area)
 		arrowWidth := bounds.Dy()
 		textBounds := bounds
 		textBounds.Max.X -= arrowWidth
 		c.drawWidgetText(options[*selectedIndex], textBounds, colorText, optionAlignCenter)
 
-		// Draw dropdown arrow indicator (up/down based on current state)
 		arrowBounds := image.Rect(bounds.Max.X-arrowWidth, bounds.Min.Y, bounds.Max.X, bounds.Max.Y)
 		icon := iconDown
 		if c.container(dropdownID, 0).open {
