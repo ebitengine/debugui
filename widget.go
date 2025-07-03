@@ -28,7 +28,6 @@ const (
 	optionHoldFocus
 	optionAutoSize
 	optionPopup
-	optionDropdown
 	optionClosed
 	optionExpanded
 )

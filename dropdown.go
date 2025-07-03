@@ -48,7 +48,7 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 	}
 
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		windowOptions := optionDropdown | optionNoResize | optionNoTitle
+		windowOptions := optionNoResize | optionNoTitle
 
 		if err := c.window("", image.Rectangle{}, windowOptions, dropdownID, func(layout ContainerLayout) {
 			if cnt := c.container(dropdownID, 0); cnt != nil {
