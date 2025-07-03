@@ -60,46 +60,13 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 
 			for i, option := range options {
 				c.IDScope(strconv.Itoa(i), func() {
-					isSelected := i == *selectedIndex
-
-					var buttonColor int
-					if isSelected {
-						buttonColor = colorButtonFocus
-					} else {
-						buttonColor = colorButton
-					}
-
-					pc := caller()
-					buttonID := c.idFromCaller(pc)
-					var wasPressed bool
-
-					_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
-						e, err := c.widget(buttonID, optionAlignCenter, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
-							var e EventHandler
-
-							if c.pointing.justPressed() && c.focus == buttonID {
-								wasPressed = true
-								e = &eventHandler{}
-							}
-
-							return e
-						}, func(bounds image.Rectangle) {
-							c.drawWidgetFrame(buttonID, bounds, buttonColor, optionAlignCenter)
-							if len(option) > 0 {
-								c.drawWidgetText(option, bounds, colorText, optionAlignCenter)
-							}
-						})
-						return e, err
-					})
-
-					// Handle option selection: update index and start close delay
-					if wasPressed {
+					c.Button(option).On(func() {
 						*selectedIndex = i
 						if cnt := c.container(dropdownID, 0); cnt != nil {
 							// Start the close delay timer (0.1 seconds at TPS rate)
 							cnt.dropdownCloseDelay = ebiten.TPS() / 10
 						}
-					}
+					})
 				})
 			}
 		}); err != nil {
