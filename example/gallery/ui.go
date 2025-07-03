@@ -65,6 +65,20 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 				ctx.OpenPopup(popupID)
 			})
 		})
+		g.dropdownOptions1 = []string{"Option 1", "Option 2", "Option 3", "Option 4", "Option 5"}
+		g.dropdownOptions2 = []string{"Choice A", "Choice B", "Choice C", "Choice D", "Choice E"}
+		ctx.Header("Dropdown Menu", true, func() {
+			ctx.SetGridLayout([]int{-1, -1}, nil)
+			ctx.Text("Select an option:")
+			ctx.Dropdown(&g.selectedOption1, g.dropdownOptions1).On(func() {
+				g.writeLog(fmt.Sprintf("Selected option: %s", g.dropdownOptions1[g.selectedOption1]))
+			})
+			ctx.Text("Another dropdown:")
+			ctx.Dropdown(&g.selectedOption2, g.dropdownOptions2).On(func() {
+				g.writeLog(fmt.Sprintf("Selected another option: %s", g.dropdownOptions2[g.selectedOption2]))
+			})
+		})
+
 		ctx.Header("Tree and Text", true, func() {
 			ctx.SetGridLayout([]int{-1, -1}, nil)
 			ctx.GridCell(func(bounds image.Rectangle) {
