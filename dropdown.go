@@ -5,6 +5,7 @@ package debugui
 
 import (
 	"image"
+	"strconv"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -58,7 +59,7 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 			c.SetGridLayout([]int{-1}, nil)
 
 			for i, option := range options {
-				c.IDScope(option, func() {
+				c.IDScope(strconv.Itoa(i), func() {
 					isSelected := i == *selectedIndex
 
 					var buttonColor int
