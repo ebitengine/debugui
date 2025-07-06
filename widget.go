@@ -124,6 +124,11 @@ func (c *Context) widget(id widgetID, opt option, layout func(bounds image.Recta
 	if handleInput != nil {
 		e = handleInput(bounds, wasFocused)
 	}
+	// Handling input is still needed even if the widget is out of bounds, especially for Header.
+	if !c.currentContainer().layout.BodyBounds.Overlaps(bounds) {
+		return e, nil
+	}
+
 	if draw != nil {
 		draw(bounds)
 	}
