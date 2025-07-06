@@ -119,14 +119,6 @@ func (c *Context) widget(id widgetID, opt option, layout func(bounds image.Recta
 		layout(bounds)
 	}
 
-	l, err := c.layout()
-	if err != nil {
-		return nil, err
-	}
-	if !l.body.Overlaps(bounds.Sub(c.currentContainer().layout.ScrollOffset)) {
-		return nil, nil
-	}
-
 	wasFocused := c.handleInputForWidget(id, bounds, opt)
 	var e EventHandler
 	if handleInput != nil {
