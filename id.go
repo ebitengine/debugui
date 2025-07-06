@@ -18,10 +18,27 @@ func caller() uintptr {
 	return pc
 }
 
+// Loop creates a loop to iterate by the given count.
+// Loop creates a unique ID scope for each iteration.
+func (c *Context) Loop(count int, f func(i int)) {
+	pc := caller()
+	c.idStack = append(c.idStack, widgetID(fmt.Sprintf("caller:%d", pc)))
+	defer func() {
+		c.idStack = slices.Delete(c.idStack, len(c.idStack)-1, len(c.idStack))
+	}()
+	for i := range count {
+		c.idStack = append(c.idStack, widgetID(fmt.Sprintf("string:%d", i)))
+		f(i)
+		c.idStack = slices.Delete(c.idStack, len(c.idStack)-1, len(c.idStack))
+	}
+}
+
 // IDScope creates a new scope for widget IDs.
 // IDScope creates a unique scope based on the caller's position and the given name string.
 //
 // IDScope is useful when you want to create multiple widgets at the same position e.g. in a for loop.
+//
+// IDScope is a low level API. For a simple loop, use [Loop] instead.
 func (c *Context) IDScope(name string, f func()) {
 	pc := caller()
 	c.idStack = append(c.idStack, widgetID(fmt.Sprintf("caller:%d", pc)))

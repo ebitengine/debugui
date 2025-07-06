@@ -5,7 +5,6 @@ package debugui
 
 import (
 	"image"
-	"strconv"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -58,17 +57,16 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 			}
 			c.SetGridLayout([]int{-1}, nil)
 
-			for i, option := range options {
-				c.IDScope(strconv.Itoa(i), func() {
-					c.Button(option).On(func() {
-						*selectedIndex = i
-						if cnt := c.container(dropdownID, 0); cnt != nil {
-							// Start the close delay timer (0.1 seconds at TPS rate)
-							cnt.dropdownCloseDelay = ebiten.TPS() / 10
-						}
-					})
+			c.Loop(len(options), func(i int) {
+				option := options[i]
+				c.Button(option).On(func() {
+					*selectedIndex = i
+					if cnt := c.container(dropdownID, 0); cnt != nil {
+						// Start the close delay timer (0.1 seconds at TPS rate)
+						cnt.dropdownCloseDelay = ebiten.TPS() / 10
+					}
 				})
-			}
+			})
 		}); err != nil {
 			return nil, err
 		}

@@ -216,12 +216,10 @@ func (g *Game) logWindow(ctx *debugui.Context) {
 func (g *Game) buttonWindows(ctx *debugui.Context) {
 	ctx.Window("Button Windows", image.Rect(350, 300, 650, 500), func(layout debugui.ContainerLayout) {
 		ctx.SetGridLayout([]int{-1, -1, -1, -1}, nil)
-		for i := 0; i < 100; i++ {
-			ctx.IDScope(fmt.Sprintf("%d", i), func() {
-				ctx.Button("Button").On(func() {
-					g.writeLog(fmt.Sprintf("Pressed button %d in Button Window", i))
-				})
+		ctx.Loop(100, func(i int) {
+			ctx.Button("Button").On(func() {
+				g.writeLog(fmt.Sprintf("Pressed button %d in Button Window", i))
 			})
-		}
+		})
 	})
 }
