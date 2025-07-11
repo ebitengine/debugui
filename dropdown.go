@@ -30,9 +30,7 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 	}
 	last := *selectedIndex
 
-	dropdownID := c.idFromString("dropdown:" + string(id))
-
-	dropdownContainer := c.container(dropdownID, 0)
+	dropdownContainer := c.container(id, 0)
 
 	// Handle delayed closing of dropdown
 	if dropdownContainer.dropdownCloseDelay > 0 {
@@ -49,8 +47,8 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		windowOptions := optionNoResize | optionNoTitle
 
-		if err := c.window("", image.Rectangle{}, windowOptions, dropdownID, func(layout ContainerLayout) {
-			if cnt := c.container(dropdownID, 0); cnt != nil {
+		if err := c.window("", image.Rectangle{}, windowOptions, id, func(layout ContainerLayout) {
+			if cnt := c.container(id, 0); cnt != nil {
 				if cnt.open {
 					c.bringToFront(cnt)
 				}
@@ -61,7 +59,7 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 				option := options[i]
 				c.Button(option).On(func() {
 					*selectedIndex = i
-					if cnt := c.container(dropdownID, 0); cnt != nil {
+					if cnt := c.container(id, 0); cnt != nil {
 						// Start the close delay timer (0.1 seconds at TPS rate)
 						cnt.dropdownCloseDelay = ebiten.TPS() / 10
 					}
@@ -76,7 +74,7 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 	return c.widget(id, optionAlignCenter, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
 		var e EventHandler
 
-		dropdownContainer := c.container(dropdownID, 0)
+		dropdownContainer := c.container(id, 0)
 		// Manual "click outside to close" and dropdown toggle, trying to do this in the container.go had lots of issues
 		if dropdownContainer.open && c.pointing.justPressed() {
 			clickPos := c.pointingPosition()
@@ -134,7 +132,7 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 
 		arrowBounds := image.Rect(bounds.Max.X-arrowWidth, bounds.Min.Y, bounds.Max.X, bounds.Max.Y)
 		icon := iconDown
-		if c.container(dropdownID, 0).open {
+		if c.container(id, 0).open {
 			icon = iconUp
 		}
 		c.drawIcon(icon, arrowBounds, c.style().colors[colorText])
