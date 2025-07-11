@@ -10,11 +10,12 @@ import (
 
 // caller returns a program counter of the caller.
 func caller() uintptr {
-	pc, _, _, ok := runtime.Caller(2)
-	if !ok {
+	var pcs [1]uintptr
+	n := runtime.Callers(3, pcs[:])
+	if n == 0 {
 		return 0
 	}
-	return pc
+	return pcs[0]
 }
 
 // Loop creates a loop to iterate by the given count.
