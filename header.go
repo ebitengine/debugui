@@ -16,7 +16,7 @@ import "image"
 // If you want to generate different widgets with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) Header(label string, initialExpansion bool, f func()) {
 	pc := caller()
-	id := c.idFromCaller(pc)
+	id := c.idStack.push(idPartFromCaller(pc))
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		var opt option
 		if initialExpansion {
@@ -39,7 +39,7 @@ func (c *Context) Header(label string, initialExpansion bool, f func()) {
 // If you want to generate different widgets with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) TreeNode(label string, f func()) {
 	pc := caller()
-	id := c.idFromCaller(pc)
+	id := c.idStack.push(idPartFromCaller(pc))
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		if err := c.treeNode(label, 0, id, f); err != nil {
 			return nil, err

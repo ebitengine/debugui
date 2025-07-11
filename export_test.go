@@ -3,13 +3,9 @@
 
 package debugui
 
-type WidgetID = widgetID
-
-const EmptyWidgetID = emptyWidgetID
-
-func (c *Context) IDFromCaller() WidgetID {
+func IDPartFromCaller() string {
 	pc := caller()
-	return c.idFromCaller(pc)
+	return idPartFromCaller(pc)
 }
 
 func (d *DebugUI) ContainerCounter() int {

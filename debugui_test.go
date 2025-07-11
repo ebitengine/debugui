@@ -11,27 +11,27 @@ import (
 	"github.com/ebitengine/debugui"
 )
 
-func TestMultipleIDFromCallersInForLoop(t *testing.T) {
+func TestMultipleIDPartFromCallersInForLoop(t *testing.T) {
 	var d debugui.DebugUI
 	if _, err := d.Update(func(ctx *debugui.Context) error {
 		ctx.Window("Window", image.Rect(0, 0, 100, 100), func(layout debugui.ContainerLayout) {
-			var id debugui.WidgetID
+			var idPart string
 			for range 10 {
-				id2 := ctx.IDFromCaller()
-				if id2 == debugui.EmptyWidgetID {
-					t.Errorf("IDFromCaller() returned 0")
+				idPart2 := debugui.IDPartFromCaller()
+				if idPart2 == "" {
+					t.Errorf("IDPartFromCaller() returned an empty string")
 					continue
 				}
-				if id == debugui.EmptyWidgetID {
-					id = id2
+				if idPart == "" {
+					idPart = idPart2
 					continue
 				}
-				if id != id2 {
-					t.Errorf("IDFromCaller) returned different values: %q and %q", id, id2)
+				if idPart != idPart2 {
+					t.Errorf("IDPartFromCaller() returned different values: %q and %q", idPart, idPart2)
 				}
 			}
-			if id == debugui.EmptyWidgetID {
-				t.Errorf("IDFromCaller() returned 0")
+			if idPart == "" {
+				t.Errorf("IDPartFromCaller() returned an empty string")
 			}
 		})
 		return nil
@@ -40,18 +40,18 @@ func TestMultipleIDFromCallersInForLoop(t *testing.T) {
 	}
 }
 
-func TestMultipleIDFromCallersOnOneLine(t *testing.T) {
+func TestMultipleIDPartFromCallersOnOneLine(t *testing.T) {
 	var d debugui.DebugUI
 	if _, err := d.Update(func(ctx *debugui.Context) error {
 		ctx.Window("Window", image.Rect(0, 0, 100, 100), func(layout debugui.ContainerLayout) {
-			idA1 := ctx.IDFromCaller()
-			idA2 := ctx.IDFromCaller()
-			if idA1 == idA2 {
-				t.Errorf("IDFromCaller() returned the same value twice: %q", idA1)
+			idPartA1 := debugui.IDPartFromCaller()
+			idPartA2 := debugui.IDPartFromCaller()
+			if idPartA1 == idPartA2 {
+				t.Errorf("IDPartFromCaller() returned the same value twice: %q", idPartA1)
 			}
-			idB1, idB2 := ctx.IDFromCaller(), ctx.IDFromCaller()
-			if idB1 == idB2 {
-				t.Errorf("IDFromCaller() returned the same value twice: %q", idB1)
+			idPartB1, idPartB2 := debugui.IDPartFromCaller(), debugui.IDPartFromCaller()
+			if idPartB1 == idPartB2 {
+				t.Errorf("IDPartFromCaller() returned the same value twice: %q", idPartB1)
 			}
 		})
 		return nil

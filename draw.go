@@ -205,7 +205,7 @@ func (c *Context) drawIcon(icon icon, rect image.Rectangle, color color.Color) {
 // DrawOnlyWidget adds a widget that only draws the given function without user interaction.
 func (c *Context) DrawOnlyWidget(f func(screen *ebiten.Image)) {
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		_, _ = c.widget(emptyWidgetID, 0, nil, nil, func(bounds image.Rectangle) {
+		_, _ = c.widget(widgetID{}, 0, nil, nil, func(bounds image.Rectangle) {
 			c.setClip(c.clipRect())
 			defer c.setClip(unclippedRect)
 			cmd := c.appendCommand(commandDraw)

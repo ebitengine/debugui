@@ -84,20 +84,20 @@ func (c *Context) currentRootContainer() *container {
 // rect is the initial size and position of the window.
 func (c *Context) Window(title string, initialBounds image.Rectangle, f func(layout ContainerLayout)) {
 	pc := caller()
-	id := c.idFromCaller(pc)
+	idPart := idPartFromCaller(pc)
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		if err := c.window(title, initialBounds, 0, id, f); err != nil {
+		if err := c.window(title, initialBounds, 0, idPart, f); err != nil {
 			return nil, err
 		}
 		return nil, nil
 	})
 }
 
-func (c *Context) window(title string, initialBounds image.Rectangle, opt option, id widgetID, f func(layout ContainerLayout)) error {
+func (c *Context) window(title string, initialBounds image.Rectangle, opt option, idPart string, f func(layout ContainerLayout)) error {
 	// A window is not a widget in the current implementation, but a window is a widget in the concept.
-	c.currentID = id
 	var err error
-	c.idScopeFromID(id, func() {
+	c.idScopeFromIDPart(idPart, func(id widgetID) {
+		c.currentID = id
 		err = c.doWindow(title, initialBounds, opt, id, f)
 	})
 	return err
@@ -146,10 +146,10 @@ func (c *Context) doWindow(title string, initialBounds image.Rectangle, opt opti
 
 		// do title text
 		if (^opt & optionNoTitle) != 0 {
-			id := c.idFromString("title")
+			titleID := id.push(idPartFromString("title"))
 			r := image.Rect(tr.Min.X+tr.Dy()-c.style().padding, tr.Min.Y, tr.Max.X, tr.Max.Y)
-			_ = c.widgetWithBounds(id, opt, r, func(bounds image.Rectangle, wasFocused bool) EventHandler {
-				if id == c.focus && c.pointing.pressed() {
+			_ = c.widgetWithBounds(titleID, opt, r, func(bounds image.Rectangle, wasFocused bool) EventHandler {
+				if titleID == c.focus && c.pointing.pressed() {
 					b := cnt.layout.Bounds.Add(c.pointingDelta())
 					if c.screenWidth > 0 {
 						maxX := b.Max.X
@@ -180,10 +180,10 @@ func (c *Context) doWindow(title string, initialBounds image.Rectangle, opt opti
 
 		// do `collapse` button
 		if (^opt & optionNoClose) != 0 {
-			id := c.idFromString("collapse")
+			collapseID := id.push(idPartFromString("collapse"))
 			r := image.Rect(tr.Min.X, tr.Min.Y, tr.Min.X+tr.Dy(), tr.Max.Y)
-			_ = c.widgetWithBounds(id, opt, r, func(bounds image.Rectangle, wasFocused bool) EventHandler {
-				if c.pointing.justPressed() && id == c.focus {
+			_ = c.widgetWithBounds(collapseID, opt, r, func(bounds image.Rectangle, wasFocused bool) EventHandler {
+				if c.pointing.justPressed() && collapseID == c.focus {
 					cnt.collapsed = !cnt.collapsed
 				}
 				return nil
@@ -213,10 +213,10 @@ func (c *Context) doWindow(title string, initialBounds image.Rectangle, opt opti
 	// do `resize` handle
 	if (^opt & optionNoResize) != 0 {
 		sz := c.style().titleHeight
-		id := c.idFromString("resize")
+		resizeID := id.push(idPartFromString("resize"))
 		r := image.Rect(bounds.Max.X-sz, bounds.Max.Y-sz, bounds.Max.X, bounds.Max.Y)
-		_ = c.widgetWithBounds(id, 0, r, func(bounds image.Rectangle, wasFocused bool) EventHandler {
-			if id == c.focus && c.pointing.pressed() {
+		_ = c.widgetWithBounds(resizeID, 0, r, func(bounds image.Rectangle, wasFocused bool) EventHandler {
+			if resizeID == c.focus && c.pointing.pressed() {
 				cnt.layout.Bounds.Max.X = min(cnt.layout.Bounds.Min.X+max(96, cnt.layout.Bounds.Dx()+c.pointingDelta().X), c.screenWidth/c.Scale())
 				cnt.layout.Bounds.Max.Y = min(cnt.layout.Bounds.Min.Y+max(64, cnt.layout.Bounds.Dy()+c.pointingDelta().Y), c.screenHeight/c.Scale())
 			}
@@ -283,10 +283,11 @@ func (c *Context) ClosePopup(popupID PopupID) {
 // To show the popup window, call OpenPopup with the PopupID returned by this function.
 func (c *Context) Popup(f func(layout ContainerLayout, popupID PopupID)) PopupID {
 	pc := caller()
-	id := c.idFromCaller(pc)
+	idPart := idPartFromCaller(pc)
+	id := c.idStack.push(idPart)
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		opt := optionPopup | optionAutoSize | optionNoResize | optionNoScroll | optionNoTitle | optionClosed
-		if err := c.window("", image.Rectangle{}, opt, id, func(layout ContainerLayout) {
+		if err := c.window("", image.Rectangle{}, opt, idPart, func(layout ContainerLayout) {
 			f(layout, PopupID(id))
 		}); err != nil {
 			return nil, err
@@ -324,7 +325,7 @@ func (c *Context) SetScroll(scroll image.Point) {
 }
 
 func (c *container) textInputTextField(id widgetID, createIfNeeded bool) *textinput.Field {
-	if id == emptyWidgetID {
+	if id == (widgetID{}) {
 		return nil
 	}
 	if _, ok := c.textInputTextFields[id]; !ok {

@@ -29,7 +29,7 @@ type Context struct {
 	numberEditBuf string
 	numberEdit    widgetID
 
-	idStack []widgetID
+	idStack widgetID
 
 	// idToContainer maps widget IDs to containers.
 	//
@@ -106,7 +106,7 @@ func (c *Context) update(f func(ctx *Context) error) (inputCapturingState InputC
 	}
 
 	// Check whether there is a focused widget like a text field.
-	if c.focus != emptyWidgetID {
+	if c.focus != (widgetID{}) {
 		inputCapturingState |= InputCapturingStateFocus
 	}
 	return inputCapturingState, nil
@@ -120,12 +120,12 @@ func (c *Context) beginUpdate() {
 		cnt.commandList = slices.Delete(cnt.commandList, 0, len(cnt.commandList))
 	}
 	c.scrollTarget = nil
-	c.currentID = emptyWidgetID
+	c.currentID = widgetID{}
 }
 
 func (c *Context) endUpdate() error {
 	// check stacks
-	if len(c.idStack) > 0 {
+	if c.idStack.size > 0 {
 		return errors.New("debugui: id stack must be empty")
 	}
 	if len(c.containerStack) > 0 {
@@ -147,7 +147,7 @@ func (c *Context) endUpdate() error {
 
 	// unset focus if focus id was not touched this frame
 	if !c.keepFocus {
-		c.focus = emptyWidgetID
+		c.focus = widgetID{}
 	}
 	c.keepFocus = false
 

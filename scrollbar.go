@@ -15,7 +15,7 @@ func (c *Context) scrollbarVertical(cnt *container, body image.Rectangle, cs ima
 		base.Max.X = base.Min.X + c.style().scrollbarSize
 
 		// handle input
-		id := c.idFromString("scrollbar-y")
+		id := c.idStack.push(idPartFromString("scrollbar-y"))
 		_ = c.widgetWithBounds(id, 0, base, func(bounds image.Rectangle, wasFocused bool) EventHandler {
 			if c.focus == id && c.pointing.pressed() {
 				cnt.layout.ScrollOffset.Y += c.pointingDelta().Y * cs.Y / bounds.Dy()
@@ -51,7 +51,7 @@ func (c *Context) scrollbarHorizontal(cnt *container, body image.Rectangle, cs i
 		base.Max.Y = base.Min.Y + c.style().scrollbarSize
 
 		// handle input
-		id := c.idFromString("scrollbar-x")
+		id := c.idStack.push(idPartFromString("scrollbar-x"))
 		_ = c.widgetWithBounds(id, 0, base, func(bounds image.Rectangle, wasFocused bool) EventHandler {
 			if c.focus == id && c.pointing.pressed() {
 				cnt.layout.ScrollOffset.X += c.pointingDelta().X * cs.X / bounds.Dx()

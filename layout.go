@@ -86,7 +86,7 @@ func (c *Context) popLayout() error {
 // GridCell creates a grid cell with the content defined by the function f.
 func (c *Context) GridCell(f func(bounds image.Rectangle)) {
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		if _, err := c.widget(emptyWidgetID, 0, f, nil, nil); err != nil {
+		if _, err := c.widget(widgetID{}, 0, f, nil, nil); err != nil {
 			return nil, err
 		}
 		return nil, nil

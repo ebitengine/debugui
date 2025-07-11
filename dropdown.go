@@ -15,13 +15,13 @@ import (
 // Returns an EventHandler that triggers when the selection changes.
 func (c *Context) Dropdown(selectedIndex *int, options []string) EventHandler {
 	pc := caller()
-	id := c.idFromCaller(pc)
+	idPart := idPartFromCaller(pc)
 	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		return c.dropdown(selectedIndex, options, id)
+		return c.dropdown(selectedIndex, options, idPart)
 	})
 }
 
-func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (EventHandler, error) {
+func (c *Context) dropdown(selectedIndex *int, options []string, idPart string) (EventHandler, error) {
 	if selectedIndex == nil || len(options) == 0 {
 		return &nullEventHandler{}, nil
 	}
@@ -30,6 +30,7 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 	}
 	last := *selectedIndex
 
+	id := c.idStack.push(idPart)
 	dropdownContainer := c.container(id, 0)
 
 	// Handle delayed closing of dropdown
@@ -47,7 +48,7 @@ func (c *Context) dropdown(selectedIndex *int, options []string, id widgetID) (E
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		windowOptions := optionNoResize | optionNoTitle
 
-		if err := c.window("", image.Rectangle{}, windowOptions, id, func(layout ContainerLayout) {
+		if err := c.window("", image.Rectangle{}, windowOptions, idPart, func(layout ContainerLayout) {
 			if cnt := c.container(id, 0); cnt != nil {
 				if cnt.open {
 					c.bringToFront(cnt)

@@ -15,7 +15,7 @@ import "image"
 // If you want to generate different widgets with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) Button(text string) EventHandler {
 	pc := caller()
-	id := c.idFromCaller(pc)
+	id := c.idStack.push(idPartFromCaller(pc))
 	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		return c.button(text, optionAlignCenter, id)
 	})
@@ -38,10 +38,9 @@ func (c *Context) button(text string, opt option, id widgetID) (EventHandler, er
 
 func (c *Context) spinButtons() (up, down EventHandler) {
 	pc := caller()
-	id := c.idFromCaller(pc)
-	c.idScopeFromID(id, func() {
-		upID := c.idFromString("up")
-		downID := c.idFromString("down")
+	c.idScopeFromIDPart(idPartFromCaller(pc), func(id widgetID) {
+		upID := id.push(idPartFromString("up"))
+		downID := id.push(idPartFromString("down"))
 		c.GridCell(func(bounds image.Rectangle) {
 			c.SetGridLayout(nil, []int{-1, -1})
 			up = c.wrapEventHandlerAndError(func() (EventHandler, error) {

@@ -10,9 +10,28 @@ import (
 // widgetID is a unique identifier for a widget.
 //
 // Do not rely on the string value of widgetID, as it is not guaranteed to be stable across different runs of the program.
-type widgetID string
+type widgetID struct {
+	idParts [16]string
+	size    int
+}
 
-const emptyWidgetID widgetID = ""
+func (w widgetID) push(idPart string) widgetID {
+	if w.size >= len(w.idParts) {
+		panic("debugui: too many ID parts")
+	}
+	w.idParts[w.size] = idPart
+	w.size++
+	return w
+}
+
+func (w widgetID) pop() widgetID {
+	if w.size <= 0 {
+		panic("debugui: no ID parts to pop")
+	}
+	w.size--
+	w.idParts[w.size] = ""
+	return w
+}
 
 type option int
 
@@ -55,7 +74,7 @@ func (c *Context) pointingPosition() image.Point {
 }
 
 func (c *Context) handleInputForWidget(id widgetID, bounds image.Rectangle, opt option) (wasFocused bool) {
-	if id == emptyWidgetID {
+	if id == (widgetID{}) {
 		return false
 	}
 
@@ -73,11 +92,11 @@ func (c *Context) handleInputForWidget(id widgetID, bounds image.Rectangle, opt 
 
 	if c.focus == id {
 		if c.pointing.justPressed() && !hover {
-			c.setFocus(emptyWidgetID)
+			c.setFocus(widgetID{})
 			wasFocused = true
 		}
 		if !c.pointing.pressed() && (^opt&optionHoldFocus) != 0 {
-			c.setFocus(emptyWidgetID)
+			c.setFocus(widgetID{})
 			wasFocused = true
 		}
 	}
@@ -86,7 +105,7 @@ func (c *Context) handleInputForWidget(id widgetID, bounds image.Rectangle, opt 
 		if c.pointing.justPressed() {
 			c.setFocus(id)
 		} else if !hover {
-			c.hover = emptyWidgetID
+			c.hover = widgetID{}
 		}
 	}
 
@@ -156,7 +175,7 @@ func (c *Context) widgetWithBounds(id widgetID, opt option, bounds image.Rectang
 // If you want to generate different widgets with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) Checkbox(state *bool, label string) EventHandler {
 	pc := caller()
-	id := c.idFromCaller(pc)
+	id := c.idStack.push(idPartFromCaller(pc))
 	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		return c.widget(id, 0, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
 			var e EventHandler

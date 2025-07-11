@@ -7,17 +7,17 @@ package debugui
 // Panel can have scroll bars, and the contents of the panel can be scrolled.
 func (c *Context) Panel(f func(layout ContainerLayout)) {
 	pc := caller()
-	id := c.idFromCaller(pc)
+	idPart := idPartFromCaller(pc)
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		if err := c.panel(0, id, f); err != nil {
+		if err := c.panel(0, idPart, f); err != nil {
 			return nil, err
 		}
 		return nil, nil
 	})
 }
 
-func (c *Context) panel(opt option, id widgetID, f func(layout ContainerLayout)) (err error) {
-	c.idScopeFromID(id, func() {
+func (c *Context) panel(opt option, idPart string, f func(layout ContainerLayout)) (err error) {
+	c.idScopeFromIDPart(idPart, func(id widgetID) {
 		err = c.doPanel(opt, id, f)
 	})
 	return

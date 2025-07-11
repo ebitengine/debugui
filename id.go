@@ -6,7 +6,6 @@ package debugui
 import (
 	"fmt"
 	"runtime"
-	"slices"
 )
 
 // caller returns a program counter of the caller.
@@ -22,14 +21,14 @@ func caller() uintptr {
 // Loop creates a unique ID scope for each iteration.
 func (c *Context) Loop(count int, f func(i int)) {
 	pc := caller()
-	c.idStack = append(c.idStack, widgetID(fmt.Sprintf("caller:%d", pc)))
+	c.idStack = c.idStack.push(idPartFromCaller(pc))
 	defer func() {
-		c.idStack = slices.Delete(c.idStack, len(c.idStack)-1, len(c.idStack))
+		c.idStack = c.idStack.pop()
 	}()
 	for i := range count {
-		c.idStack = append(c.idStack, widgetID(fmt.Sprintf("string:%d", i)))
+		c.idStack = c.idStack.push(idPartFromInt(i))
 		f(i)
-		c.idStack = slices.Delete(c.idStack, len(c.idStack)-1, len(c.idStack))
+		c.idStack = c.idStack.pop()
 	}
 }
 
@@ -41,48 +40,30 @@ func (c *Context) Loop(count int, f func(i int)) {
 // IDScope is a low level API. For a simple loop, use [Loop] instead.
 func (c *Context) IDScope(name string, f func()) {
 	pc := caller()
-	c.idStack = append(c.idStack, widgetID(fmt.Sprintf("caller:%d", pc)))
-	c.idStack = append(c.idStack, widgetID(fmt.Sprintf("string:%q", name)))
+	c.idStack = c.idStack.push(idPartFromCaller(pc))
+	c.idStack = c.idStack.push(idPartFromString(name))
 	defer func() {
-		c.idStack = slices.Delete(c.idStack, len(c.idStack)-2, len(c.idStack))
+		c.idStack = c.idStack.pop().pop()
 	}()
 	f()
 }
 
-func (c *Context) idScopeFromID(id widgetID, f func()) {
-	c.idStack = append(c.idStack, id)
+func (c *Context) idScopeFromIDPart(idPart string, f func(id widgetID)) {
+	c.idStack = c.idStack.push(idPart)
 	defer func() {
-		c.idStack = slices.Delete(c.idStack, len(c.idStack)-1, len(c.idStack))
+		c.idStack = c.idStack.pop()
 	}()
-	f()
+	f(c.idStack)
 }
 
-func (c *Context) idScopeToWidgetID() widgetID {
-	var newID widgetID
-	for _, id := range c.idStack {
-		if len(newID) > 0 {
-			newID += ":"
-		}
-		newID += "[" + id + "]"
-	}
-	return newID
+func idPartFromString(str string) string {
+	return fmt.Sprintf("string:%q", str)
 }
 
-func (c *Context) idFromString(str string) widgetID {
-	newID := c.idScopeToWidgetID()
-	if len(newID) > 0 {
-		newID += ":"
-	}
-	newID += widgetID(fmt.Sprintf("string:%q", str))
-	return newID
+func idPartFromInt(i int) string {
+	return fmt.Sprintf("number:%d", i)
 }
 
-// idFromCaller returns a hash value based on the caller's file and line number.
-func (c *Context) idFromCaller(callerPC uintptr) widgetID {
-	newID := c.idScopeToWidgetID()
-	if len(newID) > 0 {
-		newID += ":"
-	}
-	newID += widgetID(fmt.Sprintf("caller:%d", callerPC))
-	return newID
+func idPartFromCaller(callerPC uintptr) string {
+	return fmt.Sprintf("caller:%d", callerPC)
 }

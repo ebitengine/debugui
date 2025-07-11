@@ -24,7 +24,7 @@ import (
 // If you want to generate different widgets with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) Slider(value *int, low, high int, step int) EventHandler {
 	pc := caller()
-	id := c.idFromCaller(pc)
+	id := c.idStack.push(idPartFromCaller(pc))
 	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		return c.slider(value, low, high, step, id, optionAlignCenter)
 	})
@@ -43,7 +43,7 @@ func (c *Context) Slider(value *int, low, high int, step int) EventHandler {
 // If you want to generate different widgets with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) SliderF(value *float64, low, high float64, step float64, digits int) EventHandler {
 	pc := caller()
-	id := c.idFromCaller(pc)
+	id := c.idStack.push(idPartFromCaller(pc))
 	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		return c.sliderF(value, low, high, step, digits, id, optionAlignCenter)
 	})
@@ -158,7 +158,7 @@ func (c *Context) numberTextField(value *int, id widgetID) error {
 					nval = 0
 				}
 				*value = int(nval)
-				c.numberEdit = emptyWidgetID
+				c.numberEdit = widgetID{}
 			})
 		}
 	}
@@ -182,7 +182,7 @@ func (c *Context) numberTextFieldF(value *float64, id widgetID) error {
 					nval = 0
 				}
 				*value = float64(nval)
-				c.numberEdit = emptyWidgetID
+				c.numberEdit = widgetID{}
 			})
 		}
 	}

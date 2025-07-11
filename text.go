@@ -64,7 +64,7 @@ func lines(text string, width int) iter.Seq[string] {
 func (c *Context) Text(text string) {
 	c.GridCell(func(bounds image.Rectangle) {
 		for line := range lines(text, bounds.Dx()-c.style().padding) {
-			_, _ = c.widget(emptyWidgetID, 0, nil, nil, func(bounds image.Rectangle) {
+			_, _ = c.widget(widgetID{}, 0, nil, nil, func(bounds image.Rectangle) {
 				c.drawWidgetText(line, bounds, colorText, 0)
 			})
 		}

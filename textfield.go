@@ -29,7 +29,7 @@ const (
 // If you want to generate different widgets with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) TextField(buf *string) EventHandler {
 	pc := caller()
-	id := c.idFromCaller(pc)
+	id := c.idStack.push(idPartFromCaller(pc))
 	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		return c.textField(buf, id, 0)
 	})
@@ -128,9 +128,9 @@ func (c *Context) textField(buf *string, id widgetID, opt option) (EventHandler,
 // If you want to generate different widgets with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) NumberField(value *int, step int) EventHandler {
 	pc := caller()
-	id := c.idFromCaller(pc)
+	idPart := idPartFromCaller(pc)
 	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		return c.numberField(value, step, id, optionAlignRight)
+		return c.numberField(value, step, idPart, optionAlignRight)
 	})
 }
 
@@ -147,18 +147,18 @@ func (c *Context) NumberField(value *int, step int) EventHandler {
 // If you want to generate different widgets with the same function call in a loop (such as a for loop), use [IDScope].
 func (c *Context) NumberFieldF(value *float64, step float64, digits int) EventHandler {
 	pc := caller()
-	id := c.idFromCaller(pc)
+	idPart := idPartFromCaller(pc)
 	return c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		return c.numberFieldF(value, step, digits, id, optionAlignRight)
+		return c.numberFieldF(value, step, digits, idPart, optionAlignRight)
 	})
 }
 
-func (c *Context) numberField(value *int, step int, id widgetID, opt option) (EventHandler, error) {
+func (c *Context) numberField(value *int, step int, idPart string, opt option) (EventHandler, error) {
 	last := *value
 
 	var e EventHandler
 	var err error
-	c.idScopeFromID(id, func() {
+	c.idScopeFromIDPart(idPart, func(id widgetID) {
 		c.GridCell(func(bounds image.Rectangle) {
 			c.SetGridLayout([]int{-1, lineHeight()}, nil)
 
@@ -170,7 +170,7 @@ func (c *Context) numberField(value *int, step int, id widgetID, opt option) (Ev
 			}
 			if e1 != nil {
 				e1.On(func() {
-					c.setFocus(emptyWidgetID)
+					c.setFocus(widgetID{})
 					v, err := strconv.ParseInt(buf, 10, 64)
 					if err != nil {
 						v = 0
@@ -229,12 +229,12 @@ func (c *Context) numberField(value *int, step int, id widgetID, opt option) (Ev
 	return e, nil
 }
 
-func (c *Context) numberFieldF(value *float64, step float64, digits int, id widgetID, opt option) (EventHandler, error) {
+func (c *Context) numberFieldF(value *float64, step float64, digits int, idPart string, opt option) (EventHandler, error) {
 	last := *value
 
 	var e EventHandler
 	var err error
-	c.idScopeFromID(id, func() {
+	c.idScopeFromIDPart(idPart, func(id widgetID) {
 		c.GridCell(func(bounds image.Rectangle) {
 			c.SetGridLayout([]int{-1, lineHeight()}, nil)
 
@@ -246,7 +246,7 @@ func (c *Context) numberFieldF(value *float64, step float64, digits int, id widg
 			}
 			if e1 != nil {
 				e1.On(func() {
-					c.setFocus(emptyWidgetID)
+					c.setFocus(widgetID{})
 					v, err := strconv.ParseFloat(buf, 64)
 					if err != nil {
 						v = 0
