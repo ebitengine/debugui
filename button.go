@@ -45,20 +45,14 @@ func (c *Context) spinButtons() (up, down EventHandler) {
 		c.GridCell(func(bounds image.Rectangle) {
 			c.SetGridLayout(nil, []int{-1, -1})
 			up = c.wrapEventHandlerAndError(func() (EventHandler, error) {
-				var e EventHandler
-				var err error
-				e, err = c.spinButton(true, optionAlignCenter, upID, downID)
+				e, err := c.spinButton(true, optionAlignCenter, upID, downID)
 				if err != nil {
 					return nil, err
 				}
 				return e, nil
 			})
 			down = c.wrapEventHandlerAndError(func() (EventHandler, error) {
-				var e EventHandler
-				var err error
-				c.idScopeFromID(id, func() {
-					e, err = c.spinButton(false, optionAlignCenter, upID, downID)
-				})
+				e, err := c.spinButton(false, optionAlignCenter, upID, downID)
 				if err != nil {
 					return nil, err
 				}
