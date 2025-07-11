@@ -57,13 +57,36 @@ func (c *Context) idScopeFromIDPart(idPart string, f func(id widgetID)) {
 }
 
 func idPartFromString(str string) string {
-	return fmt.Sprintf("string:%q", str)
+	return theStringIDCache.get(str)
 }
 
 func idPartFromInt(i int) string {
-	return fmt.Sprintf("number:%d", i)
+	return theIntIDCache.get(i)
 }
 
 func idPartFromCaller(callerPC uintptr) string {
-	return fmt.Sprintf("caller:%d", callerPC)
+	return theCallerIDCache.get(callerPC)
 }
+
+type idCache[T comparable] struct {
+	values map[T]string
+	prefix string
+}
+
+func (c *idCache[T]) get(id T) string {
+	if idStr, ok := c.values[id]; ok {
+		return idStr
+	}
+	if c.values == nil {
+		c.values = map[T]string{}
+	}
+	idStr := fmt.Sprintf("%s:%v", c.prefix, id)
+	c.values[id] = idStr
+	return idStr
+}
+
+var (
+	theStringIDCache = idCache[string]{prefix: "string"}
+	theIntIDCache    = idCache[int]{prefix: "number"}
+	theCallerIDCache = idCache[uintptr]{prefix: "caller"}
+)
