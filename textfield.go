@@ -209,7 +209,7 @@ func (c *Context) numberField(value *int, step int, idPart string, opt option) (
 
 			c.GridCell(func(bounds image.Rectangle) {
 				c.SetGridLayout(nil, []int{-1, -1})
-				up, down := c.spinButtons()
+				up, down := c.spinButtons(id)
 				up.On(func() {
 					*value += step
 					e = &eventHandler{}
@@ -285,7 +285,7 @@ func (c *Context) numberFieldF(value *float64, step float64, digits int, idPart 
 
 			c.GridCell(func(bounds image.Rectangle) {
 				c.SetGridLayout(nil, []int{-1, -1})
-				up, down := c.spinButtons()
+				up, down := c.spinButtons(id)
 				up.On(func() {
 					*value += step
 					e = &eventHandler{}

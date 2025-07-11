@@ -36,27 +36,24 @@ func (c *Context) button(text string, opt option, id widgetID) (EventHandler, er
 	})
 }
 
-func (c *Context) spinButtons() (up, down EventHandler) {
-	pc := caller()
-	c.idScopeFromIDPart(idPartFromCaller(pc), func(id widgetID) {
-		upID := id.push(idPartFromString("up"))
-		downID := id.push(idPartFromString("down"))
-		c.GridCell(func(bounds image.Rectangle) {
-			c.SetGridLayout(nil, []int{-1, -1})
-			up = c.wrapEventHandlerAndError(func() (EventHandler, error) {
-				e, err := c.spinButton(true, optionAlignCenter, upID, downID)
-				if err != nil {
-					return nil, err
-				}
-				return e, nil
-			})
-			down = c.wrapEventHandlerAndError(func() (EventHandler, error) {
-				e, err := c.spinButton(false, optionAlignCenter, upID, downID)
-				if err != nil {
-					return nil, err
-				}
-				return e, nil
-			})
+func (c *Context) spinButtons(id widgetID) (up, down EventHandler) {
+	upID := id.push(idPartFromString("up"))
+	downID := id.push(idPartFromString("down"))
+	c.GridCell(func(bounds image.Rectangle) {
+		c.SetGridLayout(nil, []int{-1, -1})
+		up = c.wrapEventHandlerAndError(func() (EventHandler, error) {
+			e, err := c.spinButton(true, optionAlignCenter, upID, downID)
+			if err != nil {
+				return nil, err
+			}
+			return e, nil
+		})
+		down = c.wrapEventHandlerAndError(func() (EventHandler, error) {
+			e, err := c.spinButton(false, optionAlignCenter, upID, downID)
+			if err != nil {
+				return nil, err
+			}
+			return e, nil
 		})
 	})
 	return up, down
