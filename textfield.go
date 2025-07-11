@@ -158,56 +158,56 @@ func (c *Context) numberField(value *int, step int, id widgetID, opt option) (Ev
 
 	var e EventHandler
 	var err error
-	c.GridCell(func(bounds image.Rectangle) {
-		c.SetGridLayout([]int{-1, lineHeight()}, nil)
+	c.idScopeFromID(id, func() {
+		c.GridCell(func(bounds image.Rectangle) {
+			c.SetGridLayout([]int{-1, lineHeight()}, nil)
 
-		buf := fmt.Sprintf("%d", *value)
-		e1, err1 := c.textFieldRaw(&buf, id, opt)
-		if err1 != nil {
-			err = err1
-			return
-		}
-		if e1 != nil {
-			e1.On(func() {
-				c.setFocus(emptyWidgetID)
-				v, err := strconv.ParseInt(buf, 10, 64)
-				if err != nil {
-					v = 0
+			buf := fmt.Sprintf("%d", *value)
+			e1, err1 := c.textFieldRaw(&buf, id, opt)
+			if err1 != nil {
+				err = err1
+				return
+			}
+			if e1 != nil {
+				e1.On(func() {
+					c.setFocus(emptyWidgetID)
+					v, err := strconv.ParseInt(buf, 10, 64)
+					if err != nil {
+						v = 0
+					}
+					*value = int(v)
+					if *value != last {
+						e = &eventHandler{}
+					}
+				})
+			}
+			if c.focus == id {
+				var updated bool
+				if keyRepeated(ebiten.KeyUp) || keyRepeated(ebiten.KeyDown) {
+					v, err := strconv.ParseInt(buf, 10, 64)
+					if err != nil {
+						v = 0
+					}
+					*value = int(v)
+					updated = true
+					if keyRepeated(ebiten.KeyUp) {
+						*value += step
+					}
+					if keyRepeated(ebiten.KeyDown) {
+						*value -= step
+						updated = true
+					}
 				}
-				*value = int(v)
-				if *value != last {
+				if updated {
+					buf := fmt.Sprintf("%d", *value)
+					if f := c.currentContainer().textInputTextField(id, false); f != nil {
+						f.SetTextAndSelection(buf, len(buf), len(buf))
+					}
 					e = &eventHandler{}
 				}
-			})
-		}
-		if c.focus == id {
-			var updated bool
-			if keyRepeated(ebiten.KeyUp) || keyRepeated(ebiten.KeyDown) {
-				v, err := strconv.ParseInt(buf, 10, 64)
-				if err != nil {
-					v = 0
-				}
-				*value = int(v)
-				updated = true
-				if keyRepeated(ebiten.KeyUp) {
-					*value += step
-				}
-				if keyRepeated(ebiten.KeyDown) {
-					*value -= step
-					updated = true
-				}
 			}
-			if updated {
-				buf := fmt.Sprintf("%d", *value)
-				if f := c.currentContainer().textInputTextField(id, false); f != nil {
-					f.SetTextAndSelection(buf, len(buf), len(buf))
-				}
-				e = &eventHandler{}
-			}
-		}
 
-		c.GridCell(func(bounds image.Rectangle) {
-			c.idScopeFromID(id, func() {
+			c.GridCell(func(bounds image.Rectangle) {
 				c.SetGridLayout(nil, []int{-1, -1})
 				up, down := c.spinButtons()
 				up.On(func() {
@@ -234,56 +234,56 @@ func (c *Context) numberFieldF(value *float64, step float64, digits int, id widg
 
 	var e EventHandler
 	var err error
-	c.GridCell(func(bounds image.Rectangle) {
-		c.SetGridLayout([]int{-1, lineHeight()}, nil)
+	c.idScopeFromID(id, func() {
+		c.GridCell(func(bounds image.Rectangle) {
+			c.SetGridLayout([]int{-1, lineHeight()}, nil)
 
-		buf := formatNumber(*value, digits)
-		e1, err1 := c.textFieldRaw(&buf, id, opt)
-		if err1 != nil {
-			err = err1
-			return
-		}
-		if e1 != nil {
-			e1.On(func() {
-				c.setFocus(emptyWidgetID)
-				v, err := strconv.ParseFloat(buf, 64)
-				if err != nil {
-					v = 0
+			buf := formatNumber(*value, digits)
+			e1, err1 := c.textFieldRaw(&buf, id, opt)
+			if err1 != nil {
+				err = err1
+				return
+			}
+			if e1 != nil {
+				e1.On(func() {
+					c.setFocus(emptyWidgetID)
+					v, err := strconv.ParseFloat(buf, 64)
+					if err != nil {
+						v = 0
+					}
+					*value = float64(v)
+					if *value != last {
+						e = &eventHandler{}
+					}
+				})
+			}
+			if c.focus == id {
+				var updated bool
+				if keyRepeated(ebiten.KeyUp) || keyRepeated(ebiten.KeyDown) {
+					v, err := strconv.ParseFloat(buf, 64)
+					if err != nil {
+						v = 0
+					}
+					*value = float64(v)
+					updated = true
+					if keyRepeated(ebiten.KeyUp) {
+						*value += step
+					}
+					if keyRepeated(ebiten.KeyDown) {
+						*value -= step
+						updated = true
+					}
 				}
-				*value = float64(v)
-				if *value != last {
+				if updated {
+					buf := formatNumber(*value, digits)
+					if f := c.currentContainer().textInputTextField(id, false); f != nil {
+						f.SetTextAndSelection(buf, len(buf), len(buf))
+					}
 					e = &eventHandler{}
 				}
-			})
-		}
-		if c.focus == id {
-			var updated bool
-			if keyRepeated(ebiten.KeyUp) || keyRepeated(ebiten.KeyDown) {
-				v, err := strconv.ParseFloat(buf, 64)
-				if err != nil {
-					v = 0
-				}
-				*value = float64(v)
-				updated = true
-				if keyRepeated(ebiten.KeyUp) {
-					*value += step
-				}
-				if keyRepeated(ebiten.KeyDown) {
-					*value -= step
-					updated = true
-				}
 			}
-			if updated {
-				buf := formatNumber(*value, digits)
-				if f := c.currentContainer().textInputTextField(id, false); f != nil {
-					f.SetTextAndSelection(buf, len(buf), len(buf))
-				}
-				e = &eventHandler{}
-			}
-		}
 
-		c.GridCell(func(bounds image.Rectangle) {
-			c.idScopeFromID(id, func() {
+			c.GridCell(func(bounds image.Rectangle) {
 				c.SetGridLayout(nil, []int{-1, -1})
 				up, down := c.spinButtons()
 				up.On(func() {
