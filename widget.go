@@ -44,6 +44,10 @@ func (c *Context) pointingOver(bounds image.Rectangle) bool {
 }
 
 func (c *Context) pointingDelta() image.Point {
+	// The delta is always (0, 0) when a touch just started.
+	if c.pointing.isTouchActive() && c.pointing.justPressed() {
+		return image.Point{}
+	}
 	return c.pointingPosition().Sub(c.lastPointingPos)
 }
 
