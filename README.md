@@ -20,18 +20,20 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+const loopCount = 10
+
 type Game struct {
 	debugui debugui.DebugUI // Place a debugui instance on your Game
 }
 
 func (g *Game) Update() error {
 	if _, err := g.debugui.Update(func(ctx *debugui.Context) error {
-		ctx.Window("Debugui Window", image.Rect(0, 0, 640, 400), func(layout debugui.ContainerLayout) {
+		ctx.Window("Debugui Window", image.Rect(0, 0, 320, 240), func(layout debugui.ContainerLayout) {
 			// Place all your widgets inside a ctx.Window
 			ctx.Text("Some text")
 
-			// If you ever need to make loop to make widgets, use ctx.Loop
-			loopCount := 10
+			// If you ever need to make a loop to make widgets, use ctx.Loop
+
 			ctx.Loop(loopCount, func(index int) {
 				ctx.Text(fmt.Sprintf("Index value is %d", index))
 			})
