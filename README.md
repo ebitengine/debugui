@@ -8,7 +8,8 @@ DebugUI is a UI toolkit for Ebitengine applications, primarily intended for debu
 
 DebugUI is based on [Microui](https://github.com/rxi/microui). The original Microui was developed by [@rxi](https://github.com/rxi/microui). The original Go port was developed by [@zeozeozeo](https://github.com/zeozeozeo) and [@Zyko0](https://github.com/Zyko0).
 
-## Example go file
+## Example Go file
+
 ```go
 package main
 
@@ -20,22 +21,23 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-const loopCount = 10
-
 type Game struct {
-	debugui debugui.DebugUI // Place a debugui instance on your Game
+	debugui debugui.DebugUI
 }
 
 func (g *Game) Update() error {
 	if _, err := g.debugui.Update(func(ctx *debugui.Context) error {
 		ctx.Window("Debugui Window", image.Rect(0, 0, 320, 240), func(layout debugui.ContainerLayout) {
-			// Place all your widgets inside a ctx.Window
+			// Place all your widgets inside a ctx.Window's callback.
 			ctx.Text("Some text")
 
-			// If you ever need to make a loop to make widgets, use ctx.Loop
-
+			// Use Loop if you ever need to make a loop to make widgets.
+			const loopCount = 10
 			ctx.Loop(loopCount, func(index int) {
-				ctx.Text(fmt.Sprintf("Index value is %d", index))
+				// Specify a presssing-button event handler by On.
+				ctx.Button(fmt.Sprintf("Button %d", index)).On(func() {
+					fmt.Printf("Button %d is pressed")
+				})
 			})
 		})
 		return nil
@@ -46,7 +48,7 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	g.debugui.Draw(screen) // Draw debugui at the end
+	g.debugui.Draw(screen)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
