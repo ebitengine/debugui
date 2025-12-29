@@ -36,7 +36,7 @@ func (g *Game) Update() error {
 			ctx.Loop(loopCount, func(index int) {
 				// Specify a presssing-button event handler by On.
 				ctx.Button(fmt.Sprintf("Button %d", index)).On(func() {
-					fmt.Printf("Button %d is pressed")
+					fmt.Printf("Button %d is pressed", index)
 				})
 			})
 		})
