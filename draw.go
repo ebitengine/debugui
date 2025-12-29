@@ -205,8 +205,7 @@ func (c *Context) drawIcon(icon icon, rect image.Rectangle, color color.Color) {
 // DrawOnlyWidget adds a widget that only draws the given function without user interaction.
 func (c *Context) DrawOnlyWidget(f func(screen *ebiten.Image)) {
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		// If we're inside a layout callback (e.g., GridCell), just add the draw command
-		// without creating a nested widget
+		// If we're inside a layout callback like GridCell we just draw instead of putting it in a nested widget
 		if c.inLayoutCallback {
 			c.setClip(c.clipRect())
 			defer c.setClip(unclippedRect)
@@ -215,7 +214,6 @@ func (c *Context) DrawOnlyWidget(f func(screen *ebiten.Image)) {
 			return nil, nil
 		}
 
-		// Otherwise, create a widget normally
 		_, _ = c.widget(widgetID{}, 0, nil, nil, func(bounds image.Rectangle) {
 			c.setClip(c.clipRect())
 			defer c.setClip(unclippedRect)

@@ -54,8 +54,7 @@ type Context struct {
 	screenWidth  int
 	screenHeight int
 
-	// inLayoutCallback tracks if we're inside a widget's layout callback.
-	// This is used to prevent creating nested widgets unintentionally.
+	// inLayoutCallback is true during a widget layout callback to block nested widgets.
 	inLayoutCallback bool
 
 	err error
