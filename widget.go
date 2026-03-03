@@ -139,7 +139,9 @@ func (c *Context) widget(id widgetID, opt option, layout func(bounds image.Recta
 				err = err2
 			}
 		}()
+		c.inLayoutCallback = true
 		layout(bounds)
+		c.inLayoutCallback = false
 	}
 
 	wasFocused := c.handleInputForWidget(id, bounds, opt)
@@ -148,7 +150,7 @@ func (c *Context) widget(id widgetID, opt option, layout func(bounds image.Recta
 		e = handleInput(bounds, wasFocused)
 	}
 	// Handling input is still needed even if the widget is out of bounds, especially for Header.
-	if !c.currentContainer().layout.BodyBounds.Overlaps(bounds) {
+	if !c.clipRect().Overlaps(bounds) {
 		return e, nil
 	}
 

@@ -54,6 +54,9 @@ type Context struct {
 	screenWidth  int
 	screenHeight int
 
+	// inLayoutCallback is true during a widget layout callback to block nested widgets.
+	inLayoutCallback bool
+
 	err error
 }
 
