@@ -9,6 +9,7 @@ import (
 	"maps"
 	"slices"
 
+	"github.com/go-text/typesetting/segmenter"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -54,7 +55,23 @@ type Context struct {
 	screenWidth  int
 	screenHeight int
 
+	segStack    []segmenter.Segmenter
+	segStackIdx int
+
 	err error
+}
+
+func (c *Context) pushSegmenter() *segmenter.Segmenter {
+	if c.segStackIdx >= len(c.segStack) {
+		c.segStack = append(c.segStack, segmenter.Segmenter{})
+	}
+	seg := &c.segStack[c.segStackIdx]
+	c.segStackIdx++
+	return seg
+}
+
+func (c *Context) popSegmenter() {
+	c.segStackIdx--
 }
 
 func (c *Context) wrapEventHandlerAndError(f func() (EventHandler, error)) EventHandler {

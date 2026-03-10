@@ -8,50 +8,59 @@ import (
 	"iter"
 	"strings"
 	"unicode"
-
-	"github.com/rivo/uniseg"
 )
 
 func removeSpaceAtLineTail(str string) string {
 	return strings.TrimRightFunc(str, unicode.IsSpace)
 }
 
-func lines(text string, width int) iter.Seq[string] {
+func sanitizeUTF8(s string) string {
+	var b strings.Builder
+	for _, r := range s {
+		b.WriteRune(r)
+	}
+	return b.String()
+}
+
+func (c *Context) lines(text string, width int) iter.Seq[string] {
 	return func(yield func(string) bool) {
+		seg := c.pushSegmenter()
+		defer c.popSegmenter()
+
+		if err := seg.InitWithString(text); err != nil {
+			text = sanitizeUTF8(text)
+			if err := seg.InitWithString(text); err != nil {
+				panic("debugui: segmenter.InitWithString failed even after sanitizing: " + err.Error())
+			}
+		}
+
 		var line string
-		var word string
-		state := -1
-		for len(text) > 0 {
-			cluster, nextText, boundaries, nextState := uniseg.StepString(text, state)
-			switch m := boundaries & uniseg.MaskLine; m {
-			default:
-				word += cluster
-			case uniseg.LineCanBreak, uniseg.LineMustBreak:
-				if line == "" {
-					line += word + cluster
-				} else {
-					if l := removeSpaceAtLineTail(line + word + cluster); textWidth(l) > width {
-						if !yield(removeSpaceAtLineTail(line)) {
-							return
-						}
-						line = word + cluster
-					} else {
-						line += word + cluster
-					}
-				}
-				word = ""
-				if m == uniseg.LineMustBreak {
+		it := seg.LineIterator()
+		for it.Next() {
+			l := it.Line()
+			segment := text[l.OffsetInBytes : l.OffsetInBytes+l.LengthInBytes]
+
+			if line == "" {
+				line = segment
+			} else {
+				if trimmed := removeSpaceAtLineTail(line + segment); textWidth(trimmed) > width {
 					if !yield(removeSpaceAtLineTail(line)) {
 						return
 					}
-					line = ""
+					line = segment
+				} else {
+					line += segment
 				}
 			}
-			state = nextState
-			text = nextText
+
+			if l.IsMandatoryBreak {
+				if !yield(removeSpaceAtLineTail(line)) {
+					return
+				}
+				line = ""
+			}
 		}
 
-		line += word
 		if len(line) > 0 {
 			if !yield(removeSpaceAtLineTail(line)) {
 				return
@@ -63,7 +72,7 @@ func lines(text string, width int) iter.Seq[string] {
 // Text creates a text label.
 func (c *Context) Text(text string) {
 	c.GridCell(func(bounds image.Rectangle) {
-		for line := range lines(text, bounds.Dx()-c.style().padding) {
+		for line := range c.lines(text, bounds.Dx()-c.style().padding) {
 			_, _ = c.widget(widgetID{}, 0, nil, nil, func(bounds image.Rectangle) {
 				c.drawWidgetText(line, bounds, colorText, 0)
 			})
