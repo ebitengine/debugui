@@ -11,6 +11,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/exp/textinput"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
@@ -41,8 +42,12 @@ func (c *Context) textFieldRaw(buf *string, id widgetID, opt option) (EventHandl
 
 		f := c.currentContainer().textInputTextField(id, true)
 		if c.focus == id {
+			// A freshly focused text input field still has its own cursor/selection state.
+			// Seed that state from the bound string before reading input so typing starts
+			// after any existing text instead of inserting at the beginning.
+			focusTextInputField(f, *buf)
+
 			// handle text input
-			f.Focus()
 			x := bounds.Min.X + c.style().padding + textWidth(*buf)
 			y := bounds.Min.Y + lineHeight()
 			handled, err := f.HandleInput(x, y)
@@ -58,7 +63,7 @@ func (c *Context) textFieldRaw(buf *string, id widgetID, opt option) (EventHandl
 				if inpututil.IsKeyJustPressed(ebiten.KeyBackspace) && len(*buf) > 0 {
 					_, size := utf8.DecodeLastRuneInString(*buf)
 					*buf = (*buf)[:len(*buf)-size]
-					f.SetTextAndSelection(*buf, len(*buf), len(*buf))
+					setTextInputFieldValue(f, *buf)
 				}
 				if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
 					e = &eventHandler{}
@@ -66,7 +71,9 @@ func (c *Context) textFieldRaw(buf *string, id widgetID, opt option) (EventHandl
 			}
 		} else {
 			if *buf != f.Text() {
-				f.SetTextAndSelection(*buf, len(*buf), len(*buf))
+				// Keep the cached text-input object in sync while it is unfocused so the
+				// next focus starts from the latest value and with the caret at the end.
+				setTextInputFieldValue(f, *buf)
 			}
 			if wasFocused {
 				e = &eventHandler{}
@@ -100,13 +107,35 @@ func (c *Context) textFieldRaw(buf *string, id widgetID, opt option) (EventHandl
 	})
 }
 
+func focusTextInputField(f *textinput.Field, value string) {
+	// Focus() does not rewrite the field's text or selection. If this field is being
+	// focused for the first time, its selection is still 0,0, so copy in the current
+	// value first and move the caret to the end.
+	//
+	// Reset the selection on every unfocused->focused transition, even when the
+	// text already matches. The cached textinput.Field can survive across window
+	// reopenings, and in that case it can keep an old caret position from an
+	// earlier edit session.
+	if !f.IsFocused() {
+		setTextInputFieldValue(f, value)
+	}
+	f.Focus()
+}
+
+func setTextInputFieldValue(f *textinput.Field, value string) {
+	// Treat programmatic value changes the same way a user expects to keep typing:
+	// after loading text, place the caret at the end ready for appending.
+	f.SetTextAndSelection(value, len(value), len(value))
+}
+
 // SetTextFieldValue sets the value of the current text field.
+// The caret is moved to the end of the new text.
 //
 // If the last widget is not a text field, this function does nothing.
 func (c *Context) SetTextFieldValue(value string) {
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		if f := c.currentContainer().textInputTextField(c.currentID, false); f != nil {
-			f.SetTextAndSelection(value, 0, 0)
+			setTextInputFieldValue(f, value)
 		}
 		return nil, nil
 	})
@@ -201,7 +230,7 @@ func (c *Context) numberField(value *int, step int, idPart string, opt option) (
 				if updated {
 					buf := fmt.Sprintf("%d", *value)
 					if f := c.currentContainer().textInputTextField(id, false); f != nil {
-						f.SetTextAndSelection(buf, len(buf), len(buf))
+						setTextInputFieldValue(f, buf)
 					}
 					e = &eventHandler{}
 				}
@@ -277,7 +306,7 @@ func (c *Context) numberFieldF(value *float64, step float64, digits int, idPart 
 				if updated {
 					buf := formatNumber(*value, digits)
 					if f := c.currentContainer().textInputTextField(id, false); f != nil {
-						f.SetTextAndSelection(buf, len(buf), len(buf))
+						setTextInputFieldValue(f, buf)
 					}
 					e = &eventHandler{}
 				}
