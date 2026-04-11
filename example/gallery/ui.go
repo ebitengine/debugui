@@ -207,6 +207,9 @@ func (g *Game) logWindow(ctx *debugui.Context) {
 			ctx.TextField(&g.logSubmitBuf).On(func() {
 				if ebiten.IsKeyPressed(ebiten.KeyEnter) {
 					submit()
+					// SetTextFieldValue is needed because while the text field has focus,
+					// its internal state is the source of truth and overwrites the buffer each frame.
+					// Simply clearing the buffer via submit() would be undone on the next frame.
 					ctx.SetTextFieldValue("")
 				}
 			})
