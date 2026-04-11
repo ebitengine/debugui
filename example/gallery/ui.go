@@ -207,7 +207,7 @@ func (g *Game) logWindow(ctx *debugui.Context) {
 			ctx.TextField(&g.logSubmitBuf).On(func() {
 				if ebiten.IsKeyPressed(ebiten.KeyEnter) {
 					submit()
-					ctx.SetTextFieldValue(g.logSubmitBuf)
+					ctx.SetTextFieldValue("")
 				}
 			})
 			ctx.Button("Submit").On(func() {
