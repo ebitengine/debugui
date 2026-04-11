@@ -48,6 +48,8 @@ type Game struct {
 	num3_2       float64
 	num4         float64
 	num5         int
+	text1        string
+	text2        string
 
 	selectedOption1, selectedOption2   int
 	dropdownOptions1, dropdownOptions2 []string
@@ -66,6 +68,8 @@ func NewGame() (*Game, error) {
 		bg:                [3]int{90, 95, 100},
 		checks:            [3]bool{true, false, true},
 		needResetPosition: true,
+		text1:             "Hello",
+		text2:             "World",
 	}
 
 	return g, nil

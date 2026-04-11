@@ -145,7 +145,7 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 			ctx.GridCell(func(bounds image.Rectangle) {
 				ctx.DrawOnlyWidget(func(screen *ebiten.Image) {
 					scale := ctx.Scale()
-					vector.DrawFilledRect(
+					vector.FillRect(
 						screen,
 						float32(bounds.Min.X*scale),
 						float32(bounds.Min.Y*scale),
@@ -171,6 +171,10 @@ func (g *Game) testWindow(ctx *debugui.Context) {
 			ctx.NumberFieldF(&g.num3_2, 0.1, 2)
 			ctx.SliderF(&g.num4, 0, 10, 0.1, 2)
 			ctx.Slider(&g.num5, 0, 2, 1)
+		})
+		ctx.Header("Text", true, func() {
+			ctx.TextField(&g.text1)
+			ctx.TextField(&g.text2)
 		})
 		ctx.Header("Licenses", false, func() {
 			ctx.Text(`The photograph by Chris Nokleberg is licensed under the Creative Commons Attribution 4.0 License
