@@ -1,13 +1,13 @@
 module github.com/ebitengine/debugui
 
-go 1.24.0
+go 1.25.0
 
 require (
 	github.com/go-text/typesetting v0.3.5-0.20260309142344-94fe510e6837
-	github.com/hajimehoshi/bitmapfont/v4 v4.1.0
-	github.com/hajimehoshi/ebiten/v2 v2.9.8
+	github.com/hajimehoshi/bitmapfont/v4 v4.1.1
+	github.com/hajimehoshi/ebiten/v2 v2.9.9
 	github.com/kisielk/errcheck v1.10.0
-	golang.org/x/tools v0.42.0
+	golang.org/x/tools v0.44.0
 )
 
 require (
@@ -18,8 +18,8 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.22 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	golang.org/x/image v0.31.0 // indirect
-	golang.org/x/mod v0.33.0 // indirect
-	golang.org/x/sync v0.19.0 // indirect
-	golang.org/x/sys v0.41.0 // indirect
+	golang.org/x/mod v0.35.0 // indirect
+	golang.org/x/sync v0.20.0 // indirect
+	golang.org/x/sys v0.43.0 // indirect
 	golang.org/x/text v0.29.0 // indirect
 )
