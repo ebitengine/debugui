@@ -11,6 +11,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/exp/textinput"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
@@ -18,6 +19,86 @@ const (
 	realFmt   = "%.3g"
 	sliderFmt = "%.2f"
 )
+
+// textFieldState drives IME input for a single text field via a [textinput.Composer].
+//
+// The caret is fixed at the end of the text, so the committed text is entirely before
+// the caret and any active composition is appended after it.
+type textFieldState struct {
+	composer textinput.Composer
+
+	// committedText is the confirmed text, excluding any in-progress IME composition.
+	// While the field is focused it is the source of truth and is synced to the caller's
+	// buffer; otherwise it mirrors the buffer.
+	committedText string
+
+	// caretBounds is the caret rectangle handed to the IME to position the candidate window.
+	caretBounds image.Rectangle
+
+	// composition is the active IME preedit text.
+	composition string
+}
+
+func newTextFieldState() *textFieldState {
+	t := &textFieldState{}
+	t.composer.OnNewSession = t.onNewSession
+	t.composer.OnComposition = t.onComposition
+	t.composer.OnCommit = t.onCommit
+	return t
+}
+
+func (t *textFieldState) onNewSession() *textinput.SessionOptions {
+	return &textinput.SessionOptions{
+		CaretBounds:     t.caretBounds,
+		TextBeforeCaret: t.committedText,
+	}
+}
+
+func (t *textFieldState) onComposition(c *textinput.Composition) {
+	t.composition = c.Text()
+}
+
+func (t *textFieldState) onCommit(c *textinput.Commit) {
+	if before, after := c.IsSurroundingTextReplaced(); before || after {
+		newBefore, newAfter := c.SurroundingText()
+		t.committedText = newBefore + c.Text() + newAfter
+		return
+	}
+	t.committedText += c.Text()
+}
+
+// update positions the caret and runs one tick of IME handling.
+// It reports whether the IME consumed input this tick; if so, the caller must not process further key input.
+func (t *textFieldState) update(caretBounds image.Rectangle) (handled bool, err error) {
+	t.caretBounds = caretBounds
+	return t.composer.Update()
+}
+
+// text returns the committed text, excluding any in-progress composition.
+func (t *textFieldState) text() string {
+	return t.committedText
+}
+
+// textForRendering returns the committed text with the active composition appended at the caret.
+func (t *textFieldState) textForRendering() string {
+	return t.committedText + t.composition
+}
+
+// setText replaces the committed text and abandons any in-progress composition.
+func (t *textFieldState) setText(text string) {
+	t.composer.Cancel()
+	t.committedText = text
+	t.composition = ""
+}
+
+// deleteBackward removes the last rune from the committed text.
+func (t *textFieldState) deleteBackward() {
+	if len(t.committedText) == 0 {
+		return
+	}
+	_, size := utf8.DecodeLastRuneInString(t.committedText)
+	t.committedText = t.committedText[:len(t.committedText)-size]
+}
 
 // TextField creates a text field to modify the value of a string buf.
 //
@@ -41,33 +122,28 @@ func (c *Context) textFieldRaw(buf *string, id widgetID, opt option) (EventHandl
 
 		f := c.currentContainer().textInputTextField(id, true)
 		if c.focus == id {
-			// handle text input
-			f.Focus()
-			x := bounds.Min.X + c.style().padding + textWidth(*buf)
+			// While focused, f's committed text is the source of truth. The caret is fixed at the end of the text.
+			x := bounds.Min.X + c.style().padding + textWidth(f.text())
 			y := bounds.Min.Y + lineHeight()
-			handled, err := f.HandleInput(x, y)
+			handled, err := f.update(image.Rect(x, y, x+1, y+1))
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
 				return nil
 			}
-			if *buf != f.Text() {
-				*buf = f.Text()
-			}
 
 			if !handled {
-				if inpututil.IsKeyJustPressed(ebiten.KeyBackspace) && len(*buf) > 0 {
-					_, size := utf8.DecodeLastRuneInString(*buf)
-					*buf = (*buf)[:len(*buf)-size]
-					f.SetTextAndSelection(*buf, len(*buf), len(*buf))
+				if inpututil.IsKeyJustPressed(ebiten.KeyBackspace) {
+					f.deleteBackward()
 				}
 				if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
 					e = &eventHandler{}
 				}
 			}
+
+			*buf = f.text()
 		} else {
-			if *buf != f.Text() {
-				f.SetTextAndSelection(*buf, len(*buf), len(*buf))
-			}
+			// The buffer is the source of truth while unfocused. setText also ends any IME session.
+			f.setText(*buf)
 			if wasFocused {
 				e = &eventHandler{}
 			}
@@ -79,7 +155,7 @@ func (c *Context) textFieldRaw(buf *string, id widgetID, opt option) (EventHandl
 			f := c.currentContainer().textInputTextField(id, true)
 
 			color := c.style().colors[colorText]
-			textw := textWidth(*buf)
+			textw := textWidth(f.text())
 			texth := lineHeight()
 			ofx := bounds.Dx() - c.style().padding - textw - 1
 			textx := bounds.Min.X + min(ofx, c.style().padding)
@@ -91,7 +167,7 @@ func (c *Context) textFieldRaw(buf *string, id widgetID, opt option) (EventHandl
 			}
 			texty := bounds.Min.Y + (bounds.Dy()-texth)/2
 			c.pushClipRect(bounds)
-			c.drawText(f.TextForRendering(), image.Pt(textx, texty), color)
+			c.drawText(f.textForRendering(), image.Pt(textx, texty), color)
 			c.drawRect(image.Rect(textx+textw, texty, textx+textw+1, texty+texth), color)
 			c.popClipRect()
 		} else {
@@ -106,7 +182,7 @@ func (c *Context) textFieldRaw(buf *string, id widgetID, opt option) (EventHandl
 func (c *Context) SetTextFieldValue(value string) {
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		if f := c.currentContainer().textInputTextField(c.currentID, false); f != nil {
-			f.SetTextAndSelection(value, 0, 0)
+			f.setText(value)
 		}
 		return nil, nil
 	})
@@ -201,7 +277,7 @@ func (c *Context) numberField(value *int, step int, idPart string, opt option) (
 				if updated {
 					buf := fmt.Sprintf("%d", *value)
 					if f := c.currentContainer().textInputTextField(id, false); f != nil {
-						f.SetTextAndSelection(buf, len(buf), len(buf))
+						f.setText(buf)
 					}
 					e = &eventHandler{}
 				}
@@ -277,7 +353,7 @@ func (c *Context) numberFieldF(value *float64, step float64, digits int, idPart 
 				if updated {
 					buf := formatNumber(*value, digits)
 					if f := c.currentContainer().textInputTextField(id, false); f != nil {
-						f.SetTextAndSelection(buf, len(buf), len(buf))
+						f.setText(buf)
 					}
 					e = &eventHandler{}
 				}

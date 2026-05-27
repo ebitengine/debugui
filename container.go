@@ -6,8 +6,6 @@ package debugui
 import (
 	"image"
 	"slices"
-
-	"github.com/hajimehoshi/ebiten/v2/exp/textinput"
 )
 
 type container struct {
@@ -22,7 +20,7 @@ type container struct {
 	commandList []*command
 
 	toggledIDs          map[widgetID]struct{}
-	textInputTextFields map[widgetID]*textinput.Field
+	textInputTextFields map[widgetID]*textFieldState
 
 	// dropdownCloseDelay is used for delayed closing of dropdowns
 	dropdownCloseDelay int
@@ -324,7 +322,7 @@ func (c *Context) SetScroll(scroll image.Point) {
 	c.currentContainer().layout.ScrollOffset = scroll
 }
 
-func (c *container) textInputTextField(id widgetID, createIfNeeded bool) *textinput.Field {
+func (c *container) textInputTextField(id widgetID, createIfNeeded bool) *textFieldState {
 	if id == (widgetID{}) {
 		return nil
 	}
@@ -333,9 +331,9 @@ func (c *container) textInputTextField(id widgetID, createIfNeeded bool) *textin
 			return nil
 		}
 		if c.textInputTextFields == nil {
-			c.textInputTextFields = make(map[widgetID]*textinput.Field)
+			c.textInputTextFields = make(map[widgetID]*textFieldState)
 		}
-		c.textInputTextFields[id] = &textinput.Field{}
+		c.textInputTextFields[id] = newTextFieldState()
 	}
 	return c.textInputTextFields[id]
 }
