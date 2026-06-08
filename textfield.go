@@ -86,7 +86,7 @@ func (t *textFieldState) textForRendering() string {
 
 // setText replaces the committed text and abandons any in-progress composition.
 func (t *textFieldState) setText(text string) {
-	t.composer.Cancel()
+	t.composer.Finish()
 	t.committedText = text
 	t.composition = ""
 }
