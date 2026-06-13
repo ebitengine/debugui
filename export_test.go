@@ -58,12 +58,24 @@ func (t TextFieldState) SelectAll() {
 	t.s.selectAll()
 }
 
+func (t TextFieldState) SelectWordAt(pos int) {
+	t.s.selectWordAt(pos)
+}
+
+func (t TextFieldState) HandleClick(pos int, extend bool, now, interval int64) {
+	t.s.handleClick(pos, extend, now, interval)
+}
+
 func (t TextFieldState) DeleteBackward() {
 	t.s.deleteBackward()
 }
 
 func (t TextFieldState) DeleteForward() {
 	t.s.deleteForward()
+}
+
+func WordRangeAt(s string, pos int) (start, end int) {
+	return wordRangeAt(s, pos)
 }
 
 func TextIndexFromX(str string, x int) int {

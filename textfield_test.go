@@ -199,6 +199,89 @@ func TestTextFieldStateWordMovement(t *testing.T) {
 	}
 }
 
+func TestWordRangeAt(t *testing.T) {
+	// Byte offsets:  0         1
+	//                0123456789012345
+	const s = "foo, bar_baz  qux"
+
+	tests := []struct {
+		pos        int
+		start, end int
+	}{
+		// Inside a word selects the whole word.
+		{pos: 0, start: 0, end: 3},    // start of "foo"
+		{pos: 1, start: 0, end: 3},    // middle of "foo"
+		{pos: 3, start: 0, end: 3},    // end of "foo", adjacent to ','
+		{pos: 14, start: 14, end: 17}, // start of "qux"
+		{pos: 17, start: 14, end: 17}, // end of the string, after "qux"
+		// '_' is a word rune, so "bar_baz" is one word.
+		{pos: 8, start: 5, end: 12},
+		// A click on a run of non-word runes selects that run; punctuation and spaces
+		// are both non-word, so the comma and the following space select together.
+		{pos: 4, start: 3, end: 5},
+		{pos: 13, start: 12, end: 14}, // the two spaces before "qux"
+	}
+	for _, tc := range tests {
+		if start, end := debugui.WordRangeAt(s, tc.pos); start != tc.start || end != tc.end {
+			t.Errorf("WordRangeAt(%q, %d) = %d, %d; want %d, %d", s, tc.pos, start, end, tc.start, tc.end)
+		}
+	}
+
+	// A position past either end clamps into range.
+	if start, end := debugui.WordRangeAt(s, -1); start != 0 || end != 3 {
+		t.Errorf("WordRangeAt(%q, -1) = %d, %d; want 0, 3", s, start, end)
+	}
+	if start, end := debugui.WordRangeAt(s, 100); start != 14 || end != 17 {
+		t.Errorf("WordRangeAt(%q, 100) = %d, %d; want 14, 17", s, start, end)
+	}
+
+	// An empty string has an empty word range.
+	if start, end := debugui.WordRangeAt("", 0); start != 0 || end != 0 {
+		t.Errorf("WordRangeAt(%q, 0) = %d, %d; want 0, 0", "", start, end)
+	}
+}
+
+func TestTextFieldStateMultiClick(t *testing.T) {
+	const interval = 30
+
+	f := debugui.NewTextFieldState("hello world")
+
+	// A single click places the caret without selecting.
+	f.HandleClick(2, false, 100, interval)
+	if start, end := f.Selection(); start != 2 || end != 2 {
+		t.Errorf("after single click: Selection() = %d, %d; want 2, 2", start, end)
+	}
+
+	// A second click within the interval is a double-click and selects the word.
+	f.HandleClick(2, false, 110, interval)
+	if start, end := f.Selection(); start != 0 || end != 5 {
+		t.Errorf("after double-click: Selection() = %d, %d; want 0, 5 (\"hello\")", start, end)
+	}
+
+	// A third click within the interval is a triple-click and selects the whole text.
+	f.HandleClick(2, false, 120, interval)
+	if start, end := f.Selection(); start != 0 || end != 11 {
+		t.Errorf("after triple-click: Selection() = %d, %d; want 0, 11", start, end)
+	}
+
+	// A fourth click within the interval keeps the triple-click selection.
+	f.HandleClick(2, false, 130, interval)
+	if start, end := f.Selection(); start != 0 || end != 11 {
+		t.Errorf("after fourth click: Selection() = %d, %d; want 0, 11", start, end)
+	}
+
+	// A click after the interval elapses restarts the sequence as a single click.
+	f.HandleClick(8, false, 200, interval)
+	if start, end := f.Selection(); start != 8 || end != 8 {
+		t.Errorf("after interval elapses: Selection() = %d, %d; want 8, 8", start, end)
+	}
+	// And the next quick click is a double-click again, selecting the word under it.
+	f.HandleClick(8, false, 210, interval)
+	if start, end := f.Selection(); start != 6 || end != 11 {
+		t.Errorf("after double-click: Selection() = %d, %d; want 6, 11 (\"world\")", start, end)
+	}
+}
+
 func TestTextIndexFromX(t *testing.T) {
 	if got, want := debugui.TextIndexFromX("abc", -1), 0; got != want {
 		t.Errorf("TextIndexFromX(%q, -1) = %d; want %d", "abc", got, want)

@@ -56,6 +56,14 @@ type textFieldState struct {
 	// the selection.
 	dragging bool
 
+	// lastClickTick is the tick of the most recent pointer press on this field. Together
+	// with consecutiveClicks it distinguishes single-, double-, and triple-clicks.
+	lastClickTick int64
+
+	// consecutiveClicks counts pointer presses arriving in quick succession: 1 for a
+	// single click, 2 for a double-click, 3 for a triple-click.
+	consecutiveClicks int
+
 	// scrollX is the horizontal scroll offset in pixels, used when the text is wider
 	// than the field.
 	scrollX int
@@ -239,6 +247,42 @@ func wordBoundaryRight(s string, pos int) int {
 	return pos
 }
 
+// wordRangeAt returns the byte range [start, end) of the word at pos: the maximal run
+// of word runes (see isWordRune) containing pos, or the maximal run of non-word runes
+// when pos is adjacent only to non-word runes. It is used to select a word on a
+// double-click.
+func wordRangeAt(s string, pos int) (start, end int) {
+	pos = min(max(pos, 0), len(s))
+	// A click adjacent to a word rune (on either side) selects that word; otherwise it
+	// selects the run of non-word runes (such as spaces) under the click.
+	var targetWord bool
+	if pos < len(s) {
+		r, _ := utf8.DecodeRuneInString(s[pos:])
+		targetWord = isWordRune(r)
+	}
+	if !targetWord && pos > 0 {
+		r, _ := utf8.DecodeLastRuneInString(s[:pos])
+		targetWord = isWordRune(r)
+	}
+	start = pos
+	for start > 0 {
+		r, size := utf8.DecodeLastRuneInString(s[:start])
+		if isWordRune(r) != targetWord {
+			break
+		}
+		start -= size
+	}
+	end = pos
+	for end < len(s) {
+		r, size := utf8.DecodeRuneInString(s[end:])
+		if isWordRune(r) != targetWord {
+			break
+		}
+		end += size
+	}
+	return start, end
+}
+
 // moveCaretWordLeft moves the caret to the start of the previous word, extending
 // the selection when extend is true.
 func (t *textFieldState) moveCaretWordLeft(extend bool) {
@@ -259,6 +303,38 @@ func (t *textFieldState) selectAll() {
 	t.composer.Finish()
 	t.selectionAnchor = 0
 	t.selectionCaret = len(t.committedText)
+}
+
+// selectWordAt selects the word at the byte offset pos, ending any IME session.
+func (t *textFieldState) selectWordAt(pos int) {
+	t.composer.Finish()
+	t.selectionAnchor, t.selectionCaret = wordRangeAt(t.committedText, pos)
+}
+
+// handleClick processes a pointer press at the byte offset pos; now is the current tick.
+// Presses within interval ticks of one another escalate the selection: a single click
+// places the caret (extending the selection when extend is true), a double-click selects
+// the word at pos, and a triple-click selects the whole text.
+func (t *textFieldState) handleClick(pos int, extend bool, now, interval int64) {
+	count := 1
+	if now-t.lastClickTick <= interval {
+		count = min(t.consecutiveClicks+1, 3)
+	}
+	t.consecutiveClicks = count
+	t.lastClickTick = now
+
+	switch count {
+	case 2:
+		t.selectWordAt(pos)
+		t.dragging = false
+	case 3:
+		t.selectAll()
+		t.dragging = false
+	default:
+		t.composer.Finish()
+		t.moveCaretTo(pos, extend)
+		t.dragging = true
+	}
 }
 
 // deleteSelection removes the selected text, ending any IME session.
@@ -379,8 +455,8 @@ func (c *Context) textFieldRaw(buf *string, id widgetID, opt option) (EventHandl
 				// End the session first; this commits any in-progress composition, and the
 				// caret position is then resolved against the resulting committed text.
 				f.composer.Finish()
-				f.moveCaretTo(textIndexFromX(f.text(), pt.X-textx), ebiten.IsKeyPressed(ebiten.KeyShift))
-				f.dragging = true
+				idx := textIndexFromX(f.text(), pt.X-textx)
+				f.handleClick(idx, ebiten.IsKeyPressed(ebiten.KeyShift), ebiten.Tick(), int64(ebiten.TPS())/2)
 			} else if f.dragging {
 				if c.pointing.pressed() {
 					f.moveCaretTo(textIndexFromX(f.text(), pt.X-textx), true)
