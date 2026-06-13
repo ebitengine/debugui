@@ -35,6 +35,7 @@ const (
 	colorBaseFocus
 	colorScrollBase
 	colorScrollThumb
+	colorSelection
 	colorCount
 )
 
@@ -63,5 +64,6 @@ var defaultStyle style = style{
 		colorBaseFocus:          {40, 40, 40, 255},
 		colorScrollBase:         {43, 43, 43, 255},
 		colorScrollThumb:        {30, 30, 30, 255},
+		colorSelection:          {70, 100, 140, 255},
 	},
 }
