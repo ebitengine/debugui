@@ -57,11 +57,16 @@ type textFieldState struct {
 	dragging bool
 
 	// lastClickTick is the tick of the most recent pointer press on this field. Together
-	// with consecutiveClicks it distinguishes single-, double-, and triple-clicks.
+	// with lastClickPos and consecutiveClicks it distinguishes single-, double-, and
+	// triple-clicks.
 	lastClickTick int64
 
-	// consecutiveClicks counts pointer presses arriving in quick succession: 1 for a
-	// single click, 2 for a double-click, 3 for a triple-click.
+	// lastClickPos is the byte offset of the most recent pointer press. A press at a
+	// different offset restarts the sequence so that it can begin a fresh drag-selection.
+	lastClickPos int
+
+	// consecutiveClicks counts pointer presses arriving in quick succession at the same
+	// position: 1 for a single click, 2 for a double-click, 3 for a triple-click.
 	consecutiveClicks int
 
 	// scrollX is the horizontal scroll offset in pixels, used when the text is wider
@@ -312,16 +317,19 @@ func (t *textFieldState) selectWordAt(pos int) {
 }
 
 // handleClick processes a pointer press at the byte offset pos; now is the current tick.
-// Presses within interval ticks of one another escalate the selection: a single click
-// places the caret (extending the selection when extend is true), a double-click selects
-// the word at pos, and a triple-click selects the whole text.
+// Presses within interval ticks of one another at the same position escalate the
+// selection: a single click places the caret (extending the selection when extend is
+// true), a double-click selects the word at pos, and a triple-click selects the whole
+// text. A press at a different position restarts the sequence as a single click, so that
+// it can begin a fresh drag-selection.
 func (t *textFieldState) handleClick(pos int, extend bool, now, interval int64) {
 	count := 1
-	if now-t.lastClickTick <= interval {
+	if now-t.lastClickTick <= interval && pos == t.lastClickPos {
 		count = min(t.consecutiveClicks+1, 3)
 	}
 	t.consecutiveClicks = count
 	t.lastClickTick = now
+	t.lastClickPos = pos
 
 	switch count {
 	case 2:

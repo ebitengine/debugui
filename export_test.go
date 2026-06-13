@@ -66,6 +66,10 @@ func (t TextFieldState) HandleClick(pos int, extend bool, now, interval int64) {
 	t.s.handleClick(pos, extend, now, interval)
 }
 
+func (t TextFieldState) Dragging() bool {
+	return t.s.dragging
+}
+
 func (t TextFieldState) DeleteBackward() {
 	t.s.deleteBackward()
 }

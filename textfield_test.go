@@ -282,6 +282,42 @@ func TestTextFieldStateMultiClick(t *testing.T) {
 	}
 }
 
+func TestTextFieldStateMultiClickDifferentPosition(t *testing.T) {
+	const interval = 30
+
+	f := debugui.NewTextFieldState("hello world")
+
+	// A single click places the caret and starts a potential drag-selection.
+	f.HandleClick(2, false, 100, interval)
+	if start, end := f.Selection(); start != 2 || end != 2 {
+		t.Errorf("after single click: Selection() = %d, %d; want 2, 2", start, end)
+	}
+	if !f.Dragging() {
+		t.Error("after single click: Dragging() = false; want true")
+	}
+
+	// A second click within the interval but at a different position is not a
+	// double-click: it restarts the sequence as a single click so it can begin a
+	// fresh drag-selection.
+	f.HandleClick(8, false, 110, interval)
+	if start, end := f.Selection(); start != 8 || end != 8 {
+		t.Errorf("after click at a different position: Selection() = %d, %d; want 8, 8", start, end)
+	}
+	if !f.Dragging() {
+		t.Error("after click at a different position: Dragging() = false; want true")
+	}
+
+	// A further click at that new position within the interval does escalate to a
+	// double-click, selecting the word under it.
+	f.HandleClick(8, false, 120, interval)
+	if start, end := f.Selection(); start != 6 || end != 11 {
+		t.Errorf("after double-click: Selection() = %d, %d; want 6, 11 (\"world\")", start, end)
+	}
+	if f.Dragging() {
+		t.Error("after double-click: Dragging() = true; want false")
+	}
+}
+
 func TestTextIndexFromX(t *testing.T) {
 	if got, want := debugui.TextIndexFromX("abc", -1), 0; got != want {
 		t.Errorf("TextIndexFromX(%q, -1) = %d; want %d", "abc", got, want)
