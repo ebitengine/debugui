@@ -31,6 +31,7 @@ func ThemeLight() Style {
 		BaseFocus:          color.RGBA{R: 218, G: 220, B: 232, A: 255},
 		ScrollBase:         color.RGBA{R: 220, G: 220, B: 228, A: 255},
 		ScrollThumb:        color.RGBA{R: 180, G: 180, B: 195, A: 255},
+		Selection:          color.RGBA{R: 100, G: 150, B: 210, A: 180},
 	}
 	return s
 }

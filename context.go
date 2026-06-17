@@ -8,7 +8,6 @@ import (
 	"image"
 	"maps"
 	"slices"
-	"time"
 
 	"github.com/go-text/typesetting/segmenter"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -31,15 +30,6 @@ type Context struct {
 	wheelConsumed bool
 	numberEditBuf string
 	numberEdit    widgetID
-
-	// Text field mouse selection (textFieldRaw); zero lastClickAt => no prior click.
-	textFieldLastClickAt   time.Time
-	textFieldLastClickID   widgetID
-	textFieldLastClickX    int
-	textFieldLastClickY    int
-	textFieldDragging      bool
-	textFieldDragAnchor    int
-	textFieldDragWidget    widgetID
 
 	idStack widgetID
 

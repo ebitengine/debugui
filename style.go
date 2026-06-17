@@ -42,6 +42,7 @@ type StyleColors struct {
 	BaseFocus          color.RGBA `json:"baseFocus"`
 	ScrollBase         color.RGBA `json:"scrollBase"`
 	ScrollThumb        color.RGBA `json:"scrollThumb"`
+	Selection          color.RGBA `json:"selection"`
 }
 
 const (
@@ -63,6 +64,7 @@ const (
 	colorBaseFocus
 	colorScrollBase
 	colorScrollThumb
+	colorSelection
 	colorCount
 )
 
@@ -107,6 +109,7 @@ func defaultStyleColors() StyleColors {
 		BaseFocus:          color.RGBA{R: 40, G: 40, B: 40, A: 255},
 		ScrollBase:         color.RGBA{R: 43, G: 43, B: 43, A: 255},
 		ScrollThumb:        color.RGBA{R: 30, G: 30, B: 30, A: 255},
+		Selection:          color.RGBA{R: 70, G: 100, B: 140, A: 255},
 	}
 }
 
@@ -148,6 +151,8 @@ func (s *Style) widgetColor(id int) color.RGBA {
 		return s.Colors.ScrollBase
 	case colorScrollThumb:
 		return s.Colors.ScrollThumb
+	case colorSelection:
+		return s.Colors.Selection
 	default:
 		return color.RGBA{}
 	}
