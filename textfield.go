@@ -151,7 +151,7 @@ func (t *textFieldState) caretRenderIndex() int {
 // setText replaces the committed text and abandons any in-progress composition.
 // The caret moves to the end of the text.
 func (t *textFieldState) setText(text string) {
-	t.composer.Finish()
+	t.composer.Cancel()
 	t.committedText = text
 	t.composition = ""
 	t.selectionAnchor = len(text)
@@ -168,7 +168,7 @@ func (t *textFieldState) moveCaretTo(pos int, extend bool) {
 	if pos == t.selectionCaret && (extend || pos == t.selectionAnchor) {
 		return
 	}
-	t.composer.Finish()
+	t.composer.Confirm()
 	t.selectionCaret = pos
 	if !extend {
 		t.selectionAnchor = pos
@@ -305,14 +305,14 @@ func (t *textFieldState) selectAll() {
 	if t.selectionAnchor == 0 && t.selectionCaret == len(t.committedText) {
 		return
 	}
-	t.composer.Finish()
+	t.composer.Confirm()
 	t.selectionAnchor = 0
 	t.selectionCaret = len(t.committedText)
 }
 
 // selectWordAt selects the word at the byte offset pos, ending any IME session.
 func (t *textFieldState) selectWordAt(pos int) {
-	t.composer.Finish()
+	t.composer.Confirm()
 	t.selectionAnchor, t.selectionCaret = wordRangeAt(t.committedText, pos)
 }
 
@@ -339,7 +339,7 @@ func (t *textFieldState) handleClick(pos int, extend bool, now, interval int64) 
 		t.selectAll()
 		t.dragging = false
 	default:
-		t.composer.Finish()
+		t.composer.Confirm()
 		t.moveCaretTo(pos, extend)
 		t.dragging = true
 	}
@@ -352,7 +352,7 @@ func (t *textFieldState) deleteSelection() bool {
 	if start == end {
 		return false
 	}
-	t.composer.Finish()
+	t.composer.Confirm()
 	t.committedText = t.committedText[:start] + t.committedText[end:]
 	t.selectionAnchor = start
 	t.selectionCaret = start
@@ -368,7 +368,7 @@ func (t *textFieldState) deleteBackward() {
 	if t.selectionCaret == 0 {
 		return
 	}
-	t.composer.Finish()
+	t.composer.Confirm()
 	_, size := utf8.DecodeLastRuneInString(t.committedText[:t.selectionCaret])
 	t.committedText = t.committedText[:t.selectionCaret-size] + t.committedText[t.selectionCaret:]
 	t.selectionCaret -= size
@@ -384,7 +384,7 @@ func (t *textFieldState) deleteForward() {
 	if t.selectionCaret >= len(t.committedText) {
 		return
 	}
-	t.composer.Finish()
+	t.composer.Confirm()
 	_, size := utf8.DecodeRuneInString(t.committedText[t.selectionCaret:])
 	t.committedText = t.committedText[:t.selectionCaret] + t.committedText[t.selectionCaret+size:]
 }
@@ -462,7 +462,7 @@ func (c *Context) textFieldRaw(buf *string, id widgetID, opt option) (EventHandl
 			if c.pointing.justPressed() && c.pointingOver(bounds) {
 				// End the session first; this commits any in-progress composition, and the
 				// caret position is then resolved against the resulting committed text.
-				f.composer.Finish()
+				f.composer.Confirm()
 				idx := textIndexFromX(f.text(), pt.X-textx)
 				f.handleClick(idx, ebiten.IsKeyPressed(ebiten.KeyShift), ebiten.Tick(), int64(ebiten.TPS())/2)
 			} else if f.dragging {
