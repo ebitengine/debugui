@@ -118,7 +118,7 @@ func (c *Context) doWindow(title string, initialBounds image.Rectangle, opt opti
 	}
 
 	// clipping is reset here in case a root-container is made within
-	// another root-containers's begin/end block; this prevents the inner
+	// another root-container's begin/end block; this prevents the inner
 	// root-container being clipped to the outer
 	c.clipStack = append(c.clipStack, unclippedRect)
 	defer c.popClipRect()

@@ -12,7 +12,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-// Slider cretes a slider widget with the given int value, range, and step.
+// Slider creates a slider widget with the given int value, range, and step.
 //
 // low and high specify the range of the slider.
 //
@@ -30,7 +30,7 @@ func (c *Context) Slider(value *int, low, high int, step int) EventHandler {
 	})
 }
 
-// SliderF cretes a slider widget with the given float64 value, range, step, and number of digits.
+// SliderF creates a slider widget with the given float64 value, range, step, and number of digits.
 //
 // low and high specify the range of the slider.
 // digits specifies the number of digits to display after the decimal point.

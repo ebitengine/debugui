@@ -34,7 +34,7 @@ func (g *Game) Update() error {
 			// Use Loop if you ever need to make a loop to make widgets.
 			const loopCount = 10
 			ctx.Loop(loopCount, func(index int) {
-				// Specify a presssing-button event handler by On.
+				// Specify a button-press event handler with On.
 				ctx.Button(fmt.Sprintf("Button %d", index)).On(func() {
 					fmt.Printf("Button %d is pressed", index)
 				})

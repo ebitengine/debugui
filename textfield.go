@@ -595,7 +595,7 @@ func (c *Context) textField(buf *string, id widgetID, opt option) (EventHandler,
 	return c.textFieldRaw(buf, id, opt)
 }
 
-// NumberField creates a number field to modify the value of a int value.
+// NumberField creates a number field to modify the value of an int value.
 //
 // step is the amount to increment or decrement the value when the user drags the mouse cursor.
 //
