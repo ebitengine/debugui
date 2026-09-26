@@ -113,11 +113,7 @@ func (c *Context) update(f func(ctx *Context) error) (inputCapturingState InputC
 	// Check whether the cursor is on any of the root containers.
 	pt := c.pointingPosition()
 	for _, cnt := range c.rootContainers {
-		bounds := cnt.layout.Bounds
-		if cnt.collapsed {
-			bounds.Max.Y = cnt.layout.BodyBounds.Min.Y
-		}
-		if pt.In(bounds) {
+		if pt.In(c.rootContainerHitBounds(cnt)) {
 			inputCapturingState |= InputCapturingStateHover
 		}
 	}

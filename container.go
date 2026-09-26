@@ -368,15 +368,29 @@ func (c *Context) bringToFront(cnt *container) {
 }
 
 func (c *Context) hoveringRootContainer() *container {
-	p := c.pointingPosition()
+	return c.rootContainerAt(c.pointingPosition())
+}
+
+// rootContainerAt returns the topmost open root container whose hit area contains p, or nil if there is none.
+func (c *Context) rootContainerAt(p image.Point) *container {
 	for i := len(c.rootContainers) - 1; i >= 0; i-- {
 		cnt := c.rootContainers[i]
 		if !cnt.open {
 			continue
 		}
-		if p.In(cnt.layout.Bounds) {
+		if p.In(c.rootContainerHitBounds(cnt)) {
 			return cnt
 		}
 	}
 	return nil
+}
+
+// rootContainerHitBounds returns the area of a root container that receives pointing input.
+// A collapsed container shows only its title bar, so only the title bar receives input.
+func (c *Context) rootContainerHitBounds(cnt *container) image.Rectangle {
+	bounds := cnt.layout.Bounds
+	if cnt.collapsed {
+		bounds.Max.Y = min(bounds.Max.Y, bounds.Min.Y+c.style().titleHeight)
+	}
+	return bounds
 }

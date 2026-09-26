@@ -3,6 +3,8 @@
 
 package debugui
 
+import "image"
+
 func IDPartFromCaller() string {
 	pc := caller()
 	return idPartFromCaller(pc)
@@ -88,4 +90,24 @@ func TextIndexFromX(str string, x int) int {
 
 func TextWidth(str string) int {
 	return textWidth(str)
+}
+
+// RootContainerIndexAt returns the z-order index of the topmost root container hit at p, or -1.
+func (d *DebugUI) RootContainerIndexAt(p image.Point) int {
+	cnt := d.ctx.rootContainerAt(p)
+	for i, c := range d.ctx.rootContainers {
+		if c == cnt {
+			return i
+		}
+	}
+	return -1
+}
+
+func (d *DebugUI) SetRootContainerCollapsed(index int, collapsed bool) {
+	d.ctx.rootContainers[index].collapsed = collapsed
+}
+
+func (d *DebugUI) MoveRootContainer(index int, delta image.Point) {
+	cnt := d.ctx.rootContainers[index]
+	cnt.layout.Bounds = cnt.layout.Bounds.Add(delta)
 }
