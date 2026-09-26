@@ -106,7 +106,7 @@ func (c *Context) draw(screen *ebiten.Image) {
 	for cmd := range c.commands() {
 		switch cmd.typ {
 		case commandRect:
-			vector.DrawFilledRect(
+			vector.FillRect(
 				target,
 				float32(cmd.rect.rect.Min.X*scale),
 				float32(cmd.rect.rect.Min.Y*scale),
@@ -205,12 +205,19 @@ func (c *Context) drawIcon(icon icon, rect image.Rectangle, color color.Color) {
 // DrawOnlyWidget adds a widget that only draws the given function without user interaction.
 func (c *Context) DrawOnlyWidget(f func(screen *ebiten.Image)) {
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
-		_, _ = c.widget(widgetID{}, 0, nil, nil, func(bounds image.Rectangle) {
-			c.setClip(c.clipRect())
-			defer c.setClip(unclippedRect)
-			cmd := c.appendCommand(commandDraw)
-			cmd.draw.f = f
-		})
+		// The layout item is allocated as usual, so that the layout does not depend
+		// on whether the drawing is visible. The item's bounds must not be used to
+		// cull the drawing though: f can draw outside them, and the clip rect
+		// already limits the output to the visible area.
+		if _, err := c.layoutNext(); err != nil {
+			return nil, err
+		}
+
+		c.setClip(c.clipRect())
+		defer c.setClip(unclippedRect)
+
+		cmd := c.appendCommand(commandDraw)
+		cmd.draw.f = f
 		return nil, nil
 	})
 }
