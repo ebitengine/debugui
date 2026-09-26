@@ -5,6 +5,7 @@ package debugui_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/ebitengine/debugui"
 )
@@ -242,53 +243,51 @@ func TestWordRangeAt(t *testing.T) {
 }
 
 func TestTextFieldStateMultiClick(t *testing.T) {
-	const interval = 30
 
 	f := debugui.NewTextFieldState("hello world")
 
 	// A single click places the caret without selecting.
-	f.HandleClick(2, false, 100, interval)
+	f.HandleClick(2, false, 0)
 	if start, end := f.Selection(); start != 2 || end != 2 {
 		t.Errorf("after single click: Selection() = %d, %d; want 2, 2", start, end)
 	}
 
 	// A second click within the interval is a double-click and selects the word.
-	f.HandleClick(2, false, 110, interval)
+	f.HandleClick(2, false, 100*time.Millisecond)
 	if start, end := f.Selection(); start != 0 || end != 5 {
 		t.Errorf("after double-click: Selection() = %d, %d; want 0, 5 (\"hello\")", start, end)
 	}
 
 	// A third click within the interval is a triple-click and selects the whole text.
-	f.HandleClick(2, false, 120, interval)
+	f.HandleClick(2, false, 200*time.Millisecond)
 	if start, end := f.Selection(); start != 0 || end != 11 {
 		t.Errorf("after triple-click: Selection() = %d, %d; want 0, 11", start, end)
 	}
 
 	// A fourth click within the interval keeps the triple-click selection.
-	f.HandleClick(2, false, 130, interval)
+	f.HandleClick(2, false, 300*time.Millisecond)
 	if start, end := f.Selection(); start != 0 || end != 11 {
 		t.Errorf("after fourth click: Selection() = %d, %d; want 0, 11", start, end)
 	}
 
 	// A click after the interval elapses restarts the sequence as a single click.
-	f.HandleClick(8, false, 200, interval)
-	if start, end := f.Selection(); start != 8 || end != 8 {
-		t.Errorf("after interval elapses: Selection() = %d, %d; want 8, 8", start, end)
+	f.HandleClick(2, false, 1000*time.Millisecond)
+	if start, end := f.Selection(); start != 2 || end != 2 {
+		t.Errorf("after interval elapses: Selection() = %d, %d; want 2, 2", start, end)
 	}
 	// And the next quick click is a double-click again, selecting the word under it.
-	f.HandleClick(8, false, 210, interval)
-	if start, end := f.Selection(); start != 6 || end != 11 {
-		t.Errorf("after double-click: Selection() = %d, %d; want 6, 11 (\"world\")", start, end)
+	f.HandleClick(2, false, 1100*time.Millisecond)
+	if start, end := f.Selection(); start != 0 || end != 5 {
+		t.Errorf("after double-click: Selection() = %d, %d; want 0, 5 (\"hello\")", start, end)
 	}
 }
 
 func TestTextFieldStateMultiClickDifferentPosition(t *testing.T) {
-	const interval = 30
 
 	f := debugui.NewTextFieldState("hello world")
 
 	// A single click places the caret and starts a potential drag-selection.
-	f.HandleClick(2, false, 100, interval)
+	f.HandleClick(2, false, 0)
 	if start, end := f.Selection(); start != 2 || end != 2 {
 		t.Errorf("after single click: Selection() = %d, %d; want 2, 2", start, end)
 	}
@@ -299,7 +298,7 @@ func TestTextFieldStateMultiClickDifferentPosition(t *testing.T) {
 	// A second click within the interval but at a different position is not a
 	// double-click: it restarts the sequence as a single click so it can begin a
 	// fresh drag-selection.
-	f.HandleClick(8, false, 110, interval)
+	f.HandleClick(8, false, 100*time.Millisecond)
 	if start, end := f.Selection(); start != 8 || end != 8 {
 		t.Errorf("after click at a different position: Selection() = %d, %d; want 8, 8", start, end)
 	}
@@ -309,7 +308,7 @@ func TestTextFieldStateMultiClickDifferentPosition(t *testing.T) {
 
 	// A further click at that new position within the interval does escalate to a
 	// double-click, selecting the word under it.
-	f.HandleClick(8, false, 120, interval)
+	f.HandleClick(8, false, 200*time.Millisecond)
 	if start, end := f.Selection(); start != 6 || end != 11 {
 		t.Errorf("after double-click: Selection() = %d, %d; want 6, 11 (\"world\")", start, end)
 	}

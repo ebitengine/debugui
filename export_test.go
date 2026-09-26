@@ -3,6 +3,56 @@
 
 package debugui
 
+import "time"
+
+type Timer struct {
+	t     timer
+	start time.Time
+}
+
+func (t *Timer) Start(delay, interval time.Duration) {
+	t.start = time.Now()
+	t.t.start(0, delay, interval)
+}
+
+func (t *Timer) Update() {
+	t.t.update(time.Since(t.start))
+}
+
+func (t *Timer) Fired() bool {
+	return t.t.fired()
+}
+
+func (t *Timer) Expired() bool {
+	return t.t.expired()
+}
+
+type LogicalClock struct {
+	clock logicalClock
+}
+
+func (c *LogicalClock) Read(tick int64, tps int) time.Duration {
+	return c.clock.read(tick, tps, time.Now())
+}
+
+type InputRepeat struct {
+	r     inputRepeat
+	clock logicalClock
+	tick  int64
+}
+
+func (r *InputRepeat) Update(pressed bool, now time.Time) bool {
+	r.r.update(pressed, r.clock.read(r.tick, 0, now))
+	r.tick++
+	return r.r.repeated
+}
+
+func (r *InputRepeat) UpdateTick(pressed bool, tps int) bool {
+	r.r.update(pressed, r.clock.read(r.tick, tps, time.Now()))
+	r.tick++
+	return r.r.repeated
+}
+
 func IDPartFromCaller() string {
 	pc := caller()
 	return idPartFromCaller(pc)
@@ -62,8 +112,9 @@ func (t TextFieldState) SelectWordAt(pos int) {
 	t.s.selectWordAt(pos)
 }
 
-func (t TextFieldState) HandleClick(pos int, extend bool, now, interval int64) {
-	t.s.handleClick(pos, extend, now, interval)
+func (t TextFieldState) HandleClick(pos int, extend bool, now time.Duration) {
+	t.s.clickTimer.update(now)
+	t.s.handleClick(pos, extend, now)
 }
 
 func (t TextFieldState) Dragging() bool {

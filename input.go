@@ -6,6 +6,7 @@ package debugui
 import (
 	"image"
 	"slices"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -16,10 +17,10 @@ type pointing struct {
 	touchIDs            []ebiten.TouchID
 	hasPrimaryTouchID   bool
 	primaryTouchID      ebiten.TouchID
-	duration            int
+	repeat              inputRepeat
 }
 
-func (p *pointing) update() {
+func (p *pointing) update(now time.Duration) {
 	p.justPressedTouchIDs = inpututil.AppendJustPressedTouchIDs(p.justPressedTouchIDs[:0])
 	p.touchIDs = ebiten.AppendTouchIDs(p.touchIDs[:0])
 
@@ -31,11 +32,7 @@ func (p *pointing) update() {
 		p.primaryTouchID = p.touchIDs[0]
 	}
 
-	if p.pressed() {
-		p.duration++
-	} else {
-		p.duration = 0
-	}
+	p.repeat.update(p.pressed(), now)
 }
 
 func (p *pointing) isTouchActive() bool {
@@ -67,20 +64,40 @@ func (p *pointing) justPressed() bool {
 }
 
 func (p *pointing) repeated() bool {
-	return repeated(p.duration)
+	return p.repeat.repeated
 }
 
-func keyRepeated(key ebiten.Key) bool {
-	return repeated(inpututil.KeyPressDuration(key))
+func (c *Context) keyRepeated(key ebiten.Key) bool {
+	return c.keyRepeats[key].repeated
 }
 
-func repeated(duration int) bool {
-	if duration == 1 {
-		return true
+func (c *Context) updateInput() {
+	c.now = currentTimerTime()
+	c.pointing.update(c.now)
+	for _, key := range [...]ebiten.Key{
+		ebiten.KeyLeft, ebiten.KeyRight, ebiten.KeyUp, ebiten.KeyDown,
+		ebiten.KeyHome, ebiten.KeyEnd, ebiten.KeyBackspace, ebiten.KeyDelete,
+	} {
+		c.keyRepeats[key].update(ebiten.IsKeyPressed(key), c.now)
 	}
-	delay := ebiten.TPS() * 24 / 60
-	if duration < delay {
-		return false
+}
+
+type inputRepeat struct {
+	timer    timer
+	repeated bool
+}
+
+func (r *inputRepeat) update(pressed bool, now time.Duration) {
+	r.timer.update(now)
+	r.repeated = false
+	if !pressed {
+		r.timer.stop()
+		return
 	}
-	return (duration-delay)%4 == 0
+	if !r.timer.active() {
+		r.repeated = true
+		r.timer.start(now, 400*time.Millisecond, time.Second/15)
+		return
+	}
+	r.repeated = r.timer.fired()
 }
