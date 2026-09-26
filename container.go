@@ -369,14 +369,21 @@ func (c *Context) bringToFront(cnt *container) {
 
 func (c *Context) hoveringRootContainer() *container {
 	p := c.pointingPosition()
-	for i := len(c.rootContainers) - 1; i >= 0; i-- {
-		cnt := c.rootContainers[i]
+	for _, cnt := range slices.Backward(c.rootContainers) {
 		if !cnt.open {
 			continue
 		}
-		if p.In(cnt.layout.Bounds) {
+		if p.In(cnt.visibleBounds(c.style().titleHeight)) {
 			return cnt
 		}
 	}
 	return nil
+}
+
+func (c *container) visibleBounds(titleHeight int) image.Rectangle {
+	bounds := c.layout.Bounds
+	if c.collapsed {
+		bounds.Max.Y = bounds.Min.Y + titleHeight
+	}
+	return bounds
 }
