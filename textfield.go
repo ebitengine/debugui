@@ -8,6 +8,7 @@ import (
 	"image"
 	"os"
 	"strconv"
+	"time"
 	"unicode"
 	"unicode/utf8"
 
@@ -56,10 +57,7 @@ type textFieldState struct {
 	// the selection.
 	dragging bool
 
-	// lastClickTick is the tick of the most recent pointer press on this field. Together
-	// with lastClickPos and consecutiveClicks it distinguishes single-, double-, and
-	// triple-clicks.
-	lastClickTick int64
+	clickTimer timer
 
 	// lastClickPos is the byte offset of the most recent pointer press. A press at a
 	// different offset restarts the sequence so that it can begin a fresh drag-selection.
@@ -316,19 +314,19 @@ func (t *textFieldState) selectWordAt(pos int) {
 	t.selectionAnchor, t.selectionCaret = wordRangeAt(t.committedText, pos)
 }
 
-// handleClick processes a pointer press at the byte offset pos; now is the current tick.
-// Presses within interval ticks of one another at the same position escalate the
+// handleClick processes a pointer press at the byte offset pos.
+// Presses within half a second of one another at the same position escalate the
 // selection: a single click places the caret (extending the selection when extend is
 // true), a double-click selects the word at pos, and a triple-click selects the whole
 // text. A press at a different position restarts the sequence as a single click, so that
 // it can begin a fresh drag-selection.
-func (t *textFieldState) handleClick(pos int, extend bool, now, interval int64) {
+func (t *textFieldState) handleClick(pos int, extend bool, now time.Duration) {
 	count := 1
-	if now-t.lastClickTick <= interval && pos == t.lastClickPos {
+	if t.clickTimer.active() && !t.clickTimer.expired() && pos == t.lastClickPos {
 		count = min(t.consecutiveClicks+1, 3)
 	}
 	t.consecutiveClicks = count
-	t.lastClickTick = now
+	t.clickTimer.start(now, 500*time.Millisecond, 0)
 	t.lastClickPos = pos
 
 	switch count {
@@ -464,7 +462,7 @@ func (c *Context) textFieldRaw(buf *string, id widgetID, opt option) (EventHandl
 				// caret position is then resolved against the resulting committed text.
 				f.composer.Confirm()
 				idx := textIndexFromX(f.text(), pt.X-textx)
-				f.handleClick(idx, ebiten.IsKeyPressed(ebiten.KeyShift), ebiten.Tick(), int64(ebiten.TPS())/2)
+				f.handleClick(idx, ebiten.IsKeyPressed(ebiten.KeyShift), c.now)
 			} else if f.dragging {
 				if c.pointing.pressed() {
 					f.moveCaretTo(textIndexFromX(f.text(), pt.X-textx), true)
@@ -501,7 +499,7 @@ func (c *Context) textFieldRaw(buf *string, id widgetID, opt option) (EventHandl
 					word = ebiten.IsKeyPressed(ebiten.KeyControl)
 				}
 				switch {
-				case keyRepeated(ebiten.KeyLeft):
+				case c.keyRepeated(ebiten.KeyLeft):
 					switch {
 					case apple && cmd:
 						f.moveCaretTo(0, shift)
@@ -510,7 +508,7 @@ func (c *Context) textFieldRaw(buf *string, id widgetID, opt option) (EventHandl
 					default:
 						f.moveCaretLeft(shift)
 					}
-				case keyRepeated(ebiten.KeyRight):
+				case c.keyRepeated(ebiten.KeyRight):
 					switch {
 					case apple && cmd:
 						f.moveCaretTo(len(f.text()), shift)
@@ -519,15 +517,15 @@ func (c *Context) textFieldRaw(buf *string, id widgetID, opt option) (EventHandl
 					default:
 						f.moveCaretRight(shift)
 					}
-				case keyRepeated(ebiten.KeyHome):
+				case c.keyRepeated(ebiten.KeyHome):
 					f.moveCaretTo(0, shift)
-				case keyRepeated(ebiten.KeyEnd):
+				case c.keyRepeated(ebiten.KeyEnd):
 					f.moveCaretTo(len(f.text()), shift)
 				case inpututil.IsKeyJustPressed(ebiten.KeyA) && cmd:
 					f.selectAll()
-				case keyRepeated(ebiten.KeyBackspace):
+				case c.keyRepeated(ebiten.KeyBackspace):
 					f.deleteBackward()
-				case keyRepeated(ebiten.KeyDelete):
+				case c.keyRepeated(ebiten.KeyDelete):
 					f.deleteForward()
 				case inpututil.IsKeyJustPressed(ebiten.KeyEnter):
 					e = &eventHandler{}
@@ -662,17 +660,17 @@ func (c *Context) numberField(value *int, step int, idPart string, opt option) (
 			}
 			if c.focus == id {
 				var updated bool
-				if keyRepeated(ebiten.KeyUp) || keyRepeated(ebiten.KeyDown) {
+				if c.keyRepeated(ebiten.KeyUp) || c.keyRepeated(ebiten.KeyDown) {
 					v, err := strconv.ParseInt(buf, 10, 64)
 					if err != nil {
 						v = 0
 					}
 					*value = int(v)
 					updated = true
-					if keyRepeated(ebiten.KeyUp) {
+					if c.keyRepeated(ebiten.KeyUp) {
 						*value += step
 					}
-					if keyRepeated(ebiten.KeyDown) {
+					if c.keyRepeated(ebiten.KeyDown) {
 						*value -= step
 						updated = true
 					}
@@ -738,17 +736,17 @@ func (c *Context) numberFieldF(value *float64, step float64, digits int, idPart 
 			}
 			if c.focus == id {
 				var updated bool
-				if keyRepeated(ebiten.KeyUp) || keyRepeated(ebiten.KeyDown) {
+				if c.keyRepeated(ebiten.KeyUp) || c.keyRepeated(ebiten.KeyDown) {
 					v, err := strconv.ParseFloat(buf, 64)
 					if err != nil {
 						v = 0
 					}
 					*value = float64(v)
 					updated = true
-					if keyRepeated(ebiten.KeyUp) {
+					if c.keyRepeated(ebiten.KeyUp) {
 						*value += step
 					}
-					if keyRepeated(ebiten.KeyDown) {
+					if c.keyRepeated(ebiten.KeyDown) {
 						*value -= step
 						updated = true
 					}

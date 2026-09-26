@@ -22,8 +22,7 @@ type container struct {
 	toggledIDs          map[widgetID]struct{}
 	textInputTextFields map[widgetID]*textFieldState
 
-	// dropdownCloseDelay is used for delayed closing of dropdowns
-	dropdownCloseDelay int
+	dropdownCloseTimer timer
 
 	used bool
 }

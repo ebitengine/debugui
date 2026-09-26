@@ -8,6 +8,7 @@ import (
 	"image"
 	"maps"
 	"slices"
+	"time"
 
 	"github.com/go-text/typesetting/segmenter"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -19,7 +20,9 @@ func clamp[T int | float64](x, a, b T) T {
 
 // Context is the main context for the debug UI.
 type Context struct {
-	pointing pointing
+	pointing   pointing
+	keyRepeats [ebiten.KeyMax + 1]inputRepeat
+	now        time.Duration
 
 	scaleMinus1   int
 	hover         widgetID
@@ -94,7 +97,7 @@ func (c *Context) update(f func(ctx *Context) error) (inputCapturingState InputC
 		return 0, c.err
 	}
 
-	c.pointing.update()
+	c.updateInput()
 
 	c.beginUpdate()
 	defer func() {
@@ -127,6 +130,10 @@ func (c *Context) update(f func(ctx *Context) error) (inputCapturingState InputC
 
 func (c *Context) beginUpdate() {
 	for _, cnt := range c.idToContainer {
+		cnt.dropdownCloseTimer.update(c.now)
+		for _, field := range cnt.textInputTextFields {
+			field.clickTimer.update(c.now)
+		}
 		cnt.used = false
 	}
 	for _, cnt := range c.rootContainers {

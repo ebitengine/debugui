@@ -5,8 +5,7 @@ package debugui
 
 import (
 	"image"
-
-	"github.com/hajimehoshi/ebiten/v2"
+	"time"
 )
 
 // Dropdown creates a dropdown menu widget that allows users to select from a list of options.
@@ -33,12 +32,9 @@ func (c *Context) dropdown(selectedIndex *int, options []string, idPart string) 
 	id := c.idStack.push(idPart)
 	dropdownContainer := c.container(id, 0)
 
-	// Handle delayed closing of dropdown
-	if dropdownContainer.dropdownCloseDelay > 0 {
-		dropdownContainer.dropdownCloseDelay--
-		if dropdownContainer.dropdownCloseDelay == 0 {
-			dropdownContainer.open = false
-		}
+	if dropdownContainer.dropdownCloseTimer.expired() {
+		dropdownContainer.open = false
+		dropdownContainer.dropdownCloseTimer.stop()
 	}
 
 	if dropdownContainer.layout.Bounds.Empty() {
@@ -61,8 +57,7 @@ func (c *Context) dropdown(selectedIndex *int, options []string, idPart string) 
 				c.Button(option).On(func() {
 					*selectedIndex = i
 					if cnt := c.container(id, 0); cnt != nil {
-						// Start the close delay timer (0.1 seconds at TPS rate)
-						cnt.dropdownCloseDelay = ebiten.TPS() / 10
+						cnt.dropdownCloseTimer.start(c.now, 100*time.Millisecond, 0)
 					}
 				})
 			})
@@ -84,7 +79,7 @@ func (c *Context) dropdown(selectedIndex *int, options []string, idPart string) 
 
 			if !clickInButton && !clickInDropdown {
 				// Only close immediately if there's no close delay active
-				if dropdownContainer.dropdownCloseDelay == 0 {
+				if !dropdownContainer.dropdownCloseTimer.active() {
 					dropdownContainer.open = false
 				}
 			}
@@ -94,13 +89,13 @@ func (c *Context) dropdown(selectedIndex *int, options []string, idPart string) 
 			if dropdownContainer.open {
 				// Close the dropdown immediately and cancel any pending delay
 				dropdownContainer.open = false
-				dropdownContainer.dropdownCloseDelay = 0
+				dropdownContainer.dropdownCloseTimer.stop()
 			} else {
 				wasClosedBefore := !dropdownContainer.open
 
 				// Open the dropdown and cancel any pending close delay
 				dropdownContainer.open = true
-				dropdownContainer.dropdownCloseDelay = 0
+				dropdownContainer.dropdownCloseTimer.stop()
 
 				if wasClosedBefore {
 					dropdownPos := image.Pt(bounds.Min.X, bounds.Max.Y)
