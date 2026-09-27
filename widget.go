@@ -64,7 +64,7 @@ func (c *Context) pointingOver(bounds image.Rectangle) bool {
 
 func (c *Context) pointingDelta() image.Point {
 	// The delta is always (0, 0) when a touch just started.
-	if c.pointing.isTouchActive() && c.pointing.justPressed() {
+	if c.pointing.isTouchActive() && c.pointingJustPressed() {
 		return image.Point{}
 	}
 	return c.pointingPosition().Sub(c.lastPointingPos)
@@ -85,7 +85,7 @@ func (c *Context) handleInputForWidget(id widgetID, bounds image.Rectangle, opt 
 	if c.focus == id {
 		c.keepFocus = true
 	}
-	if (opt & optionNoInteract) != 0 {
+	if (opt&optionNoInteract) != 0 || c.isInputIgnored() {
 		return false
 	}
 
@@ -95,18 +95,18 @@ func (c *Context) handleInputForWidget(id widgetID, bounds image.Rectangle, opt 
 	}
 
 	if c.focus == id {
-		if c.pointing.justPressed() && !hover {
+		if c.pointingJustPressed() && !hover {
 			c.setFocus(widgetID{})
 			wasFocused = true
 		}
-		if !c.pointing.pressed() && (^opt&optionHoldFocus) != 0 {
+		if !c.pointingPressed() && (^opt&optionHoldFocus) != 0 {
 			c.setFocus(widgetID{})
 			wasFocused = true
 		}
 	}
 
 	if c.hover == id {
-		if c.pointing.justPressed() {
+		if c.pointingJustPressed() {
 			c.setFocus(id)
 		} else if !hover {
 			c.hover = widgetID{}
@@ -184,7 +184,7 @@ func (c *Context) Checkbox(state *bool, label string) EventHandler {
 		return c.widget(id, 0, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
 			var e EventHandler
 			c.handleInputForWidget(id, bounds, 0)
-			if c.pointing.justPressed() && c.focus == id {
+			if c.pointingJustPressed() && c.focus == id {
 				e = &eventHandler{}
 				*state = !*state
 			}

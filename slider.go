@@ -67,7 +67,7 @@ func (c *Context) slider(value *int, low, high, step int, id widgetID, opt optio
 
 	return c.widget(id, opt, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
 		var e EventHandler
-		if c.focus == id && c.pointing.pressed() {
+		if c.focus == id && c.pointingPressed() {
 			if w := bounds.Dx() - defaultStyle.thumbSize; w > 0 {
 				v = low + (c.pointingPosition().X-bounds.Min.X-defaultStyle.thumbSize/2)*(high-low+step)/w
 			}
@@ -113,7 +113,7 @@ func (c *Context) sliderF(value *float64, low, high, step float64, digits int, i
 
 	return c.widget(id, opt, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
 		var e EventHandler
-		if c.focus == id && c.pointing.pressed() {
+		if c.focus == id && c.pointingPressed() {
 			if w := float64(bounds.Dx() - defaultStyle.thumbSize); w > 0 {
 				v = low + float64(c.pointingPosition().X-bounds.Min.X-defaultStyle.thumbSize/2)*(high-low+step)/w
 			}
@@ -142,7 +142,7 @@ func (c *Context) sliderF(value *float64, low, high, step float64, digits int, i
 }
 
 func (c *Context) numberTextField(value *int, id widgetID) error {
-	if c.pointing.justPressed() && ebiten.IsKeyPressed(ebiten.KeyShift) && c.hover == id {
+	if c.pointingJustPressed() && ebiten.IsKeyPressed(ebiten.KeyShift) && c.hover == id {
 		c.numberEdit = id
 		c.numberEditBuf = fmt.Sprintf("%d", *value)
 	}
@@ -166,7 +166,7 @@ func (c *Context) numberTextField(value *int, id widgetID) error {
 }
 
 func (c *Context) numberTextFieldF(value *float64, id widgetID) error {
-	if c.pointing.justPressed() && ebiten.IsKeyPressed(ebiten.KeyShift) && c.hover == id {
+	if c.pointingJustPressed() && ebiten.IsKeyPressed(ebiten.KeyShift) && c.hover == id {
 		c.numberEdit = id
 		c.numberEditBuf = fmt.Sprintf(realFmt, *value)
 	}

@@ -72,7 +72,7 @@ func (c *Context) dropdown(selectedIndex *int, options []string, idPart string) 
 
 		dropdownContainer := c.container(id, 0)
 		// Manual "click outside to close" and dropdown toggle, trying to do this in the container.go had lots of issues
-		if dropdownContainer.open && c.pointing.justPressed() {
+		if dropdownContainer.open && c.pointingJustPressed() {
 			clickPos := c.pointingPosition()
 			clickInButton := clickPos.In(bounds)
 			clickInDropdown := clickPos.In(dropdownContainer.layout.Bounds)
@@ -85,7 +85,7 @@ func (c *Context) dropdown(selectedIndex *int, options []string, idPart string) 
 			}
 		}
 
-		if c.pointing.justPressed() && c.focus == id {
+		if c.pointingJustPressed() && c.focus == id {
 			if dropdownContainer.open {
 				// Close the dropdown immediately and cancel any pending delay
 				dropdownContainer.open = false

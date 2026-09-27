@@ -146,7 +146,7 @@ func (c *Context) doWindow(title string, initialBounds image.Rectangle, opt opti
 			titleID := id.push(idPartFromString("title"))
 			r := image.Rect(tr.Min.X+tr.Dy()-c.style().padding, tr.Min.Y, tr.Max.X, tr.Max.Y)
 			_ = c.widgetWithBounds(titleID, opt, r, func(bounds image.Rectangle, wasFocused bool) EventHandler {
-				if titleID == c.focus && c.pointing.pressed() {
+				if titleID == c.focus && c.pointingPressed() {
 					b := cnt.layout.Bounds.Add(c.pointingDelta())
 					if c.screenWidth > 0 {
 						maxX := b.Max.X
@@ -180,7 +180,7 @@ func (c *Context) doWindow(title string, initialBounds image.Rectangle, opt opti
 			collapseID := id.push(idPartFromString("collapse"))
 			r := image.Rect(tr.Min.X, tr.Min.Y, tr.Min.X+tr.Dy(), tr.Max.Y)
 			_ = c.widgetWithBounds(collapseID, opt, r, func(bounds image.Rectangle, wasFocused bool) EventHandler {
-				if c.pointing.justPressed() && collapseID == c.focus {
+				if c.pointingJustPressed() && collapseID == c.focus {
 					cnt.collapsed = !cnt.collapsed
 				}
 				return nil
@@ -213,7 +213,7 @@ func (c *Context) doWindow(title string, initialBounds image.Rectangle, opt opti
 		resizeID := id.push(idPartFromString("resize"))
 		r := image.Rect(bounds.Max.X-sz, bounds.Max.Y-sz, bounds.Max.X, bounds.Max.Y)
 		_ = c.widgetWithBounds(resizeID, 0, r, func(bounds image.Rectangle, wasFocused bool) EventHandler {
-			if resizeID == c.focus && c.pointing.pressed() {
+			if resizeID == c.focus && c.pointingPressed() {
 				cnt.layout.Bounds.Max.X = min(cnt.layout.Bounds.Min.X+max(96, cnt.layout.Bounds.Dx()+c.pointingDelta().X), c.screenWidth/c.Scale())
 				cnt.layout.Bounds.Max.Y = min(cnt.layout.Bounds.Min.Y+max(64, cnt.layout.Bounds.Dy()+c.pointingDelta().Y), c.screenHeight/c.Scale())
 			}
@@ -233,7 +233,7 @@ func (c *Context) doWindow(title string, initialBounds image.Rectangle, opt opti
 	}
 
 	// close if this is a popup window and elsewhere was clicked
-	if (opt&optionPopup) != 0 && c.pointing.justPressed() && c.hoveringRootContainer() != cnt {
+	if (opt&optionPopup) != 0 && c.pointingJustPressed() && c.hoveringRootContainer() != cnt {
 		cnt.open = false
 	}
 

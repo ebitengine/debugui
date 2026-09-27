@@ -298,7 +298,13 @@ func (c *Context) SetScale(scale int) {
 	if scale < 1 {
 		panic("debugui: scale must be >= 1")
 	}
+	if c.Scale() == scale {
+		return
+	}
 	c.scaleMinus1 = scale - 1
+	// Changing the scale changes the logical pointing position, so the same click
+	// could activate another widget (#40). Ignore input until the next tick to prevent this.
+	c.ignoreInputUntilTick = ebiten.Tick() + 1
 }
 
 // Scale returns the scale of the UI.

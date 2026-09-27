@@ -24,6 +24,8 @@ type Context struct {
 	keyRepeats [ebiten.KeyMax + 1]inputRepeat
 	now        time.Duration
 
+	ignoreInputUntilTick int64
+
 	scaleMinus1   int
 	hover         widgetID
 	focus         widgetID
@@ -159,7 +161,7 @@ func (c *Context) endUpdate() error {
 	}
 
 	// handle scroll input
-	if c.scrollTarget != nil {
+	if c.scrollTarget != nil && !c.isInputIgnored() {
 		wx, wy := ebiten.Wheel()
 		c.scrollTarget.layout.ScrollOffset.X += int(wx * -30)
 		c.scrollTarget.layout.ScrollOffset.Y += int(wy * -30)
@@ -172,7 +174,7 @@ func (c *Context) endUpdate() error {
 	c.keepFocus = false
 
 	// Bring the hovering root container to front if the pointing device was pressed.
-	if c.pointing.justPressed() {
+	if c.pointingJustPressed() {
 		// TODO: When showing a popup, the position might be on the popup and the parent container might not be brought to front.
 		// Fix this issue.
 		if cnt := c.hoveringRootContainer(); cnt != nil {

@@ -451,20 +451,23 @@ func (c *Context) textFieldRaw(buf *string, id widgetID, opt option) (EventHandl
 
 		f := c.currentContainer().textInputTextField(id, true)
 		if c.focus == id {
+			if c.isInputIgnored() {
+				return nil
+			}
 			// While focused, f's committed text is the source of truth.
 			textx := c.textFieldTextX(f, bounds, opt)
 
 			// Handle pointing input before running the IME, so that a new IME session
 			// starts with the up-to-date selection.
 			pt := c.pointingPosition()
-			if c.pointing.justPressed() && c.pointingOver(bounds) {
+			if c.pointingJustPressed() && c.pointingOver(bounds) {
 				// End the session first; this commits any in-progress composition, and the
 				// caret position is then resolved against the resulting committed text.
 				f.composer.Confirm()
 				idx := textIndexFromX(f.text(), pt.X-textx)
 				f.handleClick(idx, ebiten.IsKeyPressed(ebiten.KeyShift), c.now)
 			} else if f.dragging {
-				if c.pointing.pressed() {
+				if c.pointingPressed() {
 					f.moveCaretTo(textIndexFromX(f.text(), pt.X-textx), true)
 				} else {
 					f.dragging = false

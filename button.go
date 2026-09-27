@@ -24,7 +24,7 @@ func (c *Context) Button(text string) EventHandler {
 func (c *Context) button(text string, opt option, id widgetID) (EventHandler, error) {
 	return c.widget(id, opt, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
 		var e EventHandler
-		if c.pointing.justPressed() && c.focus == id {
+		if c.pointingJustPressed() && c.focus == id {
 			e = &eventHandler{}
 		}
 		return e
@@ -66,7 +66,7 @@ func (c *Context) spinButton(up bool, opt option, upID, downID widgetID) (EventH
 	}
 	return c.widget(id, opt, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
 		var e EventHandler
-		if c.pointing.repeated() && (c.focus == upID || c.focus == downID) && c.pointingPosition().In(bounds) {
+		if c.pointingRepeated() && (c.focus == upID || c.focus == downID) && c.pointingPosition().In(bounds) {
 			e = &eventHandler{}
 		}
 		return e

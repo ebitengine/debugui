@@ -60,7 +60,7 @@ func (c *Context) header(label string, isTreeNode bool, opt option, id widgetID,
 	}
 
 	e, err := c.widget(id, 0, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
-		if c.pointing.justPressed() && c.focus == id {
+		if c.pointingJustPressed() && c.focus == id {
 			c.currentContainer().toggle(id)
 		}
 		if expanded {

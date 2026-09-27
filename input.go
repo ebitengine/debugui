@@ -67,8 +67,24 @@ func (p *pointing) repeated() bool {
 	return p.repeat.repeated
 }
 
+func (c *Context) isInputIgnored() bool {
+	return ebiten.Tick() < c.ignoreInputUntilTick
+}
+
+func (c *Context) pointingPressed() bool {
+	return !c.isInputIgnored() && c.pointing.pressed()
+}
+
+func (c *Context) pointingJustPressed() bool {
+	return !c.isInputIgnored() && c.pointing.justPressed()
+}
+
+func (c *Context) pointingRepeated() bool {
+	return !c.isInputIgnored() && c.pointing.repeated()
+}
+
 func (c *Context) keyRepeated(key ebiten.Key) bool {
-	return c.keyRepeats[key].repeated
+	return !c.isInputIgnored() && c.keyRepeats[key].repeated
 }
 
 func (c *Context) updateInput() {
