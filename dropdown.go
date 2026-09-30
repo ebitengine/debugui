@@ -100,10 +100,11 @@ func (c *Context) dropdown(selectedIndex *int, options []string, idPart string) 
 				if wasClosedBefore {
 					dropdownPos := image.Pt(bounds.Min.X, bounds.Max.Y)
 					buttonWidth := bounds.Dx()
-					optionHeight := c.style().defaultHeight + c.style().padding + 1
-					totalHeight := len(options) * optionHeight
+					st := c.style()
+					optionHeight := st.defaultHeight + st.spacing
+					totalHeight := len(options)*optionHeight - st.spacing + st.padding*2
 
-					maxDropdownHeight := c.style().defaultHeight * 12 // around 10 items visible?
+					maxDropdownHeight := st.defaultHeight * 12 // around 10 items visible?
 					actualHeight := min(totalHeight, maxDropdownHeight)
 
 					dropdownContainer.layout.Bounds = image.Rectangle{
