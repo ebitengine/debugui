@@ -105,12 +105,10 @@ func (c *Context) handleInputForWidget(id widgetID, bounds image.Rectangle, opt 
 		}
 	}
 
-	if c.hover == id {
-		if c.pointingJustPressed() {
-			c.setFocus(id)
-		} else if !hover {
-			c.hover = widgetID{}
-		}
+	if hover && c.pointingJustPressed() {
+		c.setFocus(id)
+	} else if c.hover == id && !hover {
+		c.hover = widgetID{}
 	}
 
 	return
