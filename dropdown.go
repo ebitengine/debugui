@@ -29,6 +29,11 @@ func (c *Context) dropdown(selectedIndex *int, options []string, idPart string) 
 	}
 	last := *selectedIndex
 
+	buttonBounds, err := c.layoutNext()
+	if err != nil {
+		return nil, err
+	}
+
 	id := c.idStack.push(idPart)
 	dropdownContainer := c.container(id, 0)
 
@@ -40,6 +45,8 @@ func (c *Context) dropdown(selectedIndex *int, options []string, idPart string) 
 	if dropdownContainer.layout.Bounds.Empty() {
 		dropdownContainer.open = false
 	}
+
+	dropdownContainer.layout.Bounds = c.dropdownBounds(buttonBounds, len(options))
 
 	_ = c.wrapEventHandlerAndError(func() (EventHandler, error) {
 		windowOptions := optionNoResize | optionNoTitle
@@ -67,7 +74,7 @@ func (c *Context) dropdown(selectedIndex *int, options []string, idPart string) 
 		return nil, nil
 	})
 
-	return c.widget(id, optionAlignCenter, nil, func(bounds image.Rectangle, wasFocused bool) EventHandler {
+	e := c.widgetWithBounds(id, optionAlignCenter, buttonBounds, func(bounds image.Rectangle, wasFocused bool) EventHandler {
 		var e EventHandler
 
 		dropdownContainer := c.container(id, 0)
@@ -91,27 +98,9 @@ func (c *Context) dropdown(selectedIndex *int, options []string, idPart string) 
 				dropdownContainer.open = false
 				dropdownContainer.dropdownCloseTimer.stop()
 			} else {
-				wasClosedBefore := !dropdownContainer.open
-
 				// Open the dropdown and cancel any pending close delay
 				dropdownContainer.open = true
 				dropdownContainer.dropdownCloseTimer.stop()
-
-				if wasClosedBefore {
-					dropdownPos := image.Pt(bounds.Min.X, bounds.Max.Y)
-					buttonWidth := bounds.Dx()
-					st := c.style()
-					optionHeight := st.defaultHeight + st.spacing
-					totalHeight := len(options)*optionHeight - st.spacing + st.padding*2
-
-					maxDropdownHeight := st.defaultHeight * 12 // around 10 items visible?
-					actualHeight := min(totalHeight, maxDropdownHeight)
-
-					dropdownContainer.layout.Bounds = image.Rectangle{
-						Min: dropdownPos,
-						Max: dropdownPos.Add(image.Pt(buttonWidth, actualHeight)),
-					}
-				}
 			}
 		}
 		if last != *selectedIndex {
@@ -120,6 +109,9 @@ func (c *Context) dropdown(selectedIndex *int, options []string, idPart string) 
 
 		return e
 	}, func(bounds image.Rectangle) {
+		if !c.currentContainer().layout.BodyBounds.Overlaps(bounds) {
+			return
+		}
 		c.drawWidgetFrame(id, bounds, colorButton, optionAlignCenter)
 
 		arrowWidth := bounds.Dy()
@@ -134,4 +126,34 @@ func (c *Context) dropdown(selectedIndex *int, options []string, idPart string) 
 		}
 		c.drawIcon(icon, arrowBounds, c.style().colors[colorText])
 	})
+	return e, nil
+}
+
+func (c *Context) dropdownBounds(buttonBounds image.Rectangle, optionCount int) image.Rectangle {
+	st := c.style()
+	height := min(optionCount*(st.defaultHeight+st.spacing)-st.spacing+st.padding*2, st.defaultHeight*12)
+	width := buttonBounds.Dx()
+	pos := image.Pt(buttonBounds.Min.X, buttonBounds.Max.Y)
+
+	if c.screenWidth > 0 {
+		screenWidth := c.screenWidth / c.Scale()
+		width = min(width, screenWidth)
+		pos.X = clamp(pos.X, 0, screenWidth-width)
+	}
+	if c.screenHeight > 0 {
+		screenHeight := c.screenHeight / c.Scale()
+		above := clamp(buttonBounds.Min.Y, 0, screenHeight)
+		below := screenHeight - clamp(buttonBounds.Max.Y, 0, screenHeight)
+		if height > below && above > below {
+			height = min(height, above)
+			pos.Y = above - height
+		} else {
+			height = min(height, below)
+			pos.Y = screenHeight - below
+		}
+	}
+	return image.Rectangle{
+		Min: pos,
+		Max: pos.Add(image.Pt(width, height)),
+	}
 }
